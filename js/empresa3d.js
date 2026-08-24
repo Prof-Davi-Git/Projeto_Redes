@@ -1,19 +1,24 @@
 /* =========================================================
-   EMPRESA 3D - Projeto de Redes
-   - Cria a nova tela automaticamente
-   - Salva a personalizacao dentro de project.company.visual
-   - Mantem compatibilidade com JSONs antigos
+   EMPRESA 3D - Projeto de Redes - V3
+   - terreno único, sem elementos flutuando
+   - 4 paredes reais + teto
+   - giro horizontal 360° + vista superior
+   - três arquiteturas realmente diferentes
+   - três ambientes realmente diferentes
+   - salva em project.company.visual
    ========================================================= */
 
 (() => {
   const VISUAL_PADRAO = {
+    visualVersion: 3,
     primary: '#2563eb',
     secondary: '#0f172a',
     facade: '#e2e8f0',
     buildingStyle: 'moderno',
     environment: 'empresarial',
     signMode: 'nome-logo',
-    rotation: -18,
+    rotationY: 338,
+    tilt: 12,
     logo: {
       mode: 'generated',
       icon: '🌐',
@@ -27,20 +32,34 @@
     return JSON.parse(JSON.stringify(VISUAL_PADRAO));
   }
 
+  function normalizarAngulo(valor) {
+    const n = Number(valor) || 0;
+    return ((n % 360) + 360) % 360;
+  }
+
+  function limitar(valor, min, max) {
+    return Math.min(max, Math.max(min, Number(valor) || 0));
+  }
+
   function garantirVisual() {
     if (!project.company) project.company = {};
 
-    if (!project.company.visual) {
-      project.company.visual = cloneVisualPadrao();
-      return project.company.visual;
+    const padrao = cloneVisualPadrao();
+    const atual = project.company.visual || {};
+
+    /* Compatibilidade com a primeira versão, que usava rotation. */
+    if (atual.rotationY == null && atual.rotation != null) {
+      atual.rotationY = normalizarAngulo(atual.rotation);
     }
 
-    const atual = project.company.visual;
     project.company.visual = {
-      ...cloneVisualPadrao(),
+      ...padrao,
       ...atual,
+      visualVersion: 3,
+      rotationY: normalizarAngulo(atual.rotationY ?? padrao.rotationY),
+      tilt: limitar(atual.tilt ?? padrao.tilt, 0, 68),
       logo: {
-        ...cloneVisualPadrao().logo,
+        ...padrao.logo,
         ...(atual.logo || {})
       }
     };
@@ -86,41 +105,110 @@
               <p class="eyebrow">MAQUETE DA EMPRESA</p>
               <h3 id="e3dTituloPreview">Minha Empresa</h3>
             </div>
-            <span class="empresa3d-badge">Visualização 3D leve</span>
+            <span class="empresa3d-badge">360° + vista superior</span>
           </div>
 
           <div id="empresa3dCena" class="empresa3d-cena ambiente-empresarial">
+            <div class="empresa3d-cenario-fundo"></div>
             <div class="empresa3d-sol"></div>
-            <div class="empresa3d-chao"></div>
-            <span class="empresa3d-arvore a1">🌳</span>
-            <span class="empresa3d-arvore a2">🌲</span>
-            <span class="empresa3d-arvore a3">🌳</span>
+            <div class="empresa3d-drag-hint">↔ Arraste para girar • ↕ Arraste para inclinar</div>
 
-            <div id="empresa3dPredio" class="empresa3d-predio-wrap estilo-moderno">
-              <div class="empresa3d-face empresa3d-frente">
-                <div id="empresa3dPlaca" class="empresa3d-placa"></div>
-                <div class="empresa3d-janelas">
-                  <span class="empresa3d-janela"></span><span class="empresa3d-janela"></span><span class="empresa3d-janela"></span><span class="empresa3d-janela"></span><span class="empresa3d-janela"></span>
-                  <span class="empresa3d-janela"></span><span class="empresa3d-janela"></span><span class="empresa3d-janela"></span><span class="empresa3d-janela"></span><span class="empresa3d-janela"></span>
-                </div>
-                <div class="empresa3d-porta"></div>
-                <div id="empresa3dServidorBadge" class="empresa3d-servidor-badge hidden">🗄️ Sala técnica</div>
+            <div id="empresa3dMundo" class="empresa3d-mundo">
+              <!-- UM ÚNICO TERRENO. Todo detalhe externo fica dentro dele. -->
+              <div class="empresa3d-chao">
+                <div class="empresa3d-caminho"></div>
+                <div class="empresa3d-canteiro c1"></div>
+                <div class="empresa3d-canteiro c2"></div>
+                <div class="empresa3d-canteiro c3"></div>
+                <div class="empresa3d-vaga v1"></div>
+                <div class="empresa3d-vaga v2"></div>
+                <div class="empresa3d-vaga v3"></div>
+                <div class="empresa3d-vaga v4"></div>
               </div>
 
-              <div class="empresa3d-face empresa3d-tras"></div>
+              <div id="empresa3dPredio" class="empresa3d-predio-wrap estilo-moderno">
+                <!-- FRENTE -->
+                <div class="empresa3d-face empresa3d-frente">
+                  <div id="empresa3dPlaca" class="empresa3d-placa"></div>
 
-              <div class="empresa3d-face empresa3d-lado">
-                <div class="empresa3d-lado-janelas">
-                  <span></span><span></span><span></span><span></span><span></span><span></span>
+                  <div class="empresa3d-frente-conteudo">
+                    <div class="empresa3d-janelas-superiores">
+                      <span class="empresa3d-janela"></span>
+                      <span class="empresa3d-janela"></span>
+                      <span class="empresa3d-janela"></span>
+                      <span class="empresa3d-janela"></span>
+                      <span class="empresa3d-janela"></span>
+                    </div>
+
+                    <div class="empresa3d-terreo">
+                      <span class="empresa3d-janela"></span>
+                      <span class="empresa3d-janela"></span>
+                      <div class="empresa3d-porta"></div>
+                      <span class="empresa3d-janela"></span>
+                      <span class="empresa3d-janela"></span>
+                    </div>
+                  </div>
+
+                  <!-- Arquitetura Moderna -->
+                  <div class="empresa3d-arq arq-moderno">
+                    <span class="moderno-marquee"></span>
+                    <span class="moderno-lateral"></span>
+                  </div>
+
+                  <!-- Arquitetura Empresarial -->
+                  <div class="empresa3d-arq arq-empresarial">
+                    <span class="coluna c1"></span>
+                    <span class="coluna c2"></span>
+                    <span class="emp-marquee"></span>
+                    <span class="emp-base"></span>
+                  </div>
+
+                  <!-- Arquitetura Tecnológica -->
+                  <div class="empresa3d-arq arq-tecnologico">
+                    <span class="tech-torre"></span>
+                    <span class="tech-aleta a1"></span>
+                    <span class="tech-aleta a2"></span>
+                    <span class="tech-coroa"></span>
+                  </div>
+
+                  <div id="empresa3dServidorBadge" class="empresa3d-servidor-badge hidden">🗄️ Sala técnica</div>
                 </div>
-              </div>
 
-              <div class="empresa3d-face empresa3d-teto">
-                <div id="empresa3dAntena" class="empresa3d-antena hidden">📡</div>
+                <!-- TRASEIRA -->
+                <div class="empresa3d-face empresa3d-tras">
+                  <div class="empresa3d-parede-janelas">
+                    <span class="empresa3d-parede-janela"></span><span class="empresa3d-parede-janela"></span><span class="empresa3d-parede-janela"></span><span class="empresa3d-parede-janela"></span><span class="empresa3d-parede-janela"></span>
+                    <span class="empresa3d-parede-janela"></span><span class="empresa3d-parede-janela"></span><span class="empresa3d-parede-janela"></span><span class="empresa3d-parede-janela"></span><span class="empresa3d-parede-janela"></span>
+                  </div>
+                </div>
+
+                <!-- LADO DIREITO -->
+                <div class="empresa3d-face empresa3d-direita">
+                  <div class="empresa3d-parede-janelas">
+                    <span class="empresa3d-parede-janela"></span><span class="empresa3d-parede-janela"></span>
+                    <span class="empresa3d-parede-janela"></span><span class="empresa3d-parede-janela"></span>
+                    <span class="empresa3d-parede-janela"></span><span class="empresa3d-parede-janela"></span>
+                  </div>
+                </div>
+
+                <!-- LADO ESQUERDO -->
+                <div class="empresa3d-face empresa3d-esquerda">
+                  <div class="empresa3d-parede-janelas">
+                    <span class="empresa3d-parede-janela"></span><span class="empresa3d-parede-janela"></span>
+                    <span class="empresa3d-parede-janela"></span><span class="empresa3d-parede-janela"></span>
+                    <span class="empresa3d-parede-janela"></span><span class="empresa3d-parede-janela"></span>
+                  </div>
+                </div>
+
+                <!-- TETO -->
+                <div class="empresa3d-face empresa3d-teto">
+                  <div class="empresa3d-teto-centro"></div>
+                  <div class="empresa3d-teto-caixa c1"></div>
+                  <div class="empresa3d-teto-caixa c2"></div>
+                  <div id="empresa3dAntena" class="empresa3d-antena hidden">📡</div>
+                </div>
               </div>
             </div>
-
-            <div id="empresa3dOverlay" class="empresa3d-info-overlay"></div>
           </div>
         </section>
 
@@ -129,22 +217,23 @@
 
           <div class="empresa3d-config-section">
             <h4>Prédio e ambiente</h4>
+
             <div class="empresa3d-fields">
               <label>
                 Estilo do prédio
                 <select id="e3dEstilo">
-                  <option value="moderno">Moderno</option>
-                  <option value="empresarial">Empresarial</option>
-                  <option value="tecnologico">Tecnológico</option>
+                  <option value="moderno">Moderno compacto</option>
+                  <option value="empresarial">Empresarial amplo</option>
+                  <option value="tecnologico">Tecnológico vertical</option>
                 </select>
               </label>
 
               <label>
                 Ambiente
                 <select id="e3dAmbiente">
-                  <option value="empresarial">Empresarial</option>
-                  <option value="urbano">Urbano</option>
-                  <option value="verde">Área verde</option>
+                  <option value="empresarial">Praça empresarial</option>
+                  <option value="urbano">Urbano / estacionamento</option>
+                  <option value="verde">Área verde / jardim</option>
                 </select>
               </label>
 
@@ -158,18 +247,37 @@
               </label>
             </div>
 
-            <div class="empresa3d-color-row" style="margin-top:12px">
-              <label>Cor principal<input id="e3dCorPrincipal" type="color" value="#2563eb"></label>
-              <label>Cor secundária<input id="e3dCorSecundaria" type="color" value="#0f172a"></label>
-              <label>Fachada<input id="e3dCorFachada" type="color" value="#e2e8f0"></label>
+            <div class="empresa3d-color-row">
+              <label class="empresa3d-color-card">
+                <span>Cor principal</span>
+                <input id="e3dCorPrincipal" type="color" value="#2563eb">
+              </label>
+              <label class="empresa3d-color-card">
+                <span>Cor secundária</span>
+                <input id="e3dCorSecundaria" type="color" value="#0f172a">
+              </label>
+              <label class="empresa3d-color-card">
+                <span>Fachada</span>
+                <input id="e3dCorFachada" type="color" value="#e2e8f0">
+              </label>
             </div>
 
-            <div style="margin-top:14px">
-              <label style="font-size:12px;font-weight:800">Girar prédio</label>
-              <div class="empresa3d-range-row">
-                <input id="e3dRotacao" type="range" min="-28" max="28" value="-18" step="1">
-                <span id="e3dRotacaoValor" class="empresa3d-range-value">-18°</span>
-              </div>
+            <div class="empresa3d-view-controls">
+              <label>
+                Giro horizontal 360°
+                <div class="empresa3d-range-row">
+                  <input id="e3dRotacaoY" type="range" min="0" max="360" value="338" step="1">
+                  <span id="e3dRotacaoYValor" class="empresa3d-range-value">338°</span>
+                </div>
+              </label>
+
+              <label>
+                Vista superior / teto
+                <div class="empresa3d-range-row">
+                  <input id="e3dInclinacao" type="range" min="0" max="68" value="12" step="1">
+                  <span id="e3dInclinacaoValor" class="empresa3d-range-value">12°</span>
+                </div>
+              </label>
             </div>
           </div>
 
@@ -205,7 +313,7 @@
 
                 <label class="full">
                   Nome usado na logo
-                  <input id="e3dLogoTexto" type="text" placeholder="Deixe vazio para usar o nome da empresa">
+                  <input id="e3dLogoTexto" type="text" placeholder="Vazio = nome da empresa">
                 </label>
               </div>
             </div>
@@ -221,7 +329,7 @@
 
           <div class="empresa3d-config-section">
             <button id="e3dSalvarVisual" class="btn btn-primary" style="width:100%" type="button">Salvar personalização</button>
-            <p class="empresa3d-save-note">A aparência fica guardada dentro do mesmo arquivo JSON do grupo. Depois, use também o botão <strong>Salvar projeto</strong> no topo para baixar a versão atualizada.</p>
+            <p class="empresa3d-save-note">A aparência fica no mesmo JSON do grupo. Depois use também <strong>Salvar projeto</strong> no topo.</p>
           </div>
         </aside>
       </div>
@@ -269,7 +377,8 @@
       '#e3dCorPrincipal': v.primary,
       '#e3dCorSecundaria': v.secondary,
       '#e3dCorFachada': v.facade,
-      '#e3dRotacao': v.rotation,
+      '#e3dRotacaoY': v.rotationY,
+      '#e3dInclinacao': v.tilt,
       '#e3dLogoIcone': v.logo.icon,
       '#e3dLogoForma': v.logo.shape,
       '#e3dLogoTexto': v.logo.text
@@ -290,10 +399,24 @@
     v.primary = document.querySelector('#e3dCorPrincipal')?.value || v.primary;
     v.secondary = document.querySelector('#e3dCorSecundaria')?.value || v.secondary;
     v.facade = document.querySelector('#e3dCorFachada')?.value || v.facade;
-    v.rotation = Number(document.querySelector('#e3dRotacao')?.value ?? v.rotation);
+    v.rotationY = normalizarAngulo(document.querySelector('#e3dRotacaoY')?.value ?? v.rotationY);
+    v.tilt = limitar(document.querySelector('#e3dInclinacao')?.value ?? v.tilt, 0, 68);
     v.logo.icon = document.querySelector('#e3dLogoIcone')?.value || v.logo.icon;
     v.logo.shape = document.querySelector('#e3dLogoForma')?.value || v.logo.shape;
     v.logo.text = document.querySelector('#e3dLogoTexto')?.value.trim() || '';
+  }
+
+  function sincronizarControlesDeVista() {
+    const v = garantirVisual();
+    const yaw = document.querySelector('#e3dRotacaoY');
+    const tilt = document.querySelector('#e3dInclinacao');
+    const yawValue = document.querySelector('#e3dRotacaoYValor');
+    const tiltValue = document.querySelector('#e3dInclinacaoValor');
+
+    if (yaw) yaw.value = v.rotationY;
+    if (tilt) tilt.value = v.tilt;
+    if (yawValue) yawValue.textContent = `${Math.round(v.rotationY)}°`;
+    if (tiltValue) tiltValue.textContent = `${Math.round(v.tilt)}°`;
   }
 
   function atualizarMaquete() {
@@ -301,16 +424,17 @@
     const cena = document.querySelector('#empresa3dCena');
     const predio = document.querySelector('#empresa3dPredio');
     const placa = document.querySelector('#empresa3dPlaca');
-    const overlay = document.querySelector('#empresa3dOverlay');
     const previewLogo = document.querySelector('#e3dLogoPreview');
 
-    if (!cena || !predio || !placa || !overlay) return;
+    if (!cena || !predio || !placa) return;
 
-    cena.className = `empresa3d-cena ambiente-${v.environment}`;
+    cena.classList.remove('ambiente-empresarial', 'ambiente-urbano', 'ambiente-verde');
+    cena.classList.add(`ambiente-${v.environment}`);
     cena.style.setProperty('--cor-principal-3d', v.primary);
     cena.style.setProperty('--cor-secundaria-3d', v.secondary);
     cena.style.setProperty('--cor-fachada-3d', v.facade);
-    cena.style.setProperty('--rotacao-predio', `${v.rotation}deg`);
+    cena.style.setProperty('--e3d-yaw', `${v.rotationY}deg`);
+    cena.style.setProperty('--e3d-tilt', `${-v.tilt}deg`);
 
     predio.className = `empresa3d-predio-wrap estilo-${v.buildingStyle}`;
 
@@ -326,28 +450,16 @@
 
     if (previewLogo) previewLogo.innerHTML = htmlLogo('grande');
 
-    const total = project.equipment.length;
-    const roteadores = project.equipment.filter(e => e.type === 'roteador').length;
     const aps = project.equipment.filter(e => e.type === 'access-point').length;
     const servidores = project.equipment.filter(e => e.type === 'servidor').length;
-    const comIp = project.equipment.filter(e => String(e.ip || '').trim()).length;
 
     document.querySelector('#empresa3dAntena')?.classList.toggle('hidden', aps === 0);
     document.querySelector('#empresa3dServidorBadge')?.classList.toggle('hidden', servidores === 0);
 
-    overlay.innerHTML = `
-      <strong>${escapeHtml(nome)}</strong>
-      <span>🏢 ${project.departments.length} departamento(s)</span>
-      <span>💻 ${total} equipamento(s)</span>
-      <span>🌐 ${roteadores} roteador(es)</span>
-      <span>🔢 ${comIp}/${total || 0} com IP</span>
-    `;
-
     const titulo = document.querySelector('#e3dTituloPreview');
     if (titulo) titulo.textContent = nome;
 
-    const rotacaoValor = document.querySelector('#e3dRotacaoValor');
-    if (rotacaoValor) rotacaoValor.textContent = `${v.rotation}°`;
+    sincronizarControlesDeVista();
   }
 
   function atualizarResumo() {
@@ -430,11 +542,54 @@
     });
   }
 
+  function configurarArraste3D() {
+    const cena = document.querySelector('#empresa3dCena');
+    if (!cena) return;
+
+    let arrastando = false;
+    let ultimoX = 0;
+    let ultimoY = 0;
+
+    cena.addEventListener('pointerdown', event => {
+      if (event.target.closest('button, input, select, label')) return;
+      arrastando = true;
+      ultimoX = event.clientX;
+      ultimoY = event.clientY;
+      cena.classList.add('arrastando');
+      cena.setPointerCapture?.(event.pointerId);
+    });
+
+    cena.addEventListener('pointermove', event => {
+      if (!arrastando) return;
+
+      const dx = event.clientX - ultimoX;
+      const dy = event.clientY - ultimoY;
+      ultimoX = event.clientX;
+      ultimoY = event.clientY;
+
+      const v = garantirVisual();
+      v.rotationY = normalizarAngulo(v.rotationY + dx * 0.55);
+      v.tilt = limitar(v.tilt + dy * 0.28, 0, 68);
+      atualizarMaquete();
+    });
+
+    const encerrar = event => {
+      if (!arrastando) return;
+      arrastando = false;
+      cena.classList.remove('arrastando');
+      try { cena.releasePointerCapture?.(event.pointerId); } catch {}
+    };
+
+    cena.addEventListener('pointerup', encerrar);
+    cena.addEventListener('pointercancel', encerrar);
+  }
+
   function configurarEventos() {
     const idsPreview = [
       '#e3dEstilo', '#e3dAmbiente', '#e3dPlaca',
       '#e3dCorPrincipal', '#e3dCorSecundaria', '#e3dCorFachada',
-      '#e3dRotacao', '#e3dLogoIcone', '#e3dLogoForma', '#e3dLogoTexto'
+      '#e3dRotacaoY', '#e3dInclinacao',
+      '#e3dLogoIcone', '#e3dLogoForma', '#e3dLogoTexto'
     ];
 
     idsPreview.forEach(selector => {
@@ -449,6 +604,8 @@
         atualizarMaquete();
       });
     });
+
+    configurarArraste3D();
 
     document.querySelector('#e3dUsarLogoCriada')?.addEventListener('click', () => {
       lerFormularioParaProjeto();
@@ -489,10 +646,10 @@
     });
   }
 
-  // A nova tela precisa existir antes de o setupNav do app.js procurar os botões.
+  /* A tela precisa existir antes de setupNav() do app.js rodar no DOMContentLoaded. */
   injetarEstrutura();
 
-  // Toda vez que o sistema atualizar, a maquete também atualiza.
+  /* Toda atualização do projeto também atualiza a maquete. */
   const renderAllOriginal = renderAll;
   renderAll = function () {
     renderAllOriginal();

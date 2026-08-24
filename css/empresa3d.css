@@ -1,11 +1,14 @@
 /* =========================================================
-   EMPRESA 3D - Projeto de Redes
-   Arquivo exclusivo da visualizacao e personalizacao visual
+   EMPRESA 3D - Projeto de Redes - V3
+   - terreno único (sem camadas flutuando)
+   - 360° + vista superior
+   - três arquiteturas realmente diferentes
+   - três ambientes visualmente diferentes
    ========================================================= */
 
 .empresa3d-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(310px, .75fr);
+  grid-template-columns: minmax(0, 1.45fr) minmax(340px, .78fr);
   gap: 18px;
   align-items: start;
 }
@@ -18,9 +21,7 @@
   box-shadow: var(--shadow);
 }
 
-.empresa3d-preview-panel {
-  overflow: hidden;
-}
+.empresa3d-preview-panel { overflow: hidden; }
 
 .empresa3d-preview-top {
   padding: 16px 18px;
@@ -32,9 +33,7 @@
 }
 
 .empresa3d-preview-top h3,
-.empresa3d-config-panel h3 {
-  margin: 0;
-}
+.empresa3d-config-panel h3 { margin: 0; }
 
 .empresa3d-badge {
   padding: 7px 10px;
@@ -43,132 +42,323 @@
   color: #4338ca;
   font-size: 11px;
   font-weight: 800;
+  white-space: nowrap;
 }
 
+/* ========================= CENA ========================= */
 .empresa3d-cena {
   --cor-principal-3d: #2563eb;
   --cor-secundaria-3d: #0f172a;
   --cor-fachada-3d: #e2e8f0;
-  --rotacao-predio: -18deg;
+  --e3d-yaw: 338deg;
+  --e3d-tilt: -12deg;
+
   position: relative;
-  min-height: 525px;
+  min-height: 590px;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  perspective: 1050px;
+  perspective: 1180px;
+  perspective-origin: 50% 40%;
+  cursor: grab;
   transition: background .25s ease;
+  touch-action: none;
+  user-select: none;
 }
 
+.empresa3d-cena.arrastando { cursor: grabbing; }
+
+/* O fundo agora é só o céu. O chão existe UMA única vez dentro do mundo 3D. */
 .empresa3d-cena.ambiente-empresarial {
-  background: linear-gradient(180deg, #dbeafe 0%, #eff6ff 58%, #dbeafe 58%, #cbd5e1 100%);
+  background: linear-gradient(180deg, #dbeafe 0%, #f8fafc 100%);
 }
 
 .empresa3d-cena.ambiente-urbano {
-  background: linear-gradient(180deg, #cbd5e1 0%, #e2e8f0 55%, #94a3b8 55%, #64748b 100%);
+  background: linear-gradient(180deg, #cbd5e1 0%, #f1f5f9 100%);
 }
 
 .empresa3d-cena.ambiente-verde {
-  background: linear-gradient(180deg, #dbeafe 0%, #ecfeff 55%, #bbf7d0 55%, #86efac 100%);
+  background: linear-gradient(180deg, #dbeafe 0%, #ecfeff 100%);
+}
+
+/* Silhueta distante muda com o ambiente, mas não compete com a maquete. */
+.empresa3d-cenario-fundo {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 34%;
+  opacity: .18;
+  pointer-events: none;
+}
+
+.ambiente-empresarial .empresa3d-cenario-fundo {
+  background:
+    linear-gradient(90deg,
+      transparent 0 8%, #64748b 8% 15%, transparent 15% 19%,
+      #475569 19% 28%, transparent 28% 34%, #64748b 34% 43%,
+      transparent 43% 58%, #475569 58% 67%, transparent 67% 72%,
+      #64748b 72% 83%, transparent 83% 100%);
+  clip-path: polygon(0 62%, 8% 62%, 8% 30%, 15% 30%, 15% 56%, 19% 56%, 19% 18%, 28% 18%, 28% 65%, 34% 65%, 34% 38%, 43% 38%, 43% 62%, 58% 62%, 58% 26%, 67% 26%, 67% 58%, 72% 58%, 72% 12%, 83% 12%, 83% 68%, 100% 68%, 100% 100%, 0 100%);
+}
+
+.ambiente-urbano .empresa3d-cenario-fundo {
+  opacity: .25;
+  background: repeating-linear-gradient(90deg, #334155 0 48px, transparent 48px 68px);
+  clip-path: polygon(0 45%, 8% 45%, 8% 20%, 17% 20%, 17% 62%, 25% 62%, 25% 12%, 34% 12%, 34% 50%, 44% 50%, 44% 25%, 55% 25%, 55% 60%, 64% 60%, 64% 10%, 76% 10%, 76% 48%, 86% 48%, 86% 28%, 94% 28%, 94% 62%, 100% 62%, 100% 100%, 0 100%);
+}
+
+.ambiente-verde .empresa3d-cenario-fundo {
+  opacity: .30;
+  background:
+    radial-gradient(circle at 8% 72%, #16a34a 0 32px, transparent 33px),
+    radial-gradient(circle at 23% 65%, #22c55e 0 46px, transparent 47px),
+    radial-gradient(circle at 77% 67%, #16a34a 0 42px, transparent 43px),
+    radial-gradient(circle at 92% 74%, #22c55e 0 34px, transparent 35px);
 }
 
 .empresa3d-sol {
   position: absolute;
-  width: 72px;
-  height: 72px;
+  width: 74px;
+  height: 74px;
   border-radius: 50%;
-  background: rgba(255,255,255,.65);
-  top: 42px;
-  right: 58px;
-  box-shadow: 0 0 55px rgba(255,255,255,.7);
+  background: rgba(255,255,255,.68);
+  top: 38px;
+  right: 62px;
+  box-shadow: 0 0 58px rgba(255,255,255,.72);
+  pointer-events: none;
 }
 
+.empresa3d-drag-hint {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.84);
+  color: #475569;
+  box-shadow: 0 6px 18px rgba(15,23,42,.10);
+  backdrop-filter: blur(8px);
+  font-size: 11px;
+  font-weight: 800;
+  pointer-events: none;
+}
+
+/* Mundo = terreno + prédio. O conjunto inteiro gira junto. */
+.empresa3d-mundo {
+  position: absolute;
+  left: 50%;
+  top: 49%;
+  width: 790px;
+  height: 440px;
+  transform-style: preserve-3d;
+  transform: translate(-50%, -50%) rotateX(var(--e3d-tilt)) rotateY(var(--e3d-yaw));
+  transform-origin: 50% 56%;
+  transition: transform .22s ease-out;
+}
+
+.empresa3d-cena.arrastando .empresa3d-mundo { transition: none; }
+
+/* ========================= TERRENO ÚNICO ========================= */
 .empresa3d-chao {
   position: absolute;
-  width: 650px;
-  height: 360px;
   left: 50%;
-  top: 59%;
-  transform: translate(-50%, -50%) rotateX(68deg);
+  top: 57%;
+  width: 730px;
+  height: 500px;
+  transform: translate(-50%, -50%) rotateX(90deg) translateZ(-104px);
   transform-style: preserve-3d;
-  border-radius: 38px;
+  overflow: hidden;
+  border-radius: 28px;
+  box-shadow: 0 20px 46px rgba(15,23,42,.23);
+  border: 2px solid rgba(255,255,255,.42);
+}
+
+/* Empresarial = praça clara + caminho central + canteiros */
+.ambiente-empresarial .empresa3d-chao {
   background:
-    linear-gradient(90deg, transparent 49%, rgba(255,255,255,.28) 50%, transparent 51%),
-    linear-gradient(0deg, transparent 49%, rgba(255,255,255,.18) 50%, transparent 51%),
-    rgba(15,23,42,.10);
-  background-size: 70px 70px;
-  border: 1px solid rgba(255,255,255,.35);
-  box-shadow: 0 35px 80px rgba(15,23,42,.20);
+    linear-gradient(90deg, rgba(255,255,255,.18) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(255,255,255,.14) 1px, transparent 1px),
+    #94a3b8;
+  background-size: 74px 74px;
 }
 
-.empresa3d-arvore {
+/* Urbano = asfalto e estacionamento */
+.ambiente-urbano .empresa3d-chao {
+  background:
+    repeating-linear-gradient(90deg, transparent 0 92px, rgba(255,255,255,.16) 92px 94px),
+    #475569;
+}
+
+/* Verde = uma única superfície de grama */
+.ambiente-verde .empresa3d-chao {
+  background:
+    radial-gradient(circle at 14% 20%, rgba(22,163,74,.22) 0 46px, transparent 47px),
+    radial-gradient(circle at 86% 76%, rgba(22,163,74,.20) 0 52px, transparent 53px),
+    #86efac;
+}
+
+/* Todos os detalhes são FILHOS do chão e, portanto, nunca flutuam. */
+.empresa3d-caminho {
   position: absolute;
-  z-index: 4;
-  font-size: 42px;
-  filter: drop-shadow(0 8px 8px rgba(15,23,42,.18));
+  left: 50%;
+  bottom: -8px;
+  width: 122px;
+  height: 54%;
+  transform: translateX(-50%);
+  background: #e2e8f0;
+  border-left: 2px solid rgba(255,255,255,.52);
+  border-right: 2px solid rgba(255,255,255,.52);
 }
 
-.empresa3d-arvore.a1 { left: 8%; bottom: 82px; }
-.empresa3d-arvore.a2 { right: 8%; bottom: 92px; }
-.empresa3d-arvore.a3 { right: 20%; bottom: 58px; font-size: 32px; }
+.ambiente-urbano .empresa3d-caminho {
+  width: 150px;
+  background: #64748b;
+  border-left: 4px dashed rgba(255,255,255,.65);
+  border-right: 4px dashed rgba(255,255,255,.65);
+}
 
-.ambiente-urbano .empresa3d-arvore {
+.ambiente-verde .empresa3d-caminho {
+  width: 112px;
+  background: #d1d5db;
+  border: 0;
+  border-radius: 55% 55% 0 0;
+}
+
+.empresa3d-canteiro,
+.empresa3d-vaga {
+  position: absolute;
+  border-radius: 18px;
+}
+
+.empresa3d-canteiro {
+  width: 105px;
+  height: 64px;
+  background: #4ade80;
+  box-shadow: inset 0 0 0 5px rgba(22,101,52,.17);
+}
+
+.empresa3d-canteiro.c1 { left: 62px; bottom: 68px; }
+.empresa3d-canteiro.c2 { right: 62px; bottom: 68px; }
+.empresa3d-canteiro.c3 { right: 86px; top: 58px; width: 78px; height: 50px; }
+
+.ambiente-urbano .empresa3d-canteiro { display: none; }
+.ambiente-verde .empresa3d-canteiro {
+  background: #22c55e;
+  box-shadow: inset 0 0 0 5px rgba(21,128,61,.20);
+}
+
+.empresa3d-vaga {
   display: none;
 }
 
+.ambiente-urbano .empresa3d-vaga {
+  display: block;
+  width: 118px;
+  height: 62px;
+  border: 3px solid rgba(255,255,255,.62);
+  border-radius: 4px;
+}
+
+.ambiente-urbano .empresa3d-vaga.v1 { left: 62px; bottom: 55px; }
+.ambiente-urbano .empresa3d-vaga.v2 { left: 196px; bottom: 55px; }
+.ambiente-urbano .empresa3d-vaga.v3 { right: 62px; bottom: 55px; }
+.ambiente-urbano .empresa3d-vaga.v4 { right: 196px; bottom: 55px; }
+
+/* ========================= PRÉDIO 3D ========================= */
 .empresa3d-predio-wrap {
-  position: relative;
+  /* Geometria padrão: Moderno */
+  --bw: 340px;
+  --bh: 210px;
+  --bd: 180px;
+  --bw2: 170px;
+  --bh2: 105px;
+  --bd2: 90px;
+  --side-left: 80px;
+  --roof-top: 15px;
+
+  position: absolute;
   z-index: 5;
-  width: 320px;
-  height: 190px;
+  left: 50%;
+  top: 50%;
+  width: var(--bw);
+  height: var(--bh);
   transform-style: preserve-3d;
-  transform: rotateX(-8deg) rotateY(var(--rotacao-predio));
-  transition: transform .35s ease;
+  transform: translate(-50%, -55%);
+  transition: width .3s ease, height .3s ease;
+}
+
+/* Empresarial = mais largo, menos profundo, presença horizontal */
+.empresa3d-predio-wrap.estilo-empresarial {
+  --bw: 390px;
+  --bh: 230px;
+  --bd: 170px;
+  --bw2: 195px;
+  --bh2: 115px;
+  --bd2: 85px;
+  --side-left: 110px;
+  --roof-top: 30px;
+}
+
+/* Tecnológico = mais estreito, mais alto e mais profundo */
+.empresa3d-predio-wrap.estilo-tecnologico {
+  --bw: 315px;
+  --bh: 250px;
+  --bd: 200px;
+  --bw2: 157.5px;
+  --bh2: 125px;
+  --bd2: 100px;
+  --side-left: 57.5px;
+  --roof-top: 25px;
 }
 
 .empresa3d-face {
   position: absolute;
-  left: 0;
   top: 0;
+  transform-style: preserve-3d;
   backface-visibility: hidden;
   box-shadow: inset 0 0 0 1px rgba(15,23,42,.10);
+  transition: width .3s ease, height .3s ease, left .3s ease, top .3s ease, background .25s ease;
 }
 
 .empresa3d-frente,
 .empresa3d-tras {
-  width: 320px;
-  height: 190px;
+  left: 0;
+  width: var(--bw);
+  height: var(--bh);
   background: var(--cor-fachada-3d);
 }
 
-.empresa3d-frente {
-  transform: translateZ(70px);
+.empresa3d-frente { transform: translateZ(var(--bd2)); overflow: hidden; }
+.empresa3d-tras { transform: rotateY(180deg) translateZ(var(--bd2)); overflow: hidden; }
+
+.empresa3d-direita,
+.empresa3d-esquerda {
+  left: var(--side-left);
+  width: var(--bd);
+  height: var(--bh);
+  background: color-mix(in srgb, var(--cor-fachada-3d) 78%, var(--cor-secundaria-3d));
   overflow: hidden;
 }
 
-.empresa3d-tras {
-  transform: rotateY(180deg) translateZ(70px);
-}
-
-.empresa3d-lado {
-  width: 140px;
-  height: 190px;
-  left: 90px;
-  background: color-mix(in srgb, var(--cor-fachada-3d) 76%, var(--cor-secundaria-3d));
-  transform: rotateY(90deg) translateZ(160px);
-  overflow: hidden;
-}
+.empresa3d-direita { transform: rotateY(90deg) translateZ(var(--bw2)); }
+.empresa3d-esquerda { transform: rotateY(-90deg) translateZ(var(--bw2)); }
 
 .empresa3d-teto {
-  width: 320px;
-  height: 140px;
-  top: 25px;
-  background: color-mix(in srgb, var(--cor-secundaria-3d) 86%, white);
-  transform: rotateX(90deg) translateZ(95px);
+  left: 0;
+  top: var(--roof-top);
+  width: var(--bw);
+  height: var(--bd);
+  transform: rotateX(90deg) translateZ(var(--bh2));
+  background: color-mix(in srgb, var(--cor-secundaria-3d) 84%, white);
   border: 5px solid rgba(255,255,255,.18);
+  overflow: visible;
 }
 
-.empresa3d-frente::before {
+.empresa3d-frente::before,
+.empresa3d-tras::before,
+.empresa3d-direita::before,
+.empresa3d-esquerda::before {
   content: "";
   position: absolute;
   left: 0;
@@ -178,11 +368,14 @@
   background: var(--cor-principal-3d);
 }
 
+/* ========================= FACHADA ========================= */
 .empresa3d-placa {
-  min-height: 54px;
-  margin: 18px 22px 10px;
+  position: relative;
+  z-index: 6;
+  min-height: 56px;
+  margin: 18px 24px 9px;
   padding: 8px 12px;
-  border-radius: 10px;
+  border-radius: 11px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -193,30 +386,34 @@
 }
 
 .empresa3d-placa-nome {
-  max-width: 190px;
+  max-width: 215px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 18px;
   font-weight: 900;
-  letter-spacing: .4px;
+  letter-spacing: .35px;
 }
 
-.empresa3d-mini-logo {
-  width: 38px;
-  height: 38px;
-  flex: 0 0 38px;
+.empresa3d-mini-logo { width: 38px; height: 38px; flex: 0 0 38px; }
+
+.empresa3d-frente-conteudo {
+  position: relative;
+  z-index: 4;
+  padding: 0 26px;
 }
 
-.empresa3d-janelas {
+.empresa3d-janelas-superiores,
+.empresa3d-terreo {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 10px;
-  padding: 6px 26px 0;
 }
+
+.empresa3d-janelas-superiores { margin-bottom: 9px; }
 
 .empresa3d-janela {
-  height: 45px;
+  height: 43px;
   border-radius: 4px 4px 2px 2px;
   background: linear-gradient(145deg, #bae6fd, #60a5fa);
   border: 3px solid rgba(15,23,42,.22);
@@ -224,12 +421,9 @@
 }
 
 .empresa3d-porta {
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  width: 54px;
-  height: 57px;
-  transform: translateX(-50%);
+  position: relative;
+  height: 54px;
+  align-self: end;
   border-radius: 5px 5px 0 0;
   background: color-mix(in srgb, var(--cor-secundaria-3d) 82%, #334155);
   border: 3px solid rgba(255,255,255,.22);
@@ -239,39 +433,217 @@
   content: "";
   position: absolute;
   right: 7px;
-  top: 28px;
+  top: 26px;
   width: 4px;
   height: 4px;
   border-radius: 50%;
   background: #f8fafc;
 }
 
-.empresa3d-lado-janelas {
+.empresa3d-parede-janelas {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  padding: 26px 18px;
+  gap: 11px;
+  padding: 30px 22px;
 }
 
-.empresa3d-lado-janelas span {
-  height: 48px;
+.empresa3d-tras .empresa3d-parede-janelas {
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(2, 45px);
+  padding-top: 48px;
+}
+
+.empresa3d-direita .empresa3d-parede-janelas,
+.empresa3d-esquerda .empresa3d-parede-janelas {
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(3, 44px);
+  padding: 30px 18px;
+}
+
+.empresa3d-parede-janela {
+  min-width: 0;
   background: linear-gradient(145deg, #bae6fd, #3b82f6);
   border: 3px solid rgba(15,23,42,.22);
+  box-shadow: inset 7px 0 rgba(255,255,255,.13);
 }
+
+/* Elementos arquitetônicos. Todos existem no HTML e o estilo decide qual aparece. */
+.empresa3d-arq { display: none; pointer-events: none; }
+
+/* MODERNO: marquise lateral + moldura assimétrica */
+.estilo-moderno .arq-moderno { display: block; }
+.arq-moderno .moderno-marquee {
+  position: absolute;
+  left: 50%;
+  bottom: 43px;
+  width: 104px;
+  height: 9px;
+  transform: translateX(-50%) translateZ(2px);
+  background: var(--cor-principal-3d);
+  box-shadow: 0 6px 10px rgba(15,23,42,.20);
+  z-index: 8;
+}
+.arq-moderno .moderno-lateral {
+  position: absolute;
+  right: 9px;
+  top: 18px;
+  width: 10px;
+  height: 178px;
+  background: var(--cor-principal-3d);
+  opacity: .72;
+  z-index: 7;
+}
+
+/* EMPRESARIAL: prédio largo, colunas e grande marquise */
+.estilo-empresarial .arq-empresarial { display: block; }
+.estilo-empresarial .empresa3d-placa {
+  margin-left: 72px;
+  margin-right: 72px;
+  border-radius: 3px;
+  box-shadow: none;
+}
+.estilo-empresarial .empresa3d-janela,
+.estilo-empresarial .empresa3d-parede-janela { border-radius: 0; }
+.estilo-empresarial .empresa3d-frente-conteudo { padding-left: 42px; padding-right: 42px; }
+.estilo-empresarial .empresa3d-janela { height: 46px; }
+.arq-empresarial .coluna {
+  position: absolute;
+  top: 8px;
+  bottom: 0;
+  width: 18px;
+  background: color-mix(in srgb, var(--cor-secundaria-3d) 25%, var(--cor-fachada-3d));
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.28);
+  z-index: 3;
+}
+.arq-empresarial .coluna.c1 { left: 22px; }
+.arq-empresarial .coluna.c2 { right: 22px; }
+.arq-empresarial .emp-marquee {
+  position: absolute;
+  left: 50%;
+  bottom: 43px;
+  width: 145px;
+  height: 12px;
+  transform: translateX(-50%);
+  background: var(--cor-secundaria-3d);
+  border-bottom: 4px solid var(--cor-principal-3d);
+  z-index: 8;
+}
+.arq-empresarial .emp-base {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 12px;
+  background: color-mix(in srgb, var(--cor-secundaria-3d) 28%, var(--cor-fachada-3d));
+  z-index: 7;
+}
+
+/* TECNOLÓGICO: torre vertical de vidro, aletas e coroa no topo */
+.estilo-tecnologico .arq-tecnologico { display: block; }
+.estilo-tecnologico .empresa3d-frente,
+.estilo-tecnologico .empresa3d-tras {
+  box-shadow: inset 0 0 48px color-mix(in srgb, var(--cor-principal-3d) 22%, transparent);
+}
+.estilo-tecnologico .empresa3d-placa {
+  margin-left: 38px;
+  margin-right: 38px;
+  border: 1px solid color-mix(in srgb, var(--cor-principal-3d) 72%, white);
+  box-shadow: 0 0 22px color-mix(in srgb, var(--cor-principal-3d) 45%, transparent);
+}
+.estilo-tecnologico .empresa3d-janela,
+.estilo-tecnologico .empresa3d-parede-janela {
+  background: linear-gradient(145deg, #cffafe, #22d3ee);
+  border-color: rgba(8,145,178,.45);
+}
+.estilo-tecnologico .empresa3d-janela { height: 56px; }
+.estilo-tecnologico .empresa3d-frente-conteudo { padding-left: 18px; padding-right: 18px; }
+.arq-tecnologico .tech-torre {
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  bottom: 0;
+  width: 68px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, rgba(34,211,238,.18), rgba(37,99,235,.32));
+  border-left: 3px solid color-mix(in srgb, var(--cor-principal-3d) 72%, white);
+  border-right: 3px solid color-mix(in srgb, var(--cor-principal-3d) 72%, white);
+  z-index: 1;
+}
+.arq-tecnologico .tech-aleta {
+  position: absolute;
+  top: 18px;
+  width: 11px;
+  height: 205px;
+  background: var(--cor-principal-3d);
+  opacity: .82;
+  z-index: 7;
+}
+.arq-tecnologico .tech-aleta.a1 { left: 10px; transform: skewY(-12deg); }
+.arq-tecnologico .tech-aleta.a2 { right: 10px; transform: skewY(12deg); }
+.arq-tecnologico .tech-coroa {
+  position: absolute;
+  left: 50%;
+  top: -4px;
+  width: 72%;
+  height: 13px;
+  transform: translateX(-50%);
+  background: var(--cor-principal-3d);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--cor-principal-3d) 55%, transparent);
+  z-index: 9;
+}
+
+/* ========================= TELHADO ========================= */
+.empresa3d-teto-centro {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 118px;
+  height: 62px;
+  transform: translate(-50%, -50%);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--cor-principal-3d) 60%, #334155);
+  box-shadow: inset 0 0 0 5px rgba(255,255,255,.12);
+}
+
+.estilo-empresarial .empresa3d-teto-centro {
+  width: 150px;
+  height: 48px;
+  border-radius: 2px;
+  background: #64748b;
+}
+
+.estilo-tecnologico .empresa3d-teto-centro {
+  width: 95px;
+  height: 95px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--cor-principal-3d) 68%, #0f172a);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--cor-principal-3d) 52%, transparent);
+}
+
+.empresa3d-teto-caixa {
+  position: absolute;
+  width: 44px;
+  height: 30px;
+  border-radius: 5px;
+  background: #64748b;
+  border: 3px solid rgba(255,255,255,.18);
+}
+.empresa3d-teto-caixa.c1 { left: 32px; top: 34px; }
+.empresa3d-teto-caixa.c2 { right: 28px; bottom: 28px; }
 
 .empresa3d-antena {
   position: absolute;
   left: 50%;
-  top: 12px;
-  transform: translateX(-50%);
-  font-size: 33px;
+  top: 50%;
+  transform: translate(-50%, -50%) rotateX(-90deg) translateZ(34px);
+  font-size: 32px;
   filter: drop-shadow(0 4px 5px rgba(15,23,42,.28));
 }
 
 .empresa3d-servidor-badge {
   position: absolute;
-  right: 18px;
-  bottom: 12px;
+  right: 20px;
+  bottom: 7px;
+  z-index: 10;
   padding: 5px 7px;
   border-radius: 7px;
   color: #fff;
@@ -280,82 +652,25 @@
   font-weight: 900;
 }
 
-/* Variações simples do prédio */
-.estilo-empresarial .empresa3d-frente,
-.estilo-empresarial .empresa3d-lado {
-  background-color: #e5e7eb;
-}
-
-.estilo-empresarial .empresa3d-janela,
-.estilo-empresarial .empresa3d-lado-janelas span {
-  border-radius: 0;
-}
-
-.estilo-tecnologico .empresa3d-frente {
-  box-shadow: inset 0 0 45px color-mix(in srgb, var(--cor-principal-3d) 22%, transparent);
-}
-
-.estilo-tecnologico .empresa3d-placa {
-  border: 1px solid color-mix(in srgb, var(--cor-principal-3d) 72%, white);
-  box-shadow: 0 0 22px color-mix(in srgb, var(--cor-principal-3d) 48%, transparent);
-}
-
-.estilo-tecnologico .empresa3d-janela,
-.estilo-tecnologico .empresa3d-lado-janelas span {
-  background: linear-gradient(145deg, #cffafe, #22d3ee);
-}
-
-.empresa3d-info-overlay {
-  position: absolute;
-  left: 18px;
-  bottom: 18px;
-  z-index: 10;
-  width: min(310px, calc(100% - 36px));
-  padding: 12px 14px;
-  border-radius: 13px;
-  background: rgba(15,23,42,.82);
-  color: #fff;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 12px 28px rgba(15,23,42,.20);
-}
-
-.empresa3d-info-overlay strong {
-  display: block;
-  margin-bottom: 6px;
-}
-
-.empresa3d-info-overlay span {
-  display: inline-block;
-  margin: 2px 8px 2px 0;
-  color: #dbeafe;
-  font-size: 12px;
-}
-
-.empresa3d-config-panel {
-  padding: 18px;
-}
+/* ========================= PAINEL ========================= */
+.empresa3d-config-panel { padding: 18px; min-width: 0; }
 
 .empresa3d-config-section {
   padding: 16px 0;
   border-bottom: 1px solid var(--border);
 }
-
-.empresa3d-config-section:last-child {
-  border-bottom: 0;
-  padding-bottom: 0;
-}
-
-.empresa3d-config-section h4 {
-  margin: 0 0 12px;
-}
+.empresa3d-config-section:last-child { border-bottom: 0; padding-bottom: 0; }
+.empresa3d-config-section h4 { margin: 0 0 12px; }
 
 .empresa3d-fields {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 12px;
 }
 
-.empresa3d-fields label {
+.empresa3d-fields label,
+.empresa3d-view-controls label {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -363,37 +678,91 @@
   font-weight: 800;
 }
 
-.empresa3d-fields .full {
-  grid-column: 1 / -1;
+.empresa3d-fields .full { grid-column: 1 / -1; }
+
+.empresa3d-fields input,
+.empresa3d-fields select,
+.empresa3d-view-controls input,
+.empresa3d-view-controls select {
+  min-width: 0;
+  width: 100%;
+}
+
+.empresa3d-fields select {
+  padding-right: 34px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .empresa3d-color-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
+  margin-top: 12px;
 }
 
-.empresa3d-color-row label {
+.empresa3d-color-card {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: 34px 52px;
+  align-items: end;
+  gap: 6px;
   font-size: 11px;
   font-weight: 800;
 }
 
-.empresa3d-color-row input[type="color"] {
-  width: 100%;
-  height: 44px;
-  padding: 3px;
-  cursor: pointer;
+.empresa3d-color-card span {
+  display: flex;
+  align-items: end;
+  line-height: 1.15;
 }
 
+.empresa3d-color-card input[type="color"] {
+  width: 100%;
+  height: 52px;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 10px;
+}
+
+.empresa3d-view-controls {
+  display: grid;
+  gap: 13px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border);
+}
+
+.empresa3d-range-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) 62px;
+  align-items: center;
+  gap: 10px;
+}
+
+.empresa3d-range-row input[type="range"] { width: 100%; }
+
+.empresa3d-range-value {
+  min-width: 0;
+  text-align: center;
+  padding: 7px 8px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* ========================= LOGO ========================= */
 .empresa3d-logo-area {
   display: grid;
-  grid-template-columns: 108px 1fr;
+  grid-template-columns: 1fr;
   gap: 14px;
-  align-items: center;
+  align-items: stretch;
 }
 
 .empresa3d-logo-preview {
-  min-height: 104px;
+  min-height: 126px;
   display: grid;
   place-items: center;
   border: 1px dashed #cbd5e1;
@@ -404,56 +773,42 @@
 .logo3d {
   display: grid;
   place-items: center;
+  align-content: center;
   overflow: hidden;
+  padding: 7px;
   color: #fff;
   background: var(--cor-logo, #2563eb);
   box-shadow: 0 8px 18px rgba(15,23,42,.18);
 }
 
-.logo3d.grande {
-  width: 82px;
-  height: 82px;
-}
-
-.logo3d.pequena {
-  width: 38px;
-  height: 38px;
-}
-
+.logo3d.grande { width: 88px; height: 88px; }
+.logo3d.pequena { width: 38px; height: 38px; padding: 3px; }
 .logo3d.forma-circular { border-radius: 50%; }
 .logo3d.forma-quadrada { border-radius: 7px; }
 .logo3d.forma-arredondada { border-radius: 18px; }
 .logo3d.forma-hexagonal {
   border-radius: 0;
   clip-path: polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0 50%);
+  padding-left: 13px;
+  padding-right: 13px;
 }
 
-.logo3d .logo-icone {
-  font-size: 26px;
-  line-height: 1;
-}
-
-.logo3d.pequena .logo-icone {
-  font-size: 19px;
-}
-
+.logo3d .logo-icone { font-size: 25px; line-height: 1; }
+.logo3d.pequena .logo-icone { font-size: 18px; }
 .logo3d .logo-sigla {
-  margin-top: 2px;
-  font-size: 12px;
+  margin-top: 5px;
+  max-width: 100%;
+  font-size: 11px;
+  line-height: 1;
+  text-align: center;
   font-weight: 900;
-  letter-spacing: .6px;
+  letter-spacing: .4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-
-.logo3d.pequena .logo-sigla {
-  display: none;
-}
-
-.logo3d-imagem {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
+.logo3d.pequena .logo-sigla { display: none; }
+.logo3d-imagem { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 .empresa3d-upload-actions {
   display: flex;
@@ -461,31 +816,16 @@
   flex-wrap: wrap;
   margin-top: 10px;
 }
+.empresa3d-upload-actions input[type="file"] { display: none; }
 
-.empresa3d-upload-actions input[type="file"] {
-  display: none;
+.empresa3d-save-note {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
 }
 
-.empresa3d-range-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.empresa3d-range-row input {
-  flex: 1;
-}
-
-.empresa3d-range-value {
-  min-width: 48px;
-  text-align: center;
-  padding: 6px 8px;
-  border-radius: 8px;
-  background: #f1f5f9;
-  font-size: 12px;
-  font-weight: 800;
-}
-
+/* ========================= RESUMOS / SETORES ========================= */
 .empresa3d-summary {
   display: grid;
   grid-template-columns: repeat(4, minmax(130px,1fr));
@@ -500,16 +840,8 @@
   background: #fff;
   box-shadow: var(--shadow);
 }
-
-.empresa3d-summary-card small {
-  display: block;
-  color: var(--muted);
-  margin-bottom: 5px;
-}
-
-.empresa3d-summary-card strong {
-  font-size: 22px;
-}
+.empresa3d-summary-card small { display: block; color: var(--muted); margin-bottom: 5px; }
+.empresa3d-summary-card strong { font-size: 22px; }
 
 .empresa3d-departamentos {
   display: grid;
@@ -519,56 +851,34 @@
 }
 
 .empresa3d-departamento {
-  padding: 14px;
+  padding: 15px;
+  border: 1px solid var(--border);
   border-radius: 13px;
   background: #fff;
-  border: 1px solid var(--border);
   box-shadow: var(--shadow);
 }
+.empresa3d-departamento h4 { margin: 0 0 9px; }
+.empresa3d-departamento p { margin: 5px 0; color: var(--muted); font-size: 12px; }
 
-.empresa3d-departamento h4 {
-  margin: 0 0 7px;
+.empresa3d-cena .hidden { display: none !important; }
+
+@media (max-width: 1150px) {
+  .empresa3d-grid { grid-template-columns: 1fr; }
+  .empresa3d-cena { min-height: 570px; }
 }
 
-.empresa3d-departamento p {
-  margin: 3px 0;
-  color: var(--muted);
-  font-size: 12px;
+@media (max-width: 850px) {
+  .empresa3d-summary { grid-template-columns: 1fr 1fr; }
+  .empresa3d-mundo { transform: translate(-50%, -50%) scale(.86) rotateX(var(--e3d-tilt)) rotateY(var(--e3d-yaw)); }
 }
 
-.empresa3d-save-note {
-  margin: 10px 0 0;
-  color: var(--muted);
-  font-size: 11px;
-  line-height: 1.45;
-}
-
-@media (max-width: 1050px) {
-  .empresa3d-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .empresa3d-config-panel {
-    order: 2;
-  }
-}
-
-@media (max-width: 720px) {
-  .empresa3d-summary {
-    grid-template-columns: 1fr 1fr;
-  }
-
+@media (max-width: 560px) {
+  .empresa3d-summary { grid-template-columns: 1fr; }
   .empresa3d-fields,
-  .empresa3d-color-row,
-  .empresa3d-logo-area {
-    grid-template-columns: 1fr;
-  }
-
-  .empresa3d-cena {
-    min-height: 470px;
-  }
-
-  .empresa3d-predio-wrap {
-    transform: scale(.82) rotateX(-8deg) rotateY(var(--rotacao-predio));
-  }
+  .empresa3d-color-row { grid-template-columns: 1fr; }
+  .empresa3d-fields .full { grid-column: auto; }
+  .empresa3d-color-card { grid-template-rows: auto 46px; }
+  .empresa3d-cena { min-height: 520px; }
+  .empresa3d-mundo { transform: translate(-50%, -50%) scale(.68) rotateX(var(--e3d-tilt)) rotateY(var(--e3d-yaw)); }
+  .empresa3d-drag-hint { white-space: nowrap; font-size: 10px; }
 }
