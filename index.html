@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Projeto de Redes - Minha Empresa</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">PROJETO DE REDES</p>
+      <h1 id="tituloEmpresa">Minha Empresa</h1>
+    </div>
+    <div class="top-actions">
+      <button id="btnSalvarProjeto" class="btn btn-primary">💾 Salvar projeto</button>
+      <label class="btn btn-secondary file-btn">📂 Abrir projeto<input id="inputAbrirProjeto" type="file" accept=".json" /></label>
+    </div>
+  </header>
+
+  <main class="app">
+    <aside class="sidebar">
+      <button class="nav-btn active" data-target="dashboard">📊 Dashboard</button>
+      <button class="nav-btn" data-target="empresa">🏢 Empresa</button>
+      <button class="nav-btn" data-target="departamentos">🗂️ Departamentos</button>
+      <button class="nav-btn" data-target="mapa">🌐 Mapa da Rede</button>
+      <button class="nav-btn" data-target="enderecamento">🔢 Endereçamento IP</button>
+      <button class="nav-btn" data-target="historico">🛠️ Histórico</button>
+      <div class="sidebar-tip"><strong>Regra do projeto</strong><p>O site é o mesmo para todos. Cada grupo salva apenas o seu arquivo JSON no Google Drive.</p></div>
+    </aside>
+
+    <section class="content">
+      <section id="dashboard" class="screen active">
+        <div class="section-title"><p class="eyebrow">VISÃO GERAL</p><h2>Dashboard</h2></div>
+        <div class="stats">
+          <article class="stat-card"><span>💻</span><div><small>Equipamentos</small><strong id="statEquipamentos">0</strong></div></article>
+          <article class="stat-card"><span>🏢</span><div><small>Departamentos</small><strong id="statDepartamentos">0</strong></div></article>
+          <article class="stat-card"><span>🔗</span><div><small>Conexões</small><strong id="statConexoes">0</strong></div></article>
+          <article class="stat-card"><span>🛠️</span><div><small>Alterações</small><strong id="statHistorico">0</strong></div></article>
+        </div>
+        <div class="panel"><h3>Resumo da empresa</h3><p id="resumoEmpresa">Cadastre os dados da empresa para começar.</p></div>
+        <div class="panel"><h3>Como o projeto cresce</h3><p>Cada semana a equipe adiciona equipamentos, departamentos, endereços IP, conexões e registros de manutenção. O arquivo JSON guarda todo o progresso.</p></div>
+      </section>
+
+      <section id="empresa" class="screen">
+        <div class="section-title"><p class="eyebrow">IDENTIDADE</p><h2>Dados da empresa</h2></div>
+        <div class="panel form-grid">
+          <label>Nome da empresa<input id="empresaNome" type="text" placeholder="Ex.: ByteTech" /></label>
+          <label>Nome do grupo<input id="empresaGrupo" type="text" placeholder="Ex.: Grupo 4" /></label>
+          <label class="full">Integrantes<input id="empresaIntegrantes" type="text" placeholder="Ex.: Ana, João e Lucas" /></label>
+          <label class="full">Descrição da empresa<textarea id="empresaDescricao" rows="4" placeholder="Ex.: Empresa de suporte e venda de equipamentos."></textarea></label>
+          <button id="btnSalvarEmpresa" class="btn btn-primary full">Salvar dados da empresa</button>
+        </div>
+      </section>
+
+      <section id="departamentos" class="screen">
+        <div class="section-title"><p class="eyebrow">ORGANIZAÇÃO</p><h2>Departamentos</h2></div>
+        <div class="panel inline-form"><input id="novoDepartamento" type="text" placeholder="Ex.: Financeiro" /><button id="btnAdicionarDepartamento" class="btn btn-primary">+ Criar departamento</button></div>
+        <div id="listaDepartamentos" class="department-grid"></div>
+      </section>
+
+      <section id="mapa" class="screen">
+        <div class="section-title"><p class="eyebrow">TOPOLOGIA</p><h2>Mapa da Rede</h2></div>
+        <div class="toolbar">
+          <select id="tipoEquipamento">
+            <option value="computador">💻 Computador</option><option value="notebook">💼 Notebook</option><option value="switch">🔌 Switch</option><option value="roteador">🌐 Roteador</option><option value="servidor">🗄️ Servidor</option><option value="impressora">🖨️ Impressora</option><option value="access-point">📶 Access Point</option>
+          </select>
+          <button id="btnAdicionarEquipamento" class="btn btn-primary">+ Adicionar equipamento</button>
+          <button id="btnConectar" class="btn btn-secondary">🔗 Conectar equipamentos</button>
+          <button id="btnCancelarConexao" class="btn btn-danger hidden">Cancelar conexão</button>
+        </div>
+        <p id="statusConexao" class="status-message">Arraste os equipamentos para organizar a rede. Dê dois cliques para editar.</p>
+        <div id="networkCanvas" class="network-canvas"><svg id="connectionLayer" class="connection-layer"></svg><div id="emptyNetwork" class="empty-state"><div class="empty-icon">🌐</div><h3>Sua rede começa aqui</h3><p>Adicione os primeiros equipamentos.</p></div></div>
+      </section>
+
+      <section id="enderecamento" class="screen">
+        <div class="section-title"><p class="eyebrow">INVENTÁRIO</p><h2>Endereçamento IP</h2></div>
+        <div class="panel table-wrap"><table><thead><tr><th>Equipamento</th><th>Tipo</th><th>Departamento</th><th>IP</th><th>Prefixo</th><th>MAC</th><th>Status</th></tr></thead><tbody id="tabelaEnderecos"></tbody></table></div>
+      </section>
+
+      <section id="historico" class="screen">
+        <div class="section-title"><p class="eyebrow">EVOLUÇÃO</p><h2>Histórico de manutenção</h2></div>
+        <div class="panel form-grid">
+          <label>Data<input id="historicoData" type="date" /></label>
+          <label>Tipo<select id="historicoTipo"><option>Manutenção</option><option>Expansão</option><option>Configuração</option><option>Correção</option><option>Segurança</option></select></label>
+          <label class="full">O que foi feito?<textarea id="historicoDescricao" rows="3" placeholder="Ex.: Criamos o departamento Financeiro e adicionamos 4 computadores."></textarea></label>
+          <button id="btnAdicionarHistorico" class="btn btn-primary full">+ Registrar alteração</button>
+        </div>
+        <div id="listaHistorico" class="timeline"></div>
+      </section>
+    </section>
+  </main>
+
+  <div id="modalEquipamento" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-header"><div><p class="eyebrow">CONFIGURAÇÃO</p><h2>Editar equipamento</h2></div><button id="btnFecharModal" class="icon-btn">✕</button></div>
+      <div class="form-grid">
+        <label>Nome<input id="equipNome" type="text" /></label>
+        <label>Departamento<select id="equipDepartamento"></select></label>
+        <label>Endereço IP<input id="equipIp" type="text" placeholder="192.168.1.10" /></label>
+        <label>Prefixo<input id="equipPrefixo" type="text" placeholder="/24" /></label>
+        <label class="full">Endereço MAC<input id="equipMac" type="text" placeholder="00:1A:2B:3C:4D:5E" /></label>
+        <label>Status<select id="equipStatus"><option value="ativo">Ativo</option><option value="manutencao">Em manutenção</option><option value="inativo">Inativo</option></select></label>
+        <label class="full">Observações<textarea id="equipObservacoes" rows="3" placeholder="Informações importantes sobre o equipamento."></textarea></label>
+      </div>
+      <div class="modal-actions"><button id="btnExcluirEquipamento" class="btn btn-danger">Excluir equipamento</button><button id="btnSalvarEquipamento" class="btn btn-primary">Salvar alterações</button></div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

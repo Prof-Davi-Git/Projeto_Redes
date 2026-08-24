@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "company": {
+    "name": "ByteTech",
+    "group": "Grupo Exemplo",
+    "members": "Ana, Carlos e João",
+    "description": "Empresa fictícia de suporte e venda de equipamentos de informática."
+  },
+  "departments": [
+    {"id":"dep_fin","name":"Financeiro"},
+    {"id":"dep_adm","name":"Administração"},
+    {"id":"dep_ti","name":"Tecnologia"}
+  ],
+  "equipment": [
+    {"id":"eq_router","type":"roteador","name":"Roteador-01","departmentId":"dep_ti","ip":"192.168.1.1","prefix":"/24","mac":"00:AA:00:00:00:01","status":"ativo","notes":"Saída principal da rede.","x":310,"y":45},
+    {"id":"eq_switch","type":"switch","name":"Switch-01","departmentId":"dep_ti","ip":"","prefix":"","mac":"00:AA:00:00:00:02","status":"ativo","notes":"Switch principal.","x":310,"y":190},
+    {"id":"eq_pc1","type":"computador","name":"PC-FIN-01","departmentId":"dep_fin","ip":"192.168.1.10","prefix":"/24","mac":"00:AA:00:00:00:10","status":"ativo","notes":"","x":120,"y":360},
+    {"id":"eq_pc2","type":"computador","name":"PC-ADM-01","departmentId":"dep_adm","ip":"192.168.1.20","prefix":"/24","mac":"00:AA:00:00:00:20","status":"ativo","notes":"","x":500,"y":360}
+  ],
+  "connections": [
+    {"id":"con1","from":"eq_router","to":"eq_switch"},
+    {"id":"con2","from":"eq_switch","to":"eq_pc1"},
+    {"id":"con3","from":"eq_switch","to":"eq_pc2"}
+  ],
+  "history": [
+    {"id":"hist1","date":"2026-08-21","type":"Configuração","description":"Criamos a empresa e montamos a primeira versão da rede."}
+  ]
+}
