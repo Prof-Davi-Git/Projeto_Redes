@@ -1,0 +1,93 @@
+/* =========================================================
+   MAPA EXTRA - tela cheia e navegacao arrastando o fundo
+   ========================================================= */
+
+.network-canvas {
+  cursor: grab;
+  user-select: none;
+}
+
+.network-canvas.is-panning {
+  cursor: grabbing;
+}
+
+.network-canvas.is-panning .equipment {
+  cursor: grabbing;
+}
+
+.map-fullscreen-btn {
+  white-space: nowrap;
+}
+
+/* Tela cheia usando a API nativa do navegador */
+#mapa:fullscreen {
+  display: flex !important;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  padding: 18px;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+#mapa:fullscreen .section-title {
+  margin-bottom: 10px;
+}
+
+#mapa:fullscreen .toolbar {
+  flex: 0 0 auto;
+}
+
+#mapa:fullscreen .status-message {
+  flex: 0 0 auto;
+  margin-bottom: 8px;
+}
+
+#mapa:fullscreen .network-canvas {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 0;
+  border-radius: 12px;
+}
+
+/* Fallback caso o navegador nao ofereca Fullscreen API */
+#mapa.map-fullscreen-fallback {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex !important;
+  flex-direction: column;
+  padding: 18px;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+#mapa.map-fullscreen-fallback .section-title {
+  margin-bottom: 10px;
+}
+
+#mapa.map-fullscreen-fallback .toolbar,
+#mapa.map-fullscreen-fallback .status-message {
+  flex: 0 0 auto;
+}
+
+#mapa.map-fullscreen-fallback .network-canvas {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 0;
+}
+
+body.map-fullscreen-body {
+  overflow: hidden;
+}
+
+@media (max-width: 700px) {
+  #mapa:fullscreen,
+  #mapa.map-fullscreen-fallback {
+    padding: 10px;
+  }
+
+  .map-fullscreen-btn {
+    width: 100%;
+  }
+}
