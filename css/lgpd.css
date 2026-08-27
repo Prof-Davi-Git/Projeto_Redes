@@ -1,0 +1,286 @@
+/* =========================================================
+   LGPD E DADOS - Projeto de Redes
+   ========================================================= */
+
+.lgpd-intro {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.lgpd-concept {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+
+.lgpd-concept span {
+  display: block;
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.lgpd-concept strong {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.lgpd-concept p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.lgpd-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.lgpd-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+}
+
+.lgpd-card h3 {
+  margin: 0 0 6px;
+}
+
+.lgpd-card > p {
+  margin: 0 0 16px;
+  color: var(--muted);
+  line-height: 1.5;
+  font-size: 13px;
+}
+
+.lgpd-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.lgpd-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.lgpd-fields .full {
+  grid-column: 1 / -1;
+}
+
+.lgpd-data-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.lgpd-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 1px solid #dbe3ee;
+  border-radius: 11px;
+  background: #f8fafc;
+  cursor: pointer;
+  user-select: none;
+}
+
+.lgpd-check:hover {
+  border-color: #93c5fd;
+  background: #eff6ff;
+}
+
+.lgpd-check input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  flex: 0 0 auto;
+}
+
+.lgpd-check span {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.lgpd-sensitive-empty {
+  padding: 14px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 11px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.lgpd-radio-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.lgpd-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 12px;
+  border: 1px solid #dbe3ee;
+  border-radius: 10px;
+  background: #f8fafc;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.lgpd-radio input {
+  width: auto;
+  margin: 0;
+}
+
+.lgpd-save-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.lgpd-save-hint {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.lgpd-summary {
+  position: sticky;
+  top: 106px;
+}
+
+.lgpd-summary-box {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #fff;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.lgpd-summary-head {
+  padding: 16px;
+  background: #0f172a;
+  color: #fff;
+}
+
+.lgpd-summary-head small {
+  display: block;
+  margin-bottom: 4px;
+  color: #bfdbfe;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.lgpd-summary-head strong {
+  display: block;
+  font-size: 16px;
+}
+
+.lgpd-summary-body {
+  padding: 16px;
+}
+
+.lgpd-summary-item {
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.lgpd-summary-item:last-child {
+  border-bottom: 0;
+}
+
+.lgpd-summary-item small {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 10px;
+  text-transform: uppercase;
+  font-weight: 900;
+  letter-spacing: .7px;
+}
+
+.lgpd-summary-item strong,
+.lgpd-summary-item p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.lgpd-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.lgpd-chip {
+  display: inline-block;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.lgpd-mission {
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  border-radius: 14px;
+  border-left: 5px solid var(--blue);
+  background: #eff6ff;
+}
+
+.lgpd-mission strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #1e40af;
+}
+
+.lgpd-mission p {
+  margin: 0;
+  color: #334155;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+@media (max-width: 1000px) {
+  .lgpd-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .lgpd-summary {
+    position: static;
+  }
+}
+
+@media (max-width: 720px) {
+  .lgpd-intro,
+  .lgpd-fields,
+  .lgpd-data-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lgpd-fields .full {
+    grid-column: auto;
+  }
+}
