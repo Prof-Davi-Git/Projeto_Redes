@@ -187,13 +187,17 @@
 /* =========================================================
    CARREGAMENTO DA AUTENTICAÇÃO DE ALTERAÇÕES
    Mantido separado do núcleo do mapa para preservar o projeto existente.
+   O parâmetro de versão evita que o GitHub Pages reutilize credenciais antigas
+   armazenadas no cache do navegador.
    ========================================================= */
 (() => {
+  const AUTH_VERSION = '20260830-credenciais-validadas';
+
   function carregarEstilo() {
     if (document.querySelector('link[data-auth-style]')) return;
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = 'css/auth.css';
+    link.href = `css/auth.css?v=${AUTH_VERSION}`;
     link.dataset.authStyle = '1';
     document.head.appendChild(link);
   }
@@ -201,7 +205,7 @@
   function carregarAuth() {
     if (document.querySelector('script[data-auth-module]')) return;
     const script = document.createElement('script');
-    script.src = 'js/auth.js';
+    script.src = `js/auth.js?v=${AUTH_VERSION}`;
     script.dataset.authModule = '1';
     document.head.appendChild(script);
   }
@@ -214,7 +218,7 @@
 
     if (document.querySelector('script[data-alunos-auth]')) return;
     const script = document.createElement('script');
-    script.src = 'js/alunos.js';
+    script.src = `js/alunos.js?v=${AUTH_VERSION}`;
     script.dataset.alunosAuth = '1';
     script.addEventListener('load', carregarAuth, { once: true });
     document.head.appendChild(script);
