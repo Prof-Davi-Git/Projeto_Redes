@@ -23,9 +23,22 @@
     }, 80);
   }
 
+  function prepararModalNoMapa() {
+    const mapa = document.querySelector('#mapa');
+    const modal = document.querySelector('#modalEquipamento');
+    if (!mapa || !modal || modal.parentElement === mapa) return;
+
+    // O Fullscreen API exibe apenas os elementos que estão dentro do elemento
+    // colocado em tela cheia. Mantendo o modal dentro do mapa, a edição por
+    // dois cliques continua visível e funcional também no modo fullscreen.
+    mapa.appendChild(modal);
+  }
+
   async function alternarTelaCheia() {
     const mapa = document.querySelector('#mapa');
     if (!mapa) return;
+
+    prepararModalNoMapa();
 
     const estaNativo = document.fullscreenElement === mapa;
     const estaFallback = mapa.classList.contains('map-fullscreen-fallback');
@@ -160,6 +173,7 @@
   });
 
   document.addEventListener('DOMContentLoaded', () => {
+    prepararModalNoMapa();
     prepararTelaCheia();
     prepararArrasteDoFundo();
 
