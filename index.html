@@ -61,7 +61,7 @@
 
         <div class="panel">
           <h3>Como o projeto cresce</h3>
-          <p>Cada semana a equipe adiciona equipamentos, departamentos, endereços IP, conexões e registros de manutenção. O arquivo JSON guarda todo o progresso.</p>
+          <p>Cada semana a equipe adiciona equipamentos, departamentos, endereços IP, conexões e novas decisões. O Histórico registra automaticamente as principais alterações e o arquivo JSON guarda todo o progresso.</p>
         </div>
       </section>
 
@@ -169,23 +169,12 @@
       <section id="historico" class="screen">
         <div class="section-title">
           <p class="eyebrow">EVOLUÇÃO</p>
-          <h2>Histórico de manutenção</h2>
+          <h2>Histórico automático</h2>
         </div>
 
-        <div class="panel form-grid">
-          <label>Data<input id="historicoData" type="date" /></label>
-          <label>
-            Tipo
-            <select id="historicoTipo">
-              <option>Manutenção</option>
-              <option>Expansão</option>
-              <option>Configuração</option>
-              <option>Correção</option>
-              <option>Segurança</option>
-            </select>
-          </label>
-          <label class="full">O que foi feito?<textarea id="historicoDescricao" rows="3" placeholder="Ex.: Criamos o departamento Financeiro e adicionamos 4 computadores."></textarea></label>
-          <button id="btnAdicionarHistorico" class="btn btn-primary full">+ Registrar alteração</button>
+        <div class="panel">
+          <h3>Registro do projeto</h3>
+          <p>Esta área é preenchida automaticamente pelo sistema. As principais alterações realizadas pela equipe aparecem abaixo, sem necessidade de registrar manualmente.</p>
         </div>
 
         <div id="listaHistorico" class="timeline"></div>
