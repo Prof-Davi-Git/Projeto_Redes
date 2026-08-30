@@ -107,14 +107,22 @@ function addHistory(type, description) {
   project.history.unshift({ id: id('hist'), date: today(), type, description });
 }
 
+function historyValue(value, emptyText = 'vazio') {
+  const text = String(value ?? '').trim();
+  return text || emptyText;
+}
+
+function departmentName(depId) {
+  if (!depId) return 'Sem departamento';
+  return project.departments.find(dep => dep.id === depId)?.name || 'Departamento não encontrado';
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   setupNav();
   setupCompany();
   setupDepartments();
   setupMap();
-  setupHistory();
   setupSaveOpen();
-  $('#historicoData').value = today();
   renderAll();
 });
 
@@ -138,13 +146,45 @@ function setupNav() {
 
 function setupCompany() {
   $('#btnSalvarEmpresa').addEventListener('click', () => {
-    project.company.name = $('#empresaNome').value.trim() || 'Minha Empresa';
-    project.company.group = $('#empresaGrupo').value.trim();
-    project.company.members = $('#empresaIntegrantes').value.trim();
-    project.company.description = $('#empresaDescricao').value.trim();
-    addHistory('Configuração', 'Dados da empresa foram atualizados.');
+    const previous = {
+      name: project.company.name || 'Minha Empresa',
+      group: project.company.group || '',
+      members: project.company.members || '',
+      description: project.company.description || ''
+    };
+
+    const next = {
+      name: $('#empresaNome').value.trim() || 'Minha Empresa',
+      group: $('#empresaGrupo').value.trim(),
+      members: $('#empresaIntegrantes').value.trim(),
+      description: $('#empresaDescricao').value.trim()
+    };
+
+    const changes = [];
+    if (previous.name !== next.name) {
+      changes.push(`nome: "${historyValue(previous.name)}" → "${historyValue(next.name)}"`);
+    }
+    if (previous.group !== next.group) {
+      changes.push(`grupo: "${historyValue(previous.group)}" → "${historyValue(next.group)}"`);
+    }
+    if (previous.members !== next.members) {
+      changes.push('integrantes atualizados');
+    }
+    if (previous.description !== next.description) {
+      changes.push('descrição da empresa atualizada');
+    }
+
+    project.company.name = next.name;
+    project.company.group = next.group;
+    project.company.members = next.members;
+    project.company.description = next.description;
+
+    if (changes.length) {
+      addHistory('Configuração', `Dados da empresa alterados: ${changes.join('; ')}.`);
+    }
+
     renderAll();
-    alert('Dados da empresa salvos.');
+    alert(changes.length ? 'Dados da empresa salvos.' : 'Nenhuma alteração foi identificada nos dados da empresa.');
   });
 }
 
@@ -225,7 +265,7 @@ function addEquipment() {
   };
 
   project.equipment.push(equipment);
-  addHistory('Expansão', `${equipment.name} foi adicionado ao mapa.`);
+  addHistory('Expansão', `${typeNames[type] || type} "${equipment.name}" foi adicionado ao mapa da rede.`);
   renderAll();
 }
 
@@ -417,7 +457,7 @@ function cancelConnect() {
   firstConnect = null;
   $('#btnConectar').classList.remove('hidden');
   $('#btnCancelarConexao').classList.add('hidden');
-  $('#statusConexao').textContent = 'Arraste os equipamentos para organizar a rede. Dê dois cliques para editar.';
+  $('#statusConexao').textContent = 'Arraste os equipamentos para organizar a rede. Arraste o fundo quadriculado para navegar. Dê dois cliques para editar.';
   $('#statusConexao').classList.remove('active');
   $$('.equipment').forEach(el => el.classList.remove('selected'));
 }
@@ -445,7 +485,7 @@ function selectConnect(eqId) {
   const a = project.equipment.find(e => e.id === firstConnect);
   const b = project.equipment.find(e => e.id === eqId);
   project.connections.push({ id: id('con'), from: firstConnect, to: eqId });
-  addHistory('Configuração', `Conexão criada entre ${a.name} e ${b.name}.`);
+  addHistory('Configuração', `Conexão criada entre "${a.name}" e "${b.name}".`);
   cancelConnect();
   renderAll();
 }
@@ -512,15 +552,61 @@ function saveEquipmentEdit() {
   const equipment = project.equipment.find(item => item.id === editingId);
   if (!equipment) return;
 
-  equipment.name = $('#equipNome').value.trim() || equipment.name;
-  equipment.departmentId = $('#equipDepartamento').value;
-  equipment.ip = $('#equipIp').value.trim();
-  equipment.prefix = $('#equipPrefixo').value.trim();
-  equipment.mac = $('#equipMac').value.trim();
-  equipment.status = $('#equipStatus').value;
-  equipment.notes = $('#equipObservacoes').value.trim();
+  const previous = {
+    name: equipment.name,
+    departmentId: equipment.departmentId || '',
+    ip: equipment.ip || '',
+    prefix: equipment.prefix || '',
+    mac: equipment.mac || '',
+    status: equipment.status || 'ativo',
+    notes: equipment.notes || ''
+  };
 
-  addHistory('Configuração', `${equipment.name} teve suas configurações atualizadas.`);
+  const next = {
+    name: $('#equipNome').value.trim() || equipment.name,
+    departmentId: $('#equipDepartamento').value,
+    ip: $('#equipIp').value.trim(),
+    prefix: $('#equipPrefixo').value.trim(),
+    mac: $('#equipMac').value.trim(),
+    status: $('#equipStatus').value,
+    notes: $('#equipObservacoes').value.trim()
+  };
+
+  const changes = [];
+  if (previous.name !== next.name) {
+    changes.push(`nome: "${historyValue(previous.name)}" → "${historyValue(next.name)}"`);
+  }
+  if (previous.departmentId !== next.departmentId) {
+    changes.push(`departamento: "${departmentName(previous.departmentId)}" → "${departmentName(next.departmentId)}"`);
+  }
+  if (previous.ip !== next.ip) {
+    changes.push(`IP: ${historyValue(previous.ip)} → ${historyValue(next.ip)}`);
+  }
+  if (previous.prefix !== next.prefix) {
+    changes.push(`prefixo: ${historyValue(previous.prefix)} → ${historyValue(next.prefix)}`);
+  }
+  if (previous.mac !== next.mac) {
+    changes.push(`MAC: ${historyValue(previous.mac)} → ${historyValue(next.mac)}`);
+  }
+  if (previous.status !== next.status) {
+    changes.push(`status: ${statusText(previous.status)} → ${statusText(next.status)}`);
+  }
+  if (previous.notes !== next.notes) {
+    changes.push('observações atualizadas');
+  }
+
+  equipment.name = next.name;
+  equipment.departmentId = next.departmentId;
+  equipment.ip = next.ip;
+  equipment.prefix = next.prefix;
+  equipment.mac = next.mac;
+  equipment.status = next.status;
+  equipment.notes = next.notes;
+
+  if (changes.length) {
+    addHistory('Configuração', `Equipamento "${equipment.name}" alterado: ${changes.join('; ')}.`);
+  }
+
   closeModal();
   renderAll();
 }
@@ -530,29 +616,18 @@ function deleteCurrentEquipment() {
   if (!equipment) return;
   if (!confirm(`Excluir ${equipment.name}?`)) return;
 
+  const connectionsRemoved = project.connections.filter(c => c.from === equipment.id || c.to === equipment.id).length;
+
   project.equipment = project.equipment.filter(item => item.id !== equipment.id);
   project.connections = project.connections.filter(c => c.from !== equipment.id && c.to !== equipment.id);
-  addHistory('Correção', `${equipment.name} foi removido da rede.`);
+
+  const connectionInfo = connectionsRemoved
+    ? ` Também foram removidas ${connectionsRemoved} conexão(ões) vinculada(s) a ele.`
+    : '';
+  addHistory('Correção', `Equipamento "${equipment.name}" foi removido da rede.${connectionInfo}`);
+
   closeModal();
   renderAll();
-}
-
-function setupHistory() {
-  $('#btnAdicionarHistorico').addEventListener('click', () => {
-    const description = $('#historicoDescricao').value.trim();
-    if (!description) return alert('Descreva o que foi feito.');
-
-    project.history.unshift({
-      id: id('hist'),
-      date: $('#historicoData').value || today(),
-      type: $('#historicoTipo').value,
-      description
-    });
-
-    $('#historicoDescricao').value = '';
-    $('#historicoData').value = today();
-    renderAll();
-  });
 }
 
 function setupSaveOpen() {
@@ -679,7 +754,7 @@ function renderHistory() {
   list.innerHTML = '';
 
   if (!project.history.length) {
-    list.innerHTML = '<div class="panel"><p>Nenhuma alteração registrada ainda.</p></div>';
+    list.innerHTML = '<div class="panel"><p>Nenhuma alteração automática registrada ainda.</p></div>';
     return;
   }
 
