@@ -1,240 +1,244 @@
 /* Lista de alunos para autenticação local.
-   Os RAs e as senhas NÃO ficam armazenados em texto puro.
-   A senha RA + dígito é validada por PBKDF2-SHA256 com salt individual.
+   Os nomes são abreviados para reduzir exposição no site público.
+   A senha NÃO fica armazenada em texto puro.
+   Regra atual: 6 últimos dígitos do RA + dígito.
+   A validação usa PBKDF2-SHA256 com salt individual.
 */
-window.ALUNOS_AUTENTICACAO = Object.freeze([
+window.ALUNOS_AUTENTICACAO = Object.freeze(
+[
   {
-    "nome": "BEATRIZ SANTANA PEREIRA",
-    "salt": "dTBplttCuknZoq1TtP3fcQ==",
-    "hash": "J7lRcP7hM4n6Rgo/7qGXD0oIqiaz4xLN27uopaO2XLQ=",
+    "nome": "Beatriz S. P.",
+    "salt": "U9O50cqBJKKIjGuIfU53zQ==",
+    "hash": "OTui3Jfou3adVhT67HtN1Uak+64Yyn6GwASQKBzHvJs=",
     "iteracoes": 120000
   },
   {
-    "nome": "BRENNO SESSO TEIXEIRA",
-    "salt": "ZniGlEaKvNJ5+W9KiWjnyw==",
-    "hash": "PC0E0qdB2ckIbz0Dorkcvf7FWtFNbzM2FPpWt749UAw=",
+    "nome": "Brenno S. T.",
+    "salt": "1QkRJsSAinC5gUd72S0Fcg==",
+    "hash": "s5dDNhQhVtx6fC3iCI0JHeNrbV8R8F3n2guAH9Zo84w=",
     "iteracoes": 120000
   },
   {
-    "nome": "DANIELLE LAISE DA SILVA MELLO",
-    "salt": "VbSs7E+xLDLasqa3PfbM6A==",
-    "hash": "KNQkv8TQW5zwE72nobUj1WovDBNAqn/chsBVfL21FRY=",
+    "nome": "Danielle L. S. M.",
+    "salt": "VZoXj6K1rm+zQFhuAHRYNA==",
+    "hash": "qKvUQfrqqmh/9bYhAIz4rN1j2zQie5mGCrPMz0B8shE=",
     "iteracoes": 120000
   },
   {
-    "nome": "EDUARDO LUIZ DE OLIVEIRA NUNES",
-    "salt": "nItLrOe+1+B85pi2AGCFaw==",
-    "hash": "F8cv8kFeiGEDP//SWv9yFaDyjmdiakK/P1QBdndNXYs=",
+    "nome": "Eduardo L. O. N.",
+    "salt": "F0yQR5E3h/LkPW/1je+YuA==",
+    "hash": "ZqQiLl+Vx7hZxQYiYl9DW5lFzCVuX8R0QxpIcKEFsiM=",
     "iteracoes": 120000
   },
   {
-    "nome": "FERNANDA MARTINS FERNANDES",
-    "salt": "TK6speFEdFTtiKFMxmNR4A==",
-    "hash": "g5KSyapcqnJdnWv4HcXKWrBkOZpz/qse2vVaer5V8JA=",
+    "nome": "Fernanda M. F.",
+    "salt": "8vFkYGw+58x1RrWQRq+5sw==",
+    "hash": "9k7lNzWEbCfKgQi4xz6TphSNbUwLvD0dd8p9F1Lmgc8=",
     "iteracoes": 120000
   },
   {
-    "nome": "GIOVANNA ARAUJO MOREIRA",
-    "salt": "GmisxhtDuSCkNPv9z1r49Q==",
-    "hash": "UYxPC+o1gJzEoVWES1rCrS9zZq3QVVR+QtgLXH3H5Gc=",
+    "nome": "Giovanna A. M.",
+    "salt": "vY/H2HK4x0N2gqiwKMf+Rw==",
+    "hash": "+wt/TIOW2xNZul1kpao+8LpiY6hxuM0x0m9y0SGHDJk=",
     "iteracoes": 120000
   },
   {
-    "nome": "GUSTAVO FELIX LINO",
-    "salt": "xQ8qv1d+QNT193NXfzt3/Q==",
-    "hash": "h+i8MCEl5qsgkbi6yHdGUJI24yFdgyjW9qjpObICji8=",
+    "nome": "Gustavo Felix L.",
+    "salt": "Ds9i0d2kHc+mjOoWQhJoQA==",
+    "hash": "unH4GNcxd4ETkcLaGB6GDGE6rN9fHIcEThzVM7KTa54=",
     "iteracoes": 120000
   },
   {
-    "nome": "GUSTAVO FERREIRA LIMA",
-    "salt": "OvB8hk87TZeaAghkPQ8v/g==",
-    "hash": "17vtN4YgYKuZKyOHgEQ+z4RPifUf5uf2WydOjiMoNpE=",
+    "nome": "Gustavo Ferreira L.",
+    "salt": "TZpYvqA65A3XcOHjwFqPGA==",
+    "hash": "HcJqxaw0khfnTYn5nAhOIWUoFb/8x4I4NVz5DWb8X6M=",
     "iteracoes": 120000
   },
   {
-    "nome": "HELOISE BATISTA GUIMARAES",
-    "salt": "oXwe65LXtZTeqVVdEDGdRw==",
-    "hash": "4mR3LxaASPsG/4jYQ517CJyN/EmbTEdfuWkjkYAyIYU=",
+    "nome": "Heloise B. G.",
+    "salt": "E1APeF5tfkDrgdmJM0TTqQ==",
+    "hash": "spMIW5ZAuul/B5XSQRIGThjUJYdm6ASWN0vhbvTOXx8=",
     "iteracoes": 120000
   },
   {
-    "nome": "HENRIQUE MIGUEL DA SILVA MARTINS DE MORAES",
-    "salt": "CXWppp7Qx57DOVtclMRGOg==",
-    "hash": "IdLr8QD/cXr2zXAoRQxIKwrJc0t3rwoBY0ySaEk9B94=",
+    "nome": "Henrique M. S. M. M.",
+    "salt": "CLn0QuWtXPtwG8Z9Sxv5tw==",
+    "hash": "urjqvryyuYX0U/M1IiMcHdqIgX8I/vV8EfxXxncBpg8=",
     "iteracoes": 120000
   },
   {
-    "nome": "HENRY KENJI OZAKI FRANCO",
-    "salt": "/WSRNfgkYMMd24ysSyM9mw==",
-    "hash": "vlq7tWDg2pRwqwsbQXoTegwJJFVrKj9MoKSdqaVzitU=",
+    "nome": "Henry K. O. F.",
+    "salt": "HqaTlwQr1KWECJuiZwCUpQ==",
+    "hash": "F6wQ3wfqGcsgsaWuCy+o+KiHdANMJUrHJPUsMs+nQCA=",
     "iteracoes": 120000
   },
   {
-    "nome": "ISAAC SANTOS OLIVEIRA",
-    "salt": "An37Dp2wG7gcPTfrrceJuA==",
-    "hash": "6EaRV4fQv6weGJvnjjx1GnQqkXNCrk275xQRWDkgyY4=",
+    "nome": "Isaac S. O.",
+    "salt": "wR0iXV/JPmTafEAxuaOq1Q==",
+    "hash": "MdzVYg7xdpHFKLk5x9EcP1jQtztbcxnfgmivnQ8/pf8=",
     "iteracoes": 120000
   },
   {
-    "nome": "ISABELLA VITORIA ROCHA SANTOS",
-    "salt": "9taXEYS/2tgurPAh0UGfzQ==",
-    "hash": "SvxpzZJu+Dj+LGSVTs7Za6Rk27aWnOFSNo2YQxwJOFQ=",
+    "nome": "Isabella V. R. S.",
+    "salt": "vZuBFt7pZu8St7MEBh1Q4g==",
+    "hash": "CDRRx1u3TnmR8j3KfZmmMupKaDJocaiK6uYE8TG5nWY=",
     "iteracoes": 120000
   },
   {
-    "nome": "LAURO MIGUEL GOMES DOS SANTOS",
-    "salt": "lcLMU0I3Xe+ey0cAz5hJfQ==",
-    "hash": "KWfKHJ4zQSABCvVus8CR/5BBJg0WhyoSstF1Gi6oaG4=",
+    "nome": "Lauro M. G. S.",
+    "salt": "MOZWMYv5vsYfxeCvfDW4iA==",
+    "hash": "I+Iy3iiL5kHZQz8w+FN0Lu0xa6FOG5TY/xnG2k2Zd3Y=",
     "iteracoes": 120000
   },
   {
-    "nome": "LUCAS BARBOSA SANTOS",
-    "salt": "GBB+cc/q61koZmCXNgxLXg==",
-    "hash": "CNHooVFtZ/c600/geOxvsfpuWms65LPie6MvFbVAJrQ=",
+    "nome": "Lucas B. S.",
+    "salt": "YX+Q6Tt6qI4kPQ1jVpYw1A==",
+    "hash": "m9+agYczj3QX/7oNQp8rua8o+KpTrAJHw6OHTEyCfQY=",
     "iteracoes": 120000
   },
   {
-    "nome": "LUIS FERNANDO BARBOSA MUNIZ",
-    "salt": "3pCWtDGN1VEInjnWeCCiiw==",
-    "hash": "a4QpgzZ5h1o6wQFAxyi7WxrMI5Iwo1Ht73OYcgkAo7c=",
+    "nome": "Luis F. B. M.",
+    "salt": "9Aq3NRqp3+nY5gD4XxGvGw==",
+    "hash": "gXQ5FkZfOZZE27tqDgJPSNxDQf5BZpCcqIF3yBIpPn4=",
     "iteracoes": 120000
   },
   {
-    "nome": "LUIZ HENRIQUE DA SILVA FERREIRA",
-    "salt": "B65ospYVRlHUm3coFWnPhA==",
-    "hash": "HZbx9UQs/iRM6yyyh4EZFQP7nh1Vj+S+ryM4DPxMWlI=",
+    "nome": "Luiz H. S. F.",
+    "salt": "DySOtFiBjyWTj3/VoWz2+A==",
+    "hash": "7bxp1CYu4x5WwWyVkiS8PEWGItlvsdeRCjHiRqBcffA=",
     "iteracoes": 120000
   },
   {
-    "nome": "LUIZ VICTOR FERNANDES CAETANO",
-    "salt": "iYy4ZKnUAbx9XXvnBZNsBg==",
-    "hash": "exfaOpcL7co0upS1ApCB+QQdQL6gfetsmL421kaGGLc=",
+    "nome": "Luiz V. F. C.",
+    "salt": "hlP1zpcTRkR0+AQZcCOZ6g==",
+    "hash": "8jS8UiP8dH6L2vCpDSmS1KcP9fObAtyF1DLPx5qGhpU=",
     "iteracoes": 120000
   },
   {
-    "nome": "MARCELLO DE CASTRO HENRIQUES BIROLLI",
-    "salt": "f2WOR4khU7XaeF0ZyL390A==",
-    "hash": "wxWnpkV9Oy+vtCQ/SndQPhwhWK1+PvKbvP5N4UsR9w0=",
+    "nome": "Marcello C. H. B.",
+    "salt": "bOwESNUq0sQUX2HFxNN73A==",
+    "hash": "IoSj7BeYqrzeEYEsrVx0HZUCGGpMGMYXHLGvuZwb/Jw=",
     "iteracoes": 120000
   },
   {
-    "nome": "MARCOS VINICIUS AGNELO MOREIRA",
-    "salt": "hyxPCyOmv1lK86b7UODHOA==",
-    "hash": "hnNLEKJFdgiU2v8pZFXQMD0zrMMph98zNFwUOvRVyC4=",
+    "nome": "Marcos V. A. M.",
+    "salt": "hqCYo/uFU0QKvJ2Lg+bPKw==",
+    "hash": "5dbCQgACrhFmuAdnm4EUfWGhWMHBqbW5dZ3V3XkB6fo=",
     "iteracoes": 120000
   },
   {
-    "nome": "MATHEUS VINICIUS DA SILVA",
-    "salt": "e6jxhmjhG+Tr5ALYN+W/Qw==",
-    "hash": "FtRK0VTs0RIP0ZNF14CBtbFQ3wMs011MM9MQ/gAxXVE=",
+    "nome": "Matheus V. S.",
+    "salt": "k6yPwZ5fSTrlTNZ+sMyCbg==",
+    "hash": "Xhju8w9bBKbfkhbjNyeLeJlo9WugvNxDeSoTNmSVRDQ=",
     "iteracoes": 120000
   },
   {
-    "nome": "MICAELLY FIGUEREDO DE ABREU",
-    "salt": "uyX/AeAhJoJfZMs/n5/bWQ==",
-    "hash": "zCpYjm3iLat0kzBY/cus99m5NqzhfVb/NruPAqRNsYc=",
+    "nome": "Micaelly F. A.",
+    "salt": "ib65ZBnpEwRzfp/gAOcszA==",
+    "hash": "BYmlUdGdhTkafDSvTCb7wqL3x4Z+CY0YdnUDsnNrCnE=",
     "iteracoes": 120000
   },
   {
-    "nome": "MIGUEL CARVALHO DA SILVA",
-    "salt": "TUPwl0hcoYGuNLIjU2tQFA==",
-    "hash": "A41OOzty/hO/4lYs1liUuCkUhojSTI2FGLX5KKk99vk=",
+    "nome": "Miguel C. S.",
+    "salt": "CtpV7NQ7/bgnxiT6f6zJlg==",
+    "hash": "T31Y9F9MdFtb/Q+r+aafFiDs77wSr7/khqPJlrOyBBA=",
     "iteracoes": 120000
   },
   {
-    "nome": "MIGUEL HENRIQUE OLIVEIRA GUEDES",
-    "salt": "AJjUqMsxhv8JR7g5c+0G8g==",
-    "hash": "prpKSa+MRwXPf/Z7glLMby111UDCA9+dSasyI7x5xBU=",
+    "nome": "Miguel H. O. G.",
+    "salt": "Eo67cHf2N3TtdO5dP+7v7Q==",
+    "hash": "lqYomMneVDxE/bO4sZx0de0pZQBqgV+ZBNw9hDJaPg8=",
     "iteracoes": 120000
   },
   {
-    "nome": "MIKAELA FERNANDA MOURA RODRIGUES",
-    "salt": "o8+EMRb+BncaH8nCqH1+Hw==",
-    "hash": "Zu/M5VCc9w2Qzp2ipEkNpXRG/AuRwupi0E4z7/NP+FY=",
+    "nome": "Mikaela F. M. R.",
+    "salt": "8uGXJzxEfjtQdhBucPiA2w==",
+    "hash": "RqIL5oaI0YI6TgT7EPulxY8I0lPuvUCJPnM4QVYpazg=",
     "iteracoes": 120000
   },
   {
-    "nome": "MURILLO HENRIQUE DE SOUZA",
-    "salt": "V9alM81wt+OUYP6Oh8EeEA==",
-    "hash": "mYdJv5M0PrejKeL868EerEWrpbq197EGx5grPWWd33U=",
+    "nome": "Murillo H. S.",
+    "salt": "3HJ6e3W+4fRrLkX9ePBYKg==",
+    "hash": "hOFNVGZ8f6Vc0cEVGa4njApI1Ve1CnNZJlKBkv8yLzU=",
     "iteracoes": 120000
   },
   {
-    "nome": "MURILO DA SILVA COSTA",
-    "salt": "VjnTPodPkFNLRjaniSW9ug==",
-    "hash": "ab90kqqC+D/NGIZySdW9T+mVnPwD7UmBj360LWvMUHc=",
+    "nome": "Murilo S. C.",
+    "salt": "SVFUIzHr3Kt5r1GRF7CzVQ==",
+    "hash": "z8Y2vM1u0sWVPUz9L4Jj9BH+0Y0MCzvPScmzwSYFmNk=",
     "iteracoes": 120000
   },
   {
-    "nome": "MURILO RANGEL SILVEIRA",
-    "salt": "zVBzhZqZ27TdDYlhy2TgCw==",
-    "hash": "WVrUHSwTJWhWpJ24vkjB2ILGNEQwt5MRFwOG/pR9tdQ=",
+    "nome": "Murilo R. S.",
+    "salt": "Txz6fEqVnVUDcWIhY7T3qw==",
+    "hash": "RqbC3bGSWgmCf8Df7wIC8uv2MO9qZqvDCryI/bJL4bA=",
     "iteracoes": 120000
   },
   {
-    "nome": "NATAN SILVA DE LIMA",
-    "salt": "WDldwWFUquaoq24XfL9gvw==",
-    "hash": "40NxGzHivdUU8U7wYi4Ve6ki5fsXTLgx3Vzhr9TxeK4=",
+    "nome": "Natan S. L.",
+    "salt": "pzoCWtI6+a2xF6au1O4ePQ==",
+    "hash": "4/rAXsEhJoZm6LjafSd6N+8YKeaZZz6g4SHkQ98YL3g=",
     "iteracoes": 120000
   },
   {
-    "nome": "NICOLAS CORREIA DA SILVA",
-    "salt": "0OcWQOHunCx2rL0YliEt8Q==",
-    "hash": "8T+55HiFZ8/8uYkDcmNwry8ST1i/HrsNFMoRJgqUrz4=",
+    "nome": "Nicolas C. S.",
+    "salt": "8gZqaI64jyxQg6+WqpV5Lg==",
+    "hash": "xSWbMzudQBPY/+9/GkQ8Qk6WhlgyXLvOR9ZtXm3wLR0=",
     "iteracoes": 120000
   },
   {
-    "nome": "PABLO RAMIREZ DA SILVA DE JESUS",
-    "salt": "tQJcX+6ojHamWo/GAZE0rg==",
-    "hash": "UEVglKl8RNYOBVl2wIu+Y3mnnWdVKgJ1Q1fF0l8Igbk=",
+    "nome": "Pablo R. S. J.",
+    "salt": "zwBav9/BwVZcMY4S3oXoMA==",
+    "hash": "wFQvmvfDn+toNNVpBNRCjdwEJ7x0Wj5R+RDEf7XlFxc=",
     "iteracoes": 120000
   },
   {
-    "nome": "PEDRO GABRIEL SANTOS RIBEIRO",
-    "salt": "981DVTVC3LaG5A8nf5sZ0Q==",
-    "hash": "PxHAiEbeTkCSk/h1LnNWAb3ctWAX3V8EjY1zXIv8cs4=",
+    "nome": "Pedro G. S. R.",
+    "salt": "IdlnfYvbNej+dOWVeO4nRA==",
+    "hash": "kV2YI3v21+LWkwRDJBbaDacx2RbkeBfBnfjuK6yQVhA=",
     "iteracoes": 120000
   },
   {
-    "nome": "PYETRO HENRIQUE SIQUEIRA RODRIGUES",
-    "salt": "AImgjhWDo3d/vrYFu9uKBQ==",
-    "hash": "G8/Wz9qpIEkxlXNLpUOXxgEo5VLZAFlx3nEmNhZqGBo=",
+    "nome": "Pyetro H. S. R.",
+    "salt": "52zDF/PlE8e8gqs8BIUpNg==",
+    "hash": "y1UEKqLOEzaMk/N4FOkp/rE7qC81XbRrk1NPAy2I0Mg=",
     "iteracoes": 120000
   },
   {
-    "nome": "SOPHIA AMARANTE DO CARMO",
-    "salt": "a7is1A3hwtqDpbRnqOXLtQ==",
-    "hash": "2AJLz5cYaWFDEfvPtEO3t1PLgVmBE5Q27v6szW6AEyY=",
+    "nome": "Sophia A. C.",
+    "salt": "TQ4jQjUNwoGSulvkisf2oA==",
+    "hash": "K/P1ZuBdRWh/QQeJ8PB5ObVSy25cJBJk7bC1rOFk+HU=",
     "iteracoes": 120000
   },
   {
-    "nome": "SOPHIA SANT ANA CASTILHO",
-    "salt": "dV+4unuK6X+YNeNNTw39vQ==",
-    "hash": "MAL11/UvNmS1ijZd19qcUfzQRAO9nx+Xppfh1R1pk7c=",
+    "nome": "Sophia S. A. C.",
+    "salt": "ijZa9fwj7I/MV8q73u2j1A==",
+    "hash": "Gcb5gqqqCmW9PaBdWOi9BzN9H56nmSFVnHfsYVq9r3g=",
     "iteracoes": 120000
   },
   {
-    "nome": "THIAGO VARELA DUARTE",
-    "salt": "8XhrNj2VZBX0PHp/YSa5Vg==",
-    "hash": "t2WleVQYBiZpcnjBXPWvmrbtFS+7KoT10B76fglSqQc=",
+    "nome": "Thiago V. D.",
+    "salt": "jrwL9qOkYRtiCdZNFoTmuw==",
+    "hash": "PHQJnGoMC9oIHkOaS4N0fpwCVeBpCCyI2Ldt0mRI8Ng=",
     "iteracoes": 120000
   },
   {
-    "nome": "LISANDRO FERREIRA SANTOS DA SILVA",
-    "salt": "5LpdwLjJdNS+3CKyQ0QX/A==",
-    "hash": "TGydFNWi0NxJW9YpKgW73i24iCbdvz39oh9bdz964XI=",
+    "nome": "Lisandro F. S. S.",
+    "salt": "v6+O1phfxh6sSIC5nqzlvA==",
+    "hash": "oMwk7rbcUC7VXsTpvizvRKeh8KeMkGjNuVOCKdjH1jg=",
     "iteracoes": 120000
   },
   {
-    "nome": "PEDRO HENRIQUE SANTOS",
-    "salt": "PUhnZvJrxZqMAzug3jyVpw==",
-    "hash": "sGGRxnxEwyTztcRfyA4QpeQF3tcqlPbqEOQyJ4OG9vY=",
+    "nome": "Pedro H. S.",
+    "salt": "Nf5Gv7YvAOztN0B3YQLjPg==",
+    "hash": "EdqtvzizREwSrNtAa+Fk4nxrBsImssinIgpSw1hpRBA=",
     "iteracoes": 120000
   },
   {
-    "nome": "VITOR ERNESTO SILVA DO NASCIMENTO",
-    "salt": "46XB5RN+qGMr3VJ/nGcVOQ==",
-    "hash": "6BDihIdP5Wbu5t3IVsOxFL6H7ZKQaVE3bKiy81pRu4c=",
+    "nome": "Vitor E. S. N.",
+    "salt": "1kZ+Eep9Z4uXzoRh+iCxxQ==",
+    "hash": "NOI/HTmNgxDIWuu6BZ1/KCWmG7Kgc1C0fA4xpgczIJ0=",
     "iteracoes": 120000
   }
-]);
+]
+);
