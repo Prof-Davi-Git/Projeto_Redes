@@ -186,7 +186,7 @@
       id: 'missao-02',
       number: 'MISSÃO 02',
       title: 'LGPD e Dados',
-      description: 'Revisar o cadastro inicial e organizar diferentes cadastros de acordo com a finalidade de cada um.',
+      description: 'Organizar diferentes cadastros de acordo com a finalidade de cada um.',
       criteria: [
         criterion(
           registrations.length >= 4 ? 'done' : 'missing',
@@ -226,7 +226,7 @@
         criterion(
           'review',
           'Adequação dos dados à finalidade',
-          'O sistema confirma que existem dados, mas não decide se eles realmente fazem sentido para a finalidade informada.'
+          'Revisem este item com o professor para verificar se os dados escolhidos fazem sentido para a finalidade informada e se estão corretos.'
         ),
         criterion(
           'review',
