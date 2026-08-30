@@ -5,6 +5,7 @@
    - O histórico recebe um resumo completo do lote salvo.
    - O JSON só pode ser baixado quando não há alterações pendentes.
    - O navegador avisa antes de fechar/recarregar com mudanças não salvas.
+   - Alterações de andares fazem parte do lote do Mapa da Rede.
    ========================================================= */
 
 (() => {
@@ -51,9 +52,12 @@
 
     if (
       text.includes('adicionado ao mapa da rede') ||
+      text.includes('adicionado ao mapa do andar') ||
+      text.startsWith('Andar "') ||
       text.startsWith('Conexão criada entre') ||
       (text.startsWith('Equipamento "') && text.includes('alterado:')) ||
-      (text.startsWith('Equipamento "') && text.includes('foi removido da rede'))
+      (text.startsWith('Equipamento "') && text.includes('foi removido da rede')) ||
+      (text.startsWith('Equipamento "') && text.includes('foi movido do andar'))
     ) {
       return 'map';
     }
