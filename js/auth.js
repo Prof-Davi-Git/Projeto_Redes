@@ -289,20 +289,15 @@
     const salvarEmpresa = alvo.closest('#btnSalvarEmpresa');
     if (salvarEmpresa) return { element: salvarEmpresa, action: 'salvar os dados da empresa' };
 
-    const adicionarDepartamento = alvo.closest('#btnAdicionarDepartamento');
-    if (adicionarDepartamento) return { element: adicionarDepartamento, action: 'criar um departamento' };
+    const salvarDepartamentos = alvo.closest('#btnSalvarDepartamentos');
+    if (salvarDepartamentos) {
+      return { element: salvarDepartamentos, action: 'salvar as alterações dos departamentos' };
+    }
 
-    const excluirDepartamento = alvo.closest('#listaDepartamentos .btn-danger');
-    if (excluirDepartamento) return { element: excluirDepartamento, action: 'excluir um departamento' };
-
-    const adicionarEquipamento = alvo.closest('#btnAdicionarEquipamento');
-    if (adicionarEquipamento) return { element: adicionarEquipamento, action: 'adicionar um equipamento' };
-
-    const salvarEquipamento = alvo.closest('#btnSalvarEquipamento');
-    if (salvarEquipamento) return { element: salvarEquipamento, action: 'salvar as alterações do equipamento' };
-
-    const excluirEquipamento = alvo.closest('#btnExcluirEquipamento');
-    if (excluirEquipamento) return { element: excluirEquipamento, action: 'excluir um equipamento' };
+    const salvarMapa = alvo.closest('#btnSalvarMapa');
+    if (salvarMapa) {
+      return { element: salvarMapa, action: 'salvar as alterações do Mapa da Rede' };
+    }
 
     const salvarLGPD = alvo.closest('#btnSalvarCadastroLGPD');
     if (salvarLGPD) {
@@ -316,18 +311,6 @@
 
     const excluirLGPD = alvo.closest('.lgpd-excluir');
     if (excluirLGPD) return { element: excluirLGPD, action: 'excluir um cadastro da área LGPD' };
-
-    const equipamento = alvo.closest('.equipment');
-    if (
-      equipamento &&
-      typeof connectMode !== 'undefined' &&
-      typeof firstConnect !== 'undefined' &&
-      connectMode &&
-      firstConnect &&
-      equipamento.dataset.id !== firstConnect
-    ) {
-      return { element: equipamento, action: 'criar uma conexão entre equipamentos' };
-    }
 
     return null;
   }
