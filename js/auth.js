@@ -2,7 +2,8 @@
    AUTENTICAÇÃO DE ALTERAÇÕES - Projeto de Redes
 
    Este módulo identifica qual aluno concluiu cada alteração do projeto.
-   O projeto é estático: os RAs não ficam armazenados em texto puro.
+   O projeto é estático: as senhas não ficam armazenadas em texto puro.
+   Regra atual: 6 últimos dígitos do RA + dígito.
    A validação usa PBKDF2-SHA256 com salt individual.
    ========================================================= */
 
@@ -15,6 +16,22 @@
   let currentStudent = null;
   let replayingProtectedClick = false;
   let resolverAutenticacao = null;
+
+  const ICON_EYE = `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path>
+      <circle cx="12" cy="12" r="2.8"></circle>
+    </svg>
+  `;
+
+  const ICON_EYE_OFF = `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M3 3l18 18"></path>
+      <path d="M10.6 6.2A9.8 9.8 0 0 1 12 6c6 0 9.5 6 9.5 6a15.5 15.5 0 0 1-3 3.7"></path>
+      <path d="M6.2 6.3C3.8 8.1 2.5 12 2.5 12s3.5 6 9.5 6a9.5 9.5 0 0 0 3-.5"></path>
+      <path d="M10 10a2.8 2.8 0 0 0 4 4"></path>
+    </svg>
+  `;
 
   function esc(valor) {
     if (typeof escapeHtml === 'function') return escapeHtml(valor);
@@ -66,6 +83,16 @@
     return bytesParaBase64(new Uint8Array(bits));
   }
 
+  function atualizarIconeSenha(mostrar) {
+    if (!modal) return;
+    const botao = modal.querySelector('#authToggleSenha');
+    if (!botao) return;
+
+    botao.innerHTML = mostrar ? ICON_EYE_OFF : ICON_EYE;
+    botao.title = mostrar ? 'Ocultar senha' : 'Mostrar senha';
+    botao.setAttribute('aria-label', mostrar ? 'Ocultar senha' : 'Mostrar senha');
+  }
+
   function criarModal() {
     if (document.querySelector('#authAlteracaoModal')) {
       modal = document.querySelector('#authAlteracaoModal');
@@ -105,14 +132,14 @@
               type="password"
               autocomplete="off"
               inputmode="text"
-              placeholder="Digite seu RA + dígito"
+              placeholder="Digite os 6 últimos dígitos do RA + dígito"
             />
-            <button id="authToggleSenha" class="auth-eye" type="button" title="Mostrar ou ocultar senha" aria-label="Mostrar ou ocultar senha">👁️</button>
+            <button id="authToggleSenha" class="auth-eye" type="button" title="Mostrar senha" aria-label="Mostrar senha"></button>
           </div>
         </label>
 
         <div class="auth-hint">
-          Sua senha é formada pelo <strong>RA completo + dígito</strong>, sem espaço.
+          Sua senha é formada pelos <strong>6 últimos dígitos do RA + dígito</strong>, sem espaço.
         </div>
 
         <div id="authErro" class="auth-error hidden" role="alert"></div>
@@ -125,12 +152,13 @@
     `;
 
     document.body.appendChild(modal);
+    atualizarIconeSenha(false);
 
     modal.querySelector('#authToggleSenha').addEventListener('click', () => {
       const senha = modal.querySelector('#authSenha');
       const mostrar = senha.type === 'password';
       senha.type = mostrar ? 'text' : 'password';
-      modal.querySelector('#authToggleSenha').textContent = mostrar ? '🙈' : '👁️';
+      atualizarIconeSenha(mostrar);
       senha.focus();
     });
 
@@ -176,7 +204,7 @@
     select.value = '';
     senha.value = '';
     senha.type = 'password';
-    modal.querySelector('#authToggleSenha').textContent = '👁️';
+    atualizarIconeSenha(false);
     erro.textContent = '';
     erro.classList.add('hidden');
 
@@ -229,7 +257,7 @@
 
     const senhaDigitada = senha.value.trim().toUpperCase();
     if (!senhaDigitada) {
-      erro.textContent = 'Digite sua senha. Lembre-se: RA completo + dígito.';
+      erro.textContent = 'Digite sua senha. Lembre-se: 6 últimos dígitos do RA + dígito.';
       erro.classList.remove('hidden');
       senha.focus();
       return;
@@ -240,7 +268,7 @@
       const hash = await calcularHashSenha(senhaDigitada, aluno);
 
       if (hash !== aluno.hash) {
-        erro.textContent = 'Senha incorreta. Confira o RA completo + dígito e tente novamente.';
+        erro.textContent = 'Senha incorreta. Confira os 6 últimos dígitos do RA + dígito e tente novamente.';
         erro.classList.remove('hidden');
         senha.value = '';
         senha.focus();
@@ -366,7 +394,7 @@
 
           const autor = String(item.author || '').trim();
           const autorHtml = autor
-            ? ` <span class="history-author">• 👤 ${esc(autor)}</span>`
+            ? ` <span class="history-author">• ${esc(autor)}</span>`
             : '';
 
           element.innerHTML = `
