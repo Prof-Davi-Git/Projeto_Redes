@@ -2,42 +2,9 @@
    LGPD E DADOS - Projeto de Redes
    ========================================================= */
 
-.lgpd-intro {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-  margin-bottom: 18px;
-}
-
-.lgpd-concept {
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 16px;
-  box-shadow: var(--shadow);
-}
-
-.lgpd-concept span {
-  display: block;
-  font-size: 28px;
-  margin-bottom: 8px;
-}
-
-.lgpd-concept strong {
-  display: block;
-  margin-bottom: 5px;
-}
-
-.lgpd-concept p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.5;
-}
-
 .lgpd-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr);
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, .65fr);
   gap: 18px;
   align-items: start;
 }
@@ -55,11 +22,31 @@
   margin: 0 0 6px;
 }
 
-.lgpd-card > p {
+.lgpd-card > p,
+.lgpd-card-title-row p {
   margin: 0 0 16px;
   color: var(--muted);
   line-height: 1.5;
   font-size: 13px;
+}
+
+.lgpd-card-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.lgpd-edit-badge {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .5px;
 }
 
 .lgpd-fields {
@@ -78,6 +65,54 @@
 
 .lgpd-fields .full {
   grid-column: 1 / -1;
+}
+
+.lgpd-analysis-fields {
+  margin-top: 16px;
+}
+
+.lgpd-add-data {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.lgpd-added-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.lgpd-added-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 9px 8px 11px;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1e3a8a;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.lgpd-remove-data {
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 50%;
+  background: #dbeafe;
+  color: #1e40af;
+  cursor: pointer;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.lgpd-remove-data:hover {
+  background: #fecaca;
+  color: #991b1b;
 }
 
 .lgpd-data-grid {
@@ -117,6 +152,7 @@
 }
 
 .lgpd-sensitive-empty {
+  width: 100%;
   padding: 14px;
   border: 1px dashed #cbd5e1;
   border-radius: 11px;
@@ -132,7 +168,8 @@
 }
 
 .lgpd-radio {
-  display: inline-flex;
+  display: inline-flex !important;
+  flex-direction: row !important;
   align-items: center;
   gap: 7px;
   padding: 9px 12px;
@@ -140,8 +177,8 @@
   border-radius: 10px;
   background: #f8fafc;
   cursor: pointer;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 13px !important;
+  font-weight: 700 !important;
 }
 
 .lgpd-radio input {
@@ -152,7 +189,7 @@
 .lgpd-save-area {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
   margin-top: 16px;
 }
@@ -177,6 +214,10 @@
 }
 
 .lgpd-summary-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
   padding: 16px;
   background: #0f172a;
   color: #fff;
@@ -196,50 +237,149 @@
   font-size: 16px;
 }
 
+.lgpd-new-btn {
+  flex: 0 0 auto;
+  border: 1px solid #475569;
+  border-radius: 9px;
+  background: #1e293b;
+  color: #fff;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.lgpd-new-btn:hover {
+  background: #334155;
+}
+
 .lgpd-summary-body {
-  padding: 16px;
+  padding: 12px;
+  max-height: calc(100vh - 210px);
+  overflow: auto;
 }
 
-.lgpd-summary-item {
-  padding: 11px 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.lgpd-summary-item:last-child {
-  border-bottom: 0;
-}
-
-.lgpd-summary-item small {
-  display: block;
-  margin-bottom: 4px;
+.lgpd-empty-records {
+  padding: 14px 8px;
   color: var(--muted);
-  font-size: 10px;
-  text-transform: uppercase;
-  font-weight: 900;
-  letter-spacing: .7px;
 }
 
-.lgpd-summary-item strong,
-.lgpd-summary-item p {
-  margin: 0;
+.lgpd-empty-records strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #334155;
   font-size: 13px;
+}
+
+.lgpd-empty-records p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.lgpd-record {
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  margin-bottom: 10px;
+}
+
+.lgpd-record:last-child {
+  margin-bottom: 0;
+}
+
+.lgpd-record-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.lgpd-record-top small,
+.lgpd-record-field small {
+  display: block;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .65px;
+  text-transform: uppercase;
+}
+
+.lgpd-record-top h4 {
+  margin: 3px 0 0;
+  color: #0f172a;
+  font-size: 14px;
+}
+
+.lgpd-record-actions {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.lgpd-mini-btn {
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  background: #f8fafc;
+  color: #334155;
+  padding: 5px 7px;
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.lgpd-mini-btn:hover {
+  background: #e2e8f0;
+}
+
+.lgpd-mini-btn.danger {
+  border-color: #fecaca;
+  background: #fff1f2;
+  color: #b91c1c;
+}
+
+.lgpd-mini-btn.danger:hover {
+  background: #fee2e2;
+}
+
+.lgpd-record-field {
+  padding-top: 9px;
+  margin-top: 9px;
+  border-top: 1px solid #eef2f7;
+}
+
+.lgpd-record-field p {
+  margin: 4px 0 0;
+  color: #334155;
+  font-size: 12px;
   line-height: 1.45;
 }
 
 .lgpd-chip-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
+  margin-top: 6px;
 }
 
 .lgpd-chip {
   display: inline-block;
-  padding: 5px 8px;
+  padding: 5px 7px;
   border-radius: 999px;
   background: #eff6ff;
   color: #1d4ed8;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 800;
+}
+
+.lgpd-empty-text {
+  display: inline-block;
+  margin-top: 5px;
+  color: #94a3b8;
+  font-size: 10px;
 }
 
 .lgpd-mission {
@@ -271,16 +411,29 @@
   .lgpd-summary {
     position: static;
   }
+
+  .lgpd-summary-body {
+    max-height: none;
+  }
 }
 
 @media (max-width: 720px) {
-  .lgpd-intro,
   .lgpd-fields,
-  .lgpd-data-grid {
+  .lgpd-data-grid,
+  .lgpd-add-data {
     grid-template-columns: 1fr;
   }
 
   .lgpd-fields .full {
     grid-column: auto;
+  }
+
+  .lgpd-card-title-row,
+  .lgpd-record-top {
+    flex-direction: column;
+  }
+
+  .lgpd-record-actions {
+    justify-content: flex-start;
   }
 }
