@@ -1,0 +1,242 @@
+/* =========================================================
+   MISSÕES - Projeto de Redes
+   Painel de requisitos e progresso do projeto.
+   ========================================================= */
+
+.missions-dashboard-card {
+  display: grid;
+  gap: 14px;
+}
+
+.missions-dashboard-head,
+.missions-overview-head,
+.mission-card-head,
+.mission-progress-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.missions-dashboard-copy h3,
+.missions-overview-copy h3,
+.mission-card-title h3 {
+  margin: 0;
+}
+
+.missions-dashboard-copy p,
+.missions-overview-copy p,
+.mission-card-title p {
+  margin: 5px 0 0;
+  color: #64748b;
+}
+
+.missions-dashboard-score,
+.missions-overview-score {
+  min-width: 86px;
+  text-align: center;
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+}
+
+.missions-dashboard-score strong,
+.missions-overview-score strong {
+  display: block;
+  font-size: 24px;
+  color: #1d4ed8;
+}
+
+.missions-dashboard-score small,
+.missions-overview-score small {
+  color: #64748b;
+}
+
+.missions-progress-track,
+.mission-progress-track {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #e2e8f0;
+}
+
+.missions-progress-fill,
+.mission-progress-fill {
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: #16a34a;
+  transition: width .25s ease;
+}
+
+.missions-dashboard-meta,
+.missions-overview-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  color: #475569;
+  font-size: 13px;
+}
+
+.missions-dashboard-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.missions-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.missions-legend span {
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.missions-legend .done {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.missions-legend .missing {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.missions-legend .review {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.missions-grid {
+  display: grid;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.mission-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, .05);
+}
+
+.mission-card-badge {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.mission-card-badge.done {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.mission-card-badge.progress {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.mission-progress-row {
+  margin-top: 16px;
+  align-items: flex-end;
+}
+
+.mission-progress-copy strong {
+  display: block;
+  font-size: 18px;
+}
+
+.mission-progress-copy small {
+  color: #64748b;
+}
+
+.mission-requirements {
+  display: grid;
+  gap: 9px;
+  margin-top: 16px;
+}
+
+.mission-requirement {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  border-radius: 12px;
+  padding: 11px 12px;
+  border: 1px solid transparent;
+}
+
+.mission-requirement.done {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.mission-requirement.missing {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.mission-requirement.review {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.mission-status-icon {
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+.mission-requirement strong {
+  display: block;
+  color: #0f172a;
+}
+
+.mission-requirement p {
+  margin: 3px 0 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.mission-note {
+  margin-top: 14px;
+  padding: 11px 12px;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+@media (max-width: 720px) {
+  .missions-dashboard-head,
+  .missions-overview-head,
+  .mission-card-head,
+  .mission-progress-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .missions-dashboard-score,
+  .missions-overview-score {
+    width: 100%;
+  }
+
+  .missions-dashboard-actions {
+    justify-content: stretch;
+  }
+
+  .missions-dashboard-actions .btn {
+    width: 100%;
+  }
+}
