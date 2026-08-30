@@ -4,6 +4,7 @@
    - A autenticação acontece apenas ao salvar a área.
    - O histórico recebe um resumo completo do lote salvo.
    - O JSON só pode ser baixado quando não há alterações pendentes.
+   - O navegador avisa antes de fechar/recarregar com mudanças não salvas.
    ========================================================= */
 
 (() => {
@@ -266,9 +267,20 @@
     return originalSaveProject();
   };
 
+  function protectBeforeUnload(event) {
+    if (!getUnsavedAreas().length) return;
+
+    // Navegadores modernos exibem uma mensagem padrão de confirmação.
+    // O texto personalizado é ignorado por segurança, mas a saída é bloqueada
+    // até o usuário confirmar se realmente deseja fechar/recarregar a página.
+    event.preventDefault();
+    event.returnValue = '';
+  }
+
   function start() {
     injectControls();
     updatePendingUI();
+    window.addEventListener('beforeunload', protectBeforeUnload);
   }
 
   if (document.readyState === 'loading') {
