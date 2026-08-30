@@ -187,11 +187,11 @@
 /* =========================================================
    CARREGAMENTO DA AUTENTICAÇÃO DE ALTERAÇÕES
    Mantido separado do núcleo do mapa para preservar o projeto existente.
-   O parâmetro de versão evita que o GitHub Pages reutilize credenciais antigas
-   armazenadas no cache do navegador.
+   O parâmetro de versão evita que o GitHub Pages reutilize arquivos antigos
+   armazenados no cache do navegador.
    ========================================================= */
 (() => {
-  const AUTH_VERSION = '20260830-credenciais-validadas';
+  const AUTH_VERSION = '20260830-salvamento-em-lote';
 
   function carregarEstilo() {
     if (document.querySelector('link[data-auth-style]')) return;
