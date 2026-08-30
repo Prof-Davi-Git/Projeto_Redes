@@ -187,7 +187,6 @@
       number: 'MISSÃO 02',
       title: 'LGPD e Dados',
       description: 'Revisar o cadastro inicial e organizar diferentes cadastros de acordo com a finalidade de cada um.',
-      note: 'O primeiro cadastro pode ser editado, reduzido ou fragmentado. O importante é terminar com pelo menos 4 cadastros diferentes e coerentes com a empresa.',
       criteria: [
         criterion(
           registrations.length >= 4 ? 'done' : 'missing',
@@ -349,6 +348,9 @@
   function renderMissionCard(mission) {
     const stats = missionStats(mission);
     const finished = stats.done === stats.total;
+    const noteHtml = mission.note
+      ? `<div class="mission-note"><strong>Importante:</strong> ${esc(mission.note)}</div>`
+      : '';
 
     return `
       <article class="mission-card" data-mission-id="${esc(mission.id)}">
@@ -379,7 +381,7 @@
           ${mission.criteria.map(renderRequirement).join('')}
         </div>
 
-        <div class="mission-note"><strong>Importante:</strong> ${esc(mission.note)}</div>
+        ${noteHtml}
       </article>
     `;
   }
