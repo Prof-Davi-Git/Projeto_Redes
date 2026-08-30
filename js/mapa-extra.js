@@ -183,3 +183,43 @@
     }
   });
 })();
+
+/* =========================================================
+   CARREGAMENTO DA AUTENTICAÇÃO DE ALTERAÇÕES
+   Mantido separado do núcleo do mapa para preservar o projeto existente.
+   ========================================================= */
+(() => {
+  function carregarEstilo() {
+    if (document.querySelector('link[data-auth-style]')) return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'css/auth.css';
+    link.dataset.authStyle = '1';
+    document.head.appendChild(link);
+  }
+
+  function carregarAuth() {
+    if (document.querySelector('script[data-auth-module]')) return;
+    const script = document.createElement('script');
+    script.src = 'js/auth.js';
+    script.dataset.authModule = '1';
+    document.head.appendChild(script);
+  }
+
+  function carregarAlunos() {
+    if (window.ALUNOS_AUTENTICACAO) {
+      carregarAuth();
+      return;
+    }
+
+    if (document.querySelector('script[data-alunos-auth]')) return;
+    const script = document.createElement('script');
+    script.src = 'js/alunos.js';
+    script.dataset.alunosAuth = '1';
+    script.addEventListener('load', carregarAuth, { once: true });
+    document.head.appendChild(script);
+  }
+
+  carregarEstilo();
+  carregarAlunos();
+})();
