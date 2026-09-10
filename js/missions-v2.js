@@ -465,9 +465,12 @@
       });
     }
 
-    navButton.addEventListener('click', () => {
-      setTimeout(renderMissions, 0);
-    });
+    if (navButton.dataset.missionsRefreshBound !== '1') {
+      navButton.dataset.missionsRefreshBound = '1';
+      navButton.addEventListener('click', () => {
+        setTimeout(renderMissions, 0);
+      });
+    }
   }
 
   function openMissions() {
