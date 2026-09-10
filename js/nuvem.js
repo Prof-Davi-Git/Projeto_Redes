@@ -146,6 +146,18 @@
     if (!project.company || typeof project.company !== 'object') project.company = {};
 
     const current = project.company.cloudContinuity;
+    const ready = !!(
+      current &&
+      typeof current === 'object' &&
+      current.version === 1 &&
+      Array.isArray(current.resources) &&
+      current.backup &&
+      typeof current.backup === 'object' &&
+      Array.isArray(current.incidents)
+    );
+
+    if (ready) return current;
+
     const normalized = {
       version: 1,
       resources: Array.isArray(current?.resources)
@@ -758,6 +770,7 @@
   function saveBackupPlan() {
     const cloud = ensureCloud();
     const resourceId = document.querySelector('#cloudBackupResource')?.value || '';
+    const resource = cloud.resources.find(item => item.id === resourceId) || null;
     const dataAmount = numberValue(document.querySelector('#cloudDataAmount')?.value);
     const dataUnit = document.querySelector('#cloudDataUnit')?.value === 'TB' ? 'TB' : 'GB';
     const fullDay = document.querySelector('#cloudFullDay')?.value || '';
@@ -770,7 +783,7 @@
     const bandwidthMbps = numberValue(document.querySelector('#cloudBandwidth')?.value);
     const restoreEstimateMinutes = numberValue(document.querySelector('#cloudRestoreEstimate')?.value);
 
-    if (!resourceById(resourceId)) return alert('Escolham qual recurso da nuvem será protegido pelo plano.');
+    if (!resource) return alert('Escolham qual recurso da nuvem será protegido pelo plano.');
     if (dataAmount <= 0) return alert('Informem a quantidade de dados que será protegida.');
     if (!fullDay) return alert('Escolham o dia do backup Full.');
     if (!incrementalDays.length) return alert('Escolham pelo menos um dia de backup Incremental.');
@@ -805,9 +818,8 @@
 
     backupDirty = false;
 
-    const resource = resourceById(resourceId);
     if (typeof addHistory === 'function') {
-      addHistory('Continuidade', `Plano de backup e recuperação do recurso "${resource?.name || 'Nuvem'}" foi salvo.`);
+      addHistory('Continuidade', `Plano de backup e recuperação do recurso "${resource.name}" foi salvo.`);
     }
 
     renderBackupSummary();
@@ -819,8 +831,9 @@
     const container = document.querySelector('#cloudBackupSummary');
     if (!container) return;
 
-    const backup = ensureCloud().backup;
-    const resource = resourceById(backup.resourceId);
+    const cloud = ensureCloud();
+    const backup = cloud.backup;
+    const resource = cloud.resources.find(item => item.id === backup.resourceId) || null;
 
     if (!resource || !backup.fullDay) {
       container.innerHTML = '<strong>Plano ainda não salvo.</strong> Preencham as decisões acima, verifiquem os dois cálculos e salvem o plano.';
@@ -839,13 +852,13 @@
   function generateIncident() {
     const cloud = ensureCloud();
     const backup = cloud.backup;
-    const resource = resourceById(backup.resourceId);
+    const resource = cloud.resources.find(item => item.id === backup.resourceId) || null;
 
     if (!resource || !backup.fullDay || !backup.incrementalDays.length) {
       return alert('Salvem primeiro um plano de backup completo para gerar o incidente.');
     }
 
-    if (incidentDraft && hasCloudDraft()) {
+    if (incidentDraft) {
       const replace = confirm('Já existe um incidente em andamento. Deseja gerar outro cenário e substituir o rascunho atual?');
       if (!replace) return;
     }
