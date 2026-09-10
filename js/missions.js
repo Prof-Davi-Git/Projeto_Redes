@@ -1,9 +1,9 @@
 /* =========================================================
    MISSÕES - Projeto de Redes
    Acompanha requisitos objetivos sem transformar o site em gabarito.
-   Verde   = o sistema conseguiu confirmar.
+   Verde    = o sistema conseguiu confirmar.
    Vermelho = ainda falta um requisito objetivo.
-   Amarelo = depende de análise do grupo/professor.
+   Amarelo  = depende de análise do grupo/professor.
    ========================================================= */
 
 (() => {
@@ -14,6 +14,8 @@
     missing: { icon: '🔴', label: 'Faltando' },
     review: { icon: '🟡', label: 'Precisa de análise' }
   };
+
+  let projectLoadWatch = null;
 
   function esc(value) {
     if (typeof escapeHtml === 'function') return escapeHtml(value);
@@ -40,22 +42,31 @@
 
   function departmentMatches(name, aliases) {
     const normalized = normalize(name);
-    return aliases.some(alias => normalized === alias || normalized.includes(alias));
+    return aliases.some(alias => {
+      const normalizedAlias = normalize(alias);
+      return normalized === normalizedAlias || normalized.includes(normalizedAlias);
+    });
   }
 
   function requiredDepartments() {
     const departments = Array.isArray(project.departments) ? project.departments : [];
 
     return {
-      administracao: departments.find(dep => departmentMatches(dep.name, ['administracao', 'administrativo', 'administrativa'])) || null,
-      financeiro: departments.find(dep => departmentMatches(dep.name, ['financeiro', 'financeira'])) || null,
-      atendimento: departments.find(dep => departmentMatches(dep.name, ['atendimento'])) || null
+      administracao: departments.find(dep => departmentMatches(dep.name, [
+        'administracao', 'administrativo', 'administrativa', 'adm'
+      ])) || null,
+      financeiro: departments.find(dep => departmentMatches(dep.name, [
+        'financeiro', 'financeira', 'financas', 'fin'
+      ])) || null,
+      atendimento: departments.find(dep => departmentMatches(dep.name, [
+        'atendimento', 'atend'
+      ])) || null
     };
   }
 
   function connectionBetweenTypes(typeA, typeB) {
-    const equipment = new Map((project.equipment || []).map(item => [item.id, item]));
-    return (project.connections || []).some(connection => {
+    const equipment = new Map((Array.isArray(project.equipment) ? project.equipment : []).map(item => [item.id, item]));
+    return (Array.isArray(project.connections) ? project.connections : []).some(connection => {
       const from = equipment.get(connection.from);
       const to = equipment.get(connection.to);
       if (!from || !to) return false;
@@ -93,10 +104,16 @@
     );
 
     const allRequiredDepartmentsExist = requiredList.length === 3;
-    const distributionStarted = counts.administracao > 0 && counts.financeiro > 0 && counts.atendimento > 0;
-    const hierarchyOk = distributionStarted &&
-      counts.atendimento > counts.administracao &&
-      counts.administracao > counts.financeiro;
+    const eachDepartmentHasComputer =
+      counts.administracao > 0 && counts.financeiro > 0 && counts.atendimento > 0;
+
+    // A Missão 01 nasceu com 6 computadores e a distribuição 3 / 2 / 1.
+    // Depois que a empresa cresce, novos equipamentos não devem fazer uma missão
+    // antiga voltar para vermelho. Por isso validamos o mínimo daquela etapa.
+    const baseDistributionOk =
+      counts.atendimento >= 3 &&
+      counts.administracao >= 2 &&
+      counts.financeiro >= 1;
 
     const pcSwitch = connectionBetweenTypes('computador', 'switch');
     const switchRouter = connectionBetweenTypes('switch', 'roteador');
@@ -121,16 +138,16 @@
           `${computers.length} computador(es) cadastrado(s) no projeto.`
         ),
         criterion(
-          computersInRequiredDepartments.length >= 6 && distributionStarted ? 'done' : 'missing',
+          computersInRequiredDepartments.length >= 6 && eachDepartmentHasComputer ? 'done' : 'missing',
           'Computadores distribuídos nos 3 departamentos',
           `Administração: ${counts.administracao} • Financeiro: ${counts.financeiro} • Atendimento: ${counts.atendimento}.`
         ),
         criterion(
-          hierarchyOk ? 'done' : 'missing',
+          baseDistributionOk ? 'done' : 'missing',
           'Distribuição solicitada entre os setores',
-          hierarchyOk
-            ? 'Atendimento possui mais computadores, Administração fica no meio e Financeiro possui menos.'
-            : 'A distribuição ainda precisa seguir: Atendimento > Administração > Financeiro, mantendo pelo menos 1 PC em cada setor.'
+          baseDistributionOk
+            ? 'A base da Missão 01 está atendida: pelo menos 3 PCs no Atendimento, 2 na Administração e 1 no Financeiro.'
+            : 'Para concluir a base desta missão: Atendimento precisa ter pelo menos 3 PCs, Administração 2 e Financeiro 1.'
         ),
         criterion(
           switches.length >= 1 ? 'done' : 'missing',
@@ -145,7 +162,7 @@
         criterion(
           configuredComputers.length >= 6 ? 'done' : 'missing',
           'Configuração básica dos computadores',
-          `${configuredComputers.length} de 6 computadores possuem nome, departamento exigido e status Ativo.`
+          `${configuredComputers.length} computador(es) dos setores da Missão 01 possuem nome, departamento e status Ativo. O mínimo exigido é 6.`
         ),
         criterion(
           pcSwitch && switchRouter ? 'done' : 'missing',
@@ -157,7 +174,7 @@
         criterion(
           'review',
           'Organização visual e coerência da topologia',
-          'O sistema não decide se o desenho está bem organizado. O grupo e o professor devem analisar o mapa.'
+          'Revisem este item com o professor para verificar se a organização do mapa está coerente e correta.'
         )
       ]
     };
@@ -165,14 +182,35 @@
 
   function lgpdRegistrations() {
     const lgpd = project.company?.lgpd;
-    return Array.isArray(lgpd?.cadastros) ? lgpd.cadastros : [];
+    if (!lgpd || typeof lgpd !== 'object') return [];
+
+    if (Array.isArray(lgpd.cadastros)) return lgpd.cadastros;
+
+    // Compatibilidade de leitura com JSONs antigos da primeira versão da LGPD.
+    const hasLegacyContent = !!(
+      lgpd.cadastro || lgpd.nome || lgpd.finalidade || lgpd.titular ||
+      (Array.isArray(lgpd.dados) && lgpd.dados.length) ||
+      lgpd.necessidade || lgpd.justificativa
+    );
+
+    if (!hasLegacyContent) return [];
+
+    return [{
+      nome: lgpd.nome || lgpd.cadastro || 'Cadastro',
+      finalidade: lgpd.finalidade || '',
+      titular: lgpd.titular || '',
+      dados: Array.isArray(lgpd.dados) ? lgpd.dados : [],
+      sensiveis: Array.isArray(lgpd.sensiveis) ? lgpd.sensiveis : [],
+      necessidade: lgpd.necessidade || '',
+      justificativa: lgpd.justificativa || ''
+    }];
   }
 
   function mission02() {
     const registrations = lgpdRegistrations();
     const uniqueNames = new Set(
       registrations
-        .map(item => normalize(item?.nome))
+        .map(item => normalize(item?.nome || item?.cadastro))
         .filter(Boolean)
     );
 
@@ -231,7 +269,7 @@
         criterion(
           'review',
           'Classificação de dados sensíveis',
-          'A escolha do que exige maior cuidado precisa ser analisada com base no conteúdo estudado e revisada pelo professor.'
+          'Revisem com o professor se a classificação dos dados sensíveis está de acordo com o conteúdo estudado.'
         )
       ]
     };
@@ -386,6 +424,14 @@
     `;
   }
 
+  function verificationTime() {
+    try {
+      return new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    } catch {
+      return '';
+    }
+  }
+
   function renderMissions() {
     injectStructure();
 
@@ -400,11 +446,14 @@
         <div class="missions-overview-head">
           <div class="missions-overview-copy">
             <h3>Progresso geral</h3>
-            <p>O painel verifica somente requisitos que o sistema consegue confirmar. Itens de qualidade e raciocínio ficam para análise.</p>
+            <p>O painel verifica os requisitos do projeto atual. Itens que dependem de qualidade e raciocínio continuam para análise com o professor.</p>
           </div>
-          <div class="missions-overview-score">
-            <strong>${percent}%</strong>
-            <small>concluído</small>
+          <div class="missions-overview-actions">
+            <div class="missions-overview-score">
+              <strong>${percent}%</strong>
+              <small>concluído</small>
+            </div>
+            <button id="btnAtualizarMissoes" class="btn btn-secondary" type="button">↻ Atualizar progresso</button>
           </div>
         </div>
         <div class="missions-progress-track" aria-hidden="true">
@@ -415,12 +464,22 @@
           <span>🔴 ${missing} faltando</span>
           <span>🟡 ${overall.review} para análise</span>
         </div>
+        <div class="missions-refresh-info">
+          <span>Última verificação: <strong>${esc(verificationTime())}</strong></span>
+          <span>Se acabou de abrir um arquivo JSON e algo não mudou, use <strong>Atualizar progresso</strong>.</span>
+        </div>
         <div class="missions-legend" aria-label="Legenda">
           <span class="done">🟢 Concluído</span>
           <span class="missing">🔴 Faltando</span>
           <span class="review">🟡 Precisa de análise</span>
         </div>
       `;
+
+      overview.querySelector('#btnAtualizarMissoes')?.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        renderMissions();
+      });
     }
 
     const grid = document.querySelector('#missionsGrid');
@@ -441,6 +500,29 @@
     }
   }
 
+  function watchProjectFileOpen() {
+    const input = document.querySelector('#inputAbrirProjeto');
+    if (!input || input.dataset.missionsWatch === '1') return;
+
+    input.dataset.missionsWatch = '1';
+    input.addEventListener('change', () => {
+      const previousProject = project;
+      let checks = 0;
+
+      if (projectLoadWatch) clearInterval(projectLoadWatch);
+
+      projectLoadWatch = setInterval(() => {
+        checks += 1;
+
+        if (project !== previousProject || checks >= 30) {
+          clearInterval(projectLoadWatch);
+          projectLoadWatch = null;
+          setTimeout(renderMissions, 0);
+        }
+      }, 100);
+    });
+  }
+
   injectStructure();
 
   if (typeof renderAll === 'function') {
@@ -452,15 +534,37 @@
     };
   }
 
-  // A LGPD possui renderização própria; este listener mantém o painel atualizado
-  // também depois de salvar, atualizar ou excluir um cadastro.
-  document.addEventListener('click', () => {
-    setTimeout(renderMissions, 0);
+  // Atualiza também quando a área de LGPD conclui uma ação própria.
+  document.addEventListener('click', event => {
+    const target = event.target instanceof Element ? event.target : null;
+    if (!target) return;
+
+    if (
+      target.closest('#btnSalvarCadastroLGPD') ||
+      target.closest('.lgpd-excluir') ||
+      target.closest('[data-target="missoes"]')
+    ) {
+      setTimeout(renderMissions, 50);
+    }
   });
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', renderMissions);
-  } else {
+  window.addEventListener('focus', () => {
+    if (document.querySelector('#missoes')?.classList.contains('active')) {
+      renderMissions();
+    }
+  });
+
+  // Permite que outros módulos do projeto solicitem uma nova verificação no futuro.
+  window.atualizarMissoes = renderMissions;
+
+  function start() {
+    watchProjectFileOpen();
     renderMissions();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start);
+  } else {
+    start();
   }
 })();
