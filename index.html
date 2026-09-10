@@ -218,6 +218,14 @@
   <script src="js/mapa-extra-v2.js?v=20260910-nuvem-continuidade"></script>
   <script src="js/lgpd.js?v=20260910-nuvem-continuidade"></script>
   <script src="js/nuvem.js?v=20260910-nuvem-continuidade-v2"></script>
+  <script>
+    (() => {
+      document.querySelectorAll('#nuvem .cloud-section-head small').forEach(label => {
+        if (label.textContent.includes('SEMANA 19')) label.textContent = 'IAM E CRIPTOGRAFIA';
+        if (label.textContent.includes('SEMANA 20')) label.textContent = 'BACKUP E RECUPERAÇÃO';
+      });
+    })();
+  </script>
   <script src="js/missions-v2.js?v=20260910-missao03-v2"></script>
 </body>
 </html>
