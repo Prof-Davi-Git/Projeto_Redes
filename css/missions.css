@@ -57,6 +57,19 @@
   max-width: 760px;
 }
 
+.missions-overview-actions {
+  display: grid;
+  justify-items: stretch;
+  gap: 10px;
+  flex: 0 0 auto;
+  min-width: 170px;
+}
+
+.missions-overview-actions .btn {
+  width: 100%;
+  white-space: nowrap;
+}
+
 .missions-dashboard-score,
 .missions-overview-score {
   min-width: 92px;
@@ -108,6 +121,23 @@
   color: #475569;
   font-size: 13px;
   line-height: 1.5;
+}
+
+.missions-refresh-info {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 18px;
+  padding: 11px 13px;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.missions-refresh-info strong {
+  color: #334155;
 }
 
 .missions-dashboard-actions {
@@ -296,7 +326,8 @@
   }
 
   .missions-dashboard-score,
-  .missions-overview-score {
+  .missions-overview-score,
+  .missions-overview-actions {
     width: 100%;
   }
 
@@ -306,6 +337,10 @@
 
   .missions-dashboard-actions .btn {
     width: 100%;
+  }
+
+  .missions-refresh-info {
+    flex-direction: column;
   }
 
   .missions-overview,
