@@ -118,3 +118,45 @@
       sdn.virtualNetworks.push({ id: uid('vnet'), name, purpose, departmentIds: ids, updatedAt: new Date().toISOString() });
       if (typeof addHistory === 'function') addHistory('SDN', 'Rede virtual "' + name + '" criada.');
     }
+
+    resetVnet(); renderVnets(); if (typeof renderAll === 'function') renderAll(); window.atualizarMissoes?.();
+  }
+
+  function editVnet(idValue) {
+    const x = ensureSdn().virtualNetworks.find(v => v.id === idValue); if (!x) return; editingVnet = x.id; vnetDirty = false; E('#sdnVnetName').value = x.name || ''; E('#sdnVnetPurpose').value = x.purpose || ''; E('#sdnVnetTitle').textContent = 'Editar rede virtual'; E('#btnSalvarVnetSdn').textContent = '💾 Atualizar rede virtual'; E('#btnCancelarVnetSdn').classList.remove('hidden'); renderDepartments(x.departmentIds || []);
+  }
+
+  function deleteVnet(idValue) {
+    const sdn = ensureSdn(), x = sdn.virtualNetworks.find(v => v.id === idValue); if (!x || !confirm('Excluir a rede virtual "' + x.name + '"?')) return; sdn.virtualNetworks = sdn.virtualNetworks.filter(v => v.id !== idValue); if (editingVnet === idValue) resetVnet(); if (typeof addHistory === 'function') addHistory('SDN', 'Rede virtual "' + x.name + '" removida.'); renderVnets(); if (typeof renderAll === 'function') renderAll(); window.atualizarMissoes?.();
+  }
+
+  function renderVnets() {
+    const box = E('#sdnVnetList'); if (!box) return; const list = ensureSdn().virtualNetworks;
+    if (!list.length) { box.innerHTML = '<div class="sdn-empty">Nenhuma rede virtual criada.</div>'; return; }
+    box.innerHTML = list.map(x => '<article class="sdn-saved-item"><div class="sdn-saved-head"><strong>' + esc(x.name || 'Sem nome') + '</strong><span>🌐 Virtual</span></div><p>' + esc(x.purpose || '') + '</p><small><strong>Departamentos:</strong> ' + esc((x.departmentIds || []).map(i => department(i)?.name).filter(Boolean).join(', ') || 'Nenhum atual') + '</small><div class="sdn-mini-actions"><button class="sdn-mini-btn sdn-vnet-edit" data-id="' + esc(x.id) + '">Editar</button><button class="sdn-mini-btn danger sdn-vnet-delete" data-id="' + esc(x.id) + '" data-auth-action="excluir uma rede virtual SDN">Excluir</button></div></article>').join('');
+    box.querySelectorAll('.sdn-vnet-edit').forEach(b => b.onclick = () => editVnet(b.dataset.id)); box.querySelectorAll('.sdn-vnet-delete').forEach(b => b.onclick = () => deleteVnet(b.dataset.id));
+  }
+
+  function resetRule(focus) {
+    editingRule = null; ruleDirty = false; renderHostSelects(); E('#sdnRuleSource').value=''; E('#sdnRuleDestination').value=''; E('#sdnRuleAction').value=''; E('#sdnRuleReason').value=''; E('#sdnRuleTitle').textContent='Criar regra SDN'; E('#btnSalvarRegraSdn').textContent='💾 Salvar regra'; E('#btnCancelarRegraSdn').classList.add('hidden'); if (focus) E('#sdnRuleSource').focus();
+  }
+
+  function saveRule() {
+    const sdn=ensureSdn(), sourceId=E('#sdnRuleSource').value, destinationId=E('#sdnRuleDestination').value, action=E('#sdnRuleAction').value, reason=E('#sdnRuleReason').value.trim(), valid=new Set(hosts().map(x=>x.id));
+    if (!valid.has(sourceId) || !valid.has(destinationId) || sourceId===destinationId) return alert('Escolham dois computadores diferentes.');
+    if (!['permitir','bloquear'].includes(action) || !reason) return alert('Escolham a ação e justifiquem a regra.');
+    if (sdn.rules.some(x => x.id!==editingRule && x.sourceId===sourceId && x.destinationId===destinationId)) return alert('Já existe uma regra para essa origem e destino.');
+    if (editingRule) { const x=sdn.rules.find(r=>r.id===editingRule); if (!x) return resetRule(); Object.assign(x,{sourceId,destinationId,action,reason,updatedAt:new Date().toISOString()}); if (typeof addHistory==='function') addHistory('SDN','Regra de comunicação SDN atualizada.'); }
+    else { sdn.rules.push({id:uid('sdnrule'),sourceId,destinationId,action,reason,updatedAt:new Date().toISOString()}); if (typeof addHistory==='function') addHistory('SDN','Nova regra de comunicação SDN criada.'); }
+    resetRule(); renderRules(); if (typeof renderAll==='function') renderAll(); window.atualizarMissoes?.();
+  }
+
+  function editRule(idValue) { const x=ensureSdn().rules.find(r=>r.id===idValue); if(!x)return; editingRule=x.id; ruleDirty=false; renderHostSelects(); E('#sdnRuleSource').value=x.sourceId; E('#sdnRuleDestination').value=x.destinationId; E('#sdnRuleAction').value=x.action; E('#sdnRuleReason').value=x.reason||''; E('#sdnRuleTitle').textContent='Editar regra SDN'; E('#btnSalvarRegraSdn').textContent='💾 Atualizar regra'; E('#btnCancelarRegraSdn').classList.remove('hidden'); }
+  function deleteRule(idValue) { const sdn=ensureSdn(); if(!sdn.rules.some(r=>r.id===idValue)||!confirm('Excluir esta regra SDN?'))return; sdn.rules=sdn.rules.filter(r=>r.id!==idValue); if(editingRule===idValue)resetRule(); if(typeof addHistory==='function')addHistory('SDN','Regra de comunicação SDN removida.'); renderRules(); if(typeof renderAll==='function')renderAll(); window.atualizarMissoes?.(); }
+
+  function renderRules() {
+    const box=E('#sdnRuleList'); if(!box)return; const list=ensureSdn().rules;
+    if(!list.length){box.innerHTML='<div class="sdn-empty">Nenhuma regra criada.</div>';return;}
+    box.innerHTML=list.map(r=>{const a=equipment(r.sourceId),b=equipment(r.destinationId),allow=r.action==='permitir';return '<article class="sdn-saved-item"><div class="sdn-saved-head"><strong>'+esc(a?.name||'Origem removida')+' → '+esc(b?.name||'Destino removido')+'</strong><span class="sdn-rule-action '+(allow?'allow':'block')+'">'+(allow?'✓ Permitir':'✕ Bloquear')+'</span></div><p>'+esc(r.reason||'')+'</p><div class="sdn-mini-actions"><button class="sdn-mini-btn sdn-rule-edit" data-id="'+esc(r.id)+'">Editar</button><button class="sdn-mini-btn danger sdn-rule-delete" data-id="'+esc(r.id)+'" data-auth-action="excluir uma regra SDN">Excluir</button></div></article>';}).join('');
+    box.querySelectorAll('.sdn-rule-edit').forEach(b=>b.onclick=()=>editRule(b.dataset.id)); box.querySelectorAll('.sdn-rule-delete').forEach(b=>b.onclick=()=>deleteRule(b.dataset.id));
+  }
