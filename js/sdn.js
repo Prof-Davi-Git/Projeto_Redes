@@ -62,3 +62,59 @@
       '<section class="sdn-section"><div class="sdn-section-head"><small>DATA PLANE</small><h3>Simular envio de pacote</h3><p>Escolham dois computadores com uma regra cadastrada e acompanhem o caminho da decisão.</p></div><article class="sdn-card"><div class="sdn-simulation-controls"><label>Origem<select id="sdnSimSource"></select></label><label>Destino<select id="sdnSimDestination"></select></label><button id="btnSimularPacoteSdn" class="btn btn-secondary" type="button" data-auth-action="executar uma simulação SDN">▶ Simular pacote</button></div><div id="sdnSimResult" class="sdn-simulation-result"><div class="sdn-empty">Nenhuma simulação realizada nesta sessão.</div></div></article></section>';
     content.appendChild(screen);
   }
+
+  function renderSwitches() {
+    const box = E('#sdnSwitchList'); if (!box) return;
+    const list = switches(), selected = new Set(ensureSdn().controller.switchIds || []);
+    if (!list.length) { box.innerHTML = '<div class="sdn-empty">Nenhum switch encontrado no Mapa da Rede.</div>'; return; }
+    box.innerHTML = list.map(x => '<label class="sdn-check-item"><input type="checkbox" value="' + esc(x.id) + '" ' + (selected.has(x.id) ? 'checked' : '') + '><span><strong>' + esc(x.name) + '</strong><small>' + esc(department(x.departmentId)?.name || 'Sem departamento') + '</small></span></label>').join('');
+  }
+
+  function renderDepartments(selectedIds) {
+    const box = E('#sdnDepartmentList'); if (!box) return;
+    const selected = new Set(selectedIds || []), list = project.departments || [];
+    if (!list.length) { box.innerHTML = '<div class="sdn-empty">Nenhum departamento criado.</div>'; return; }
+    box.innerHTML = list.map(x => '<label class="sdn-check-item compact"><input type="checkbox" value="' + esc(x.id) + '" ' + (selected.has(x.id) ? 'checked' : '') + '><span><strong>' + esc(x.name) + '</strong></span></label>').join('');
+  }
+
+  function hostOptions(selected) {
+    return '<option value="">Selecione...</option>' + hosts().map(x => '<option value="' + esc(x.id) + '" ' + (x.id === selected ? 'selected' : '') + '>' + esc(x.name) + ' — ' + esc(department(x.departmentId)?.name || 'Sem departamento') + '</option>').join('');
+  }
+
+  function renderHostSelects() {
+    ['#sdnRuleSource','#sdnRuleDestination','#sdnSimSource','#sdnSimDestination'].forEach(sel => {
+      const el = E(sel); if (!el) return; const prev = el.value; el.innerHTML = hostOptions(prev); if (hosts().some(x => x.id === prev)) el.value = prev;
+    });
+  }
+
+  function loadController() {
+    const c = ensureSdn().controller; E('#sdnControllerActive').checked = c.active === true; renderSwitches(); controllerDirty = false;
+  }
+
+  function saveController() {
+    const sdn = ensureSdn(), active = E('#sdnControllerActive').checked;
+    const valid = new Set(switches().map(x => x.id));
+    const ids = Array.from(document.querySelectorAll('#sdnSwitchList input:checked')).map(x => x.value).filter(x => valid.has(x));
+    if (active && !ids.length) return alert('Escolham pelo menos um switch antes de ativar o controlador.');
+    sdn.controller = { active, switchIds: ids, updatedAt: new Date().toISOString() }; controllerDirty = false;
+    if (typeof addHistory === 'function') addHistory('SDN', active ? 'Controlador SDN ativado para ' + ids.length + ' switch(es).' : 'Controlador SDN desativado.');
+    if (typeof renderAll === 'function') renderAll(); window.atualizarMissoes?.(); alert('Configuração do controlador salva.');
+  }
+
+  function resetVnet(focus) {
+    editingVnet = null; vnetDirty = false; E('#sdnVnetName').value = ''; E('#sdnVnetPurpose').value = ''; E('#sdnVnetTitle').textContent = 'Criar rede virtual'; E('#btnSalvarVnetSdn').textContent = '💾 Salvar rede virtual'; E('#btnCancelarVnetSdn').classList.add('hidden'); renderDepartments([]); if (focus) E('#sdnVnetName').focus();
+  }
+
+  function saveVnet() {
+    const sdn = ensureSdn(), name = E('#sdnVnetName').value.trim(), purpose = E('#sdnVnetPurpose').value.trim();
+    const valid = new Set((project.departments || []).map(x => x.id));
+    const ids = Array.from(document.querySelectorAll('#sdnDepartmentList input:checked')).map(x => x.value).filter(x => valid.has(x));
+    if (!name || !purpose || !ids.length) return alert('Preencham nome, finalidade e pelo menos um departamento.');
+    if (sdn.virtualNetworks.some(x => x.id !== editingVnet && String(x.name).toLowerCase() === name.toLowerCase())) return alert('Já existe uma rede virtual com esse nome.');
+    if (editingVnet) {
+      const x = sdn.virtualNetworks.find(v => v.id === editingVnet); if (!x) return resetVnet(); Object.assign(x, { name, purpose, departmentIds: ids, updatedAt: new Date().toISOString() });
+      if (typeof addHistory === 'function') addHistory('SDN', 'Rede virtual "' + name + '" atualizada.');
+    } else {
+      sdn.virtualNetworks.push({ id: uid('vnet'), name, purpose, departmentIds: ids, updatedAt: new Date().toISOString() });
+      if (typeof addHistory === 'function') addHistory('SDN', 'Rede virtual "' + name + '" criada.');
+    }
