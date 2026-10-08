@@ -160,3 +160,36 @@
     box.innerHTML=list.map(r=>{const a=equipment(r.sourceId),b=equipment(r.destinationId),allow=r.action==='permitir';return '<article class="sdn-saved-item"><div class="sdn-saved-head"><strong>'+esc(a?.name||'Origem removida')+' → '+esc(b?.name||'Destino removido')+'</strong><span class="sdn-rule-action '+(allow?'allow':'block')+'">'+(allow?'✓ Permitir':'✕ Bloquear')+'</span></div><p>'+esc(r.reason||'')+'</p><div class="sdn-mini-actions"><button class="sdn-mini-btn sdn-rule-edit" data-id="'+esc(r.id)+'">Editar</button><button class="sdn-mini-btn danger sdn-rule-delete" data-id="'+esc(r.id)+'" data-auth-action="excluir uma regra SDN">Excluir</button></div></article>';}).join('');
     box.querySelectorAll('.sdn-rule-edit').forEach(b=>b.onclick=()=>editRule(b.dataset.id)); box.querySelectorAll('.sdn-rule-delete').forEach(b=>b.onclick=()=>deleteRule(b.dataset.id));
   }
+
+  function step(n,icon,title,text){return '<div class="sdn-sim-step"><span class="sdn-sim-number">'+n+'</span><span class="sdn-sim-icon">'+icon+'</span><div><strong>'+esc(title)+'</strong><p>'+esc(text)+'</p></div></div>';}
+
+  function simulate() {
+    const sdn=ensureSdn(), sourceId=E('#sdnSimSource').value, destinationId=E('#sdnSimDestination').value, source=equipment(sourceId), dest=equipment(destinationId), current=new Map(switches().map(x=>[x.id,x])), sw=(sdn.controller.switchIds||[]).map(x=>current.get(x)).find(Boolean);
+    if(!sdn.controller.active||!sw)return alert('Ativem e salvem primeiro o Controlador SDN com um switch.');
+    if(!source||!dest||sourceId===destinationId)return alert('Escolham dois computadores diferentes.');
+    const rule=sdn.rules.find(r=>r.sourceId===sourceId&&r.destinationId===destinationId&&['permitir','bloquear'].includes(r.action));
+    if(!rule){E('#sdnSimResult').innerHTML='<div class="sdn-simulation-warning"><strong>⚠️ O switch ainda não possui uma decisão para esse tráfego.</strong><p>O primeiro pacote faria o switch consultar o controlador. Criem uma regra para essa origem e destino e simulem novamente.</p></div>';return;}
+    const allow=rule.action==='permitir';
+    E('#sdnSimResult').innerHTML='<div class="sdn-plane-summary"><span><strong>Control Plane:</strong> Controlador SDN decide a regra.</span><span><strong>Data Plane:</strong> '+esc(sw.name)+' executa a decisão.</span></div><div class="sdn-sim-flow">'+step(1,'💻','Host gera tráfego',source.name+' envia um pacote para '+dest.name+'.')+step(2,'🔌','Switch recebe o primeiro pacote',sw.name+' representa o Data Plane e precisa de uma regra.')+step(3,'🧠','Switch consulta o controlador','O Control Plane procura a regra cadastrada.')+step(4,'📋','Controlador envia a regra','Decisão: '+(allow?'Permitir':'Bloquear')+' comunicação.')+step(5,allow?'➡️':'⛔',allow?'Switch encaminha':'Switch bloqueia',allow?'O Data Plane encaminha o pacote.':'O Data Plane interrompe o pacote.')+step(6,allow?'💻':'🚫',allow?'Pacote chega ao destino':'Pacote não chega ao destino',allow?dest.name+' recebe o pacote.':dest.name+' não recebe o pacote.')+'</div>';
+    sdn.simulations.unshift({id:uid('sdnsim'),sourceId,destinationId,ruleId:rule.id,action:rule.action,switchId:sw.id,createdAt:new Date().toISOString()}); if(sdn.simulations.length>20)sdn.simulations=sdn.simulations.slice(0,20);
+    if(typeof addHistory==='function')addHistory('SDN','Simulação de pacote executada entre "'+source.name+'" e "'+dest.name+'".'); if(typeof renderAll==='function')renderAll(); window.atualizarMissoes?.();
+  }
+
+  function renderFromProject(){ensureSdn();loadController();resetVnet(false);resetRule(false);renderVnets();renderRules();renderHostSelects();if(E('#sdnSimResult'))E('#sdnSimResult').innerHTML='<div class="sdn-empty">Nenhuma simulação realizada nesta sessão.</div>';}
+  function openScreen(){if(!hasDraft())renderFromProject();else{renderSwitches();renderVnets();renderRules();renderHostSelects();}}
+
+  function bind(){
+    E('[data-target="sdn"]')?.addEventListener('click',openScreen); E('#btnSalvarControladorSdn')?.addEventListener('click',saveController); E('#btnSalvarVnetSdn')?.addEventListener('click',saveVnet); E('#btnCancelarVnetSdn')?.addEventListener('click',()=>resetVnet(true)); E('#btnSalvarRegraSdn')?.addEventListener('click',saveRule); E('#btnCancelarRegraSdn')?.addEventListener('click',()=>resetRule(true)); E('#btnSimularPacoteSdn')?.addEventListener('click',simulate);
+    E('#sdnControllerActive')?.addEventListener('change',()=>controllerDirty=true); E('#sdnSwitchList')?.addEventListener('change',()=>controllerDirty=true); ['#sdnVnetName','#sdnVnetPurpose','#sdnDepartmentList'].forEach(s=>{E(s)?.addEventListener('input',()=>vnetDirty=true);E(s)?.addEventListener('change',()=>vnetDirty=true);}); ['#sdnRuleSource','#sdnRuleDestination','#sdnRuleAction','#sdnRuleReason'].forEach(s=>{E(s)?.addEventListener('input',()=>ruleDirty=true);E(s)?.addEventListener('change',()=>ruleDirty=true);});
+  }
+
+  function watchOpen(){const input=E('#inputAbrirProjeto');if(!input||input.dataset.sdnWatch==='1')return;input.dataset.sdnWatch='1';input.addEventListener('change',()=>{const before=project;let n=0;if(loadWatch)clearInterval(loadWatch);loadWatch=setInterval(()=>{n++;if(project!==before||n>=40){clearInterval(loadWatch);loadWatch=null;if(project!==before){controllerDirty=vnetDirty=ruleDirty=false;editingVnet=editingRule=null;ensureSdn();renderFromProject();window.atualizarMissoes?.();}}},100);});}
+
+  const previousSave=typeof saveProject==='function'?saveProject:null;
+  if(previousSave)saveProject=function(){if(hasDraft()){alert('Existem alterações não salvas em Controle SDN.\n\nSalve ou cancele o que está em edição antes de baixar o projeto.');return;}return previousSave();};
+  window.addEventListener('beforeunload',e=>{if(!hasDraft())return;e.preventDefault();e.returnValue='';});
+
+  function start(){ensureSdn();bind();watchOpen();renderFromProject();}
+  inject();
+  document.readyState==='loading'?document.addEventListener('DOMContentLoaded',start):start();
+})();
