@@ -1,0 +1,353 @@
+/* CONTROLE SDN - Projeto de Redes */
+
+#sdn .section-title { margin-bottom: 24px; }
+
+.sdn-intro {
+  margin-bottom: 26px;
+  padding: 18px 20px;
+  border: 1px solid #cbd5e1;
+  border-radius: 16px;
+  background: #f8fafc;
+}
+
+.sdn-intro strong {
+  display: block;
+  margin-bottom: 7px;
+  color: #0f172a;
+  font-size: 16px;
+}
+
+.sdn-intro p,
+.sdn-section-head p,
+.sdn-card > p,
+.sdn-subtitle p,
+.sdn-saved-item p,
+.sdn-simulation-warning p,
+.sdn-sim-step p {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.sdn-section { margin-bottom: 34px; }
+.sdn-section-head { margin-bottom: 14px; }
+
+.sdn-section-head small {
+  color: #2563eb;
+  font-weight: 800;
+  letter-spacing: .07em;
+}
+
+.sdn-section-head h3 {
+  margin: 5px 0 7px;
+  font-size: 21px;
+}
+
+.sdn-card {
+  padding: 22px;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, .05);
+}
+
+.sdn-card h4 {
+  margin: 0 0 8px;
+  font-size: 17px;
+}
+
+.sdn-two-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
+  gap: 20px;
+}
+
+.sdn-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.sdn-fields label,
+.sdn-simulation-controls label {
+  display: grid;
+  gap: 7px;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.sdn-fields .full { grid-column: 1 / -1; }
+
+.sdn-fields input,
+.sdn-fields select,
+.sdn-fields textarea,
+.sdn-simulation-controls select {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 10px 11px;
+  background: #fff;
+  color: #0f172a;
+  font: inherit;
+  font-weight: 400;
+}
+
+.sdn-fields textarea { resize: vertical; }
+
+.sdn-controller-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 15px 16px;
+  border-radius: 12px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  cursor: pointer;
+}
+
+.sdn-controller-toggle input {
+  margin-top: 3px;
+  width: 18px;
+  height: 18px;
+}
+
+.sdn-controller-toggle span {
+  display: grid;
+  gap: 4px;
+}
+
+.sdn-controller-toggle strong { color: #1e3a8a; }
+
+.sdn-controller-toggle small {
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.sdn-subtitle { margin: 20px 0 10px; }
+
+.sdn-subtitle strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #0f172a;
+}
+
+.sdn-switch-list,
+.sdn-department-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+}
+
+.sdn-check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 13px;
+  border: 1px solid #e2e8f0;
+  border-radius: 11px;
+  background: #f8fafc;
+  cursor: pointer;
+}
+
+.sdn-check-item.compact { align-items: center; }
+.sdn-check-item input { margin-top: 3px; }
+
+.sdn-check-item span {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.sdn-check-item strong {
+  color: #0f172a;
+  font-size: 13px;
+}
+
+.sdn-check-item small {
+  color: #64748b;
+  font-size: 11px;
+}
+
+.sdn-actions,
+.sdn-mini-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 18px;
+}
+
+.sdn-saved-list {
+  display: grid;
+  gap: 11px;
+  margin-top: 15px;
+}
+
+.sdn-saved-item {
+  padding: 14px 15px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.sdn-saved-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 7px;
+}
+
+.sdn-saved-head > strong {
+  color: #0f172a;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.sdn-saved-head > span {
+  flex: 0 0 auto;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.sdn-saved-item > small {
+  display: block;
+  margin-top: 9px;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.sdn-mini-btn {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 7px 9px;
+  background: #fff;
+  color: #334155;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.sdn-mini-btn.danger {
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.sdn-rule-action {
+  border-radius: 999px;
+  padding: 5px 8px;
+  font-size: 10px !important;
+}
+
+.sdn-rule-action.allow {
+  background: #dcfce7;
+  color: #166534 !important;
+}
+
+.sdn-rule-action.block {
+  background: #fee2e2;
+  color: #991b1b !important;
+}
+
+.sdn-simulation-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.sdn-simulation-controls .btn { min-height: 42px; }
+.sdn-simulation-result { margin-top: 20px; }
+
+.sdn-plane-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.sdn-plane-summary span {
+  padding: 11px 13px;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #334155;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.sdn-sim-flow {
+  display: grid;
+  gap: 9px;
+}
+
+.sdn-sim-step {
+  display: grid;
+  grid-template-columns: 28px 34px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 12px 13px;
+  border: 1px solid #e2e8f0;
+  border-radius: 11px;
+  background: #fff;
+}
+
+.sdn-sim-number {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.sdn-sim-icon {
+  font-size: 20px;
+  line-height: 1.3;
+}
+
+.sdn-sim-step strong {
+  display: block;
+  margin-bottom: 3px;
+  color: #0f172a;
+  font-size: 13px;
+}
+
+.sdn-sim-step p { font-size: 12px; }
+
+.sdn-simulation-warning {
+  padding: 14px 15px;
+  border: 1px solid #fde68a;
+  border-radius: 12px;
+  background: #fffbeb;
+}
+
+.sdn-simulation-warning strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #92400e;
+}
+
+.sdn-empty {
+  padding: 14px 15px;
+  border-radius: 11px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+@media (max-width: 850px) {
+  .sdn-two-columns,
+  .sdn-fields,
+  .sdn-plane-summary,
+  .sdn-simulation-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .sdn-simulation-controls .btn { width: 100%; }
+}
