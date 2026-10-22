@@ -1,6 +1,6 @@
 /* =========================================================
    MISSÕES V2 - Projeto de Redes
-   - Missões 01, 02, 03 e 04
+   - Missões 01, 02, 03, 04 e 05
    - atualização automática e manual
    - requisitos mínimos permanecem concluídos após expansões futuras
    ========================================================= */
@@ -477,8 +477,176 @@
     };
   }
 
+  function mission05() {
+    const building = project.company?.building;
+    const floors = Array.isArray(building?.floors) ? building.floors : [];
+    const equipment = Array.isArray(project.equipment) ? project.equipment : [];
+    const connections = Array.isArray(project.connections) ? project.connections : [];
+    const departments = Array.isArray(project.departments) ? project.departments : [];
+
+    const initialDepartments = requiredDepartments();
+    const initialDepartmentIds = new Set(
+      Object.values(initialDepartments).filter(Boolean).map(department => department.id)
+    );
+    const additionalDepartments = departments.filter(department => !initialDepartmentIds.has(department.id));
+    const additionalDepartmentIds = new Set(additionalDepartments.map(department => department.id));
+
+    const expansionFloors = floors.length > 1 ? floors.slice(1) : [];
+    const floorCandidates = expansionFloors.map(floor => {
+      const floorEquipment = equipment.filter(item => item.floorId === floor.id);
+      const floorEquipmentIds = new Set(floorEquipment.map(item => item.id));
+      const floorConnections = connections.filter(connection =>
+        floorEquipmentIds.has(connection.from) && floorEquipmentIds.has(connection.to)
+      );
+      const computers = floorEquipment.filter(item => item.type === 'computador');
+      const configuredComputers = computers.filter(computer =>
+        String(computer.name || '').trim() &&
+        computer.departmentId &&
+        (computer.status || 'ativo') === 'ativo'
+      );
+      const representedAdditionalDepartments = new Set(
+        computers
+          .map(computer => computer.departmentId)
+          .filter(departmentId => additionalDepartmentIds.has(departmentId))
+      );
+
+      return {
+        floor,
+        equipment: floorEquipment,
+        connections: floorConnections,
+        computers,
+        configuredComputers,
+        representedAdditionalDepartments,
+        switches: floorEquipment.filter(item => item.type === 'switch'),
+        accessPoints: floorEquipment.filter(item => item.type === 'access-point'),
+        printers: floorEquipment.filter(item => item.type === 'impressora'),
+        servers: floorEquipment.filter(item => item.type === 'servidor')
+      };
+    });
+
+    const expansion = floorCandidates.sort((a, b) => {
+      const scoreA =
+        a.equipment.length +
+        a.connections.length +
+        a.computers.length * 2 +
+        a.representedAdditionalDepartments.size * 3;
+      const scoreB =
+        b.equipment.length +
+        b.connections.length +
+        b.computers.length * 2 +
+        b.representedAdditionalDepartments.size * 3;
+      return scoreB - scoreA;
+    })[0] || null;
+
+    const floorCountOk = floors.length >= 2;
+    const additionalDepartmentsOk = departments.length >= 5 && additionalDepartments.length >= 2;
+    const expansionEquipmentCount = expansion?.equipment.length || 0;
+    const expansionComputerCount = expansion?.computers.length || 0;
+    const configuredComputerCount = expansion?.configuredComputers.length || 0;
+    const representedDepartmentsCount = expansion?.representedAdditionalDepartments.size || 0;
+    const expansionConnectionCount = expansion?.connections.length || 0;
+    const expansionFloorName = expansion?.floor?.name || 'novo andar';
+
+    return {
+      id: 'missao-05',
+      number: 'MISSÃO 05',
+      title: 'Expansão da Infraestrutura',
+      description: 'Expandir fisicamente a empresa com um novo andar, novos setores, equipamentos e conexões.',
+      note: 'A missão usa requisitos mínimos. Depois de concluída, adicionar ainda mais equipamentos, departamentos ou conexões não invalida o progresso.',
+      criteria: [
+        criterion(
+          floorCountOk ? 'done' : 'missing',
+          'Pelo menos 2 andares no projeto',
+          floorCountOk
+            ? `${floors.length} andar(es) encontrado(s) na empresa.`
+            : 'Criem mais um andar no Mapa da Rede para representar a expansão da empresa.'
+        ),
+        criterion(
+          additionalDepartmentsOk ? 'done' : 'missing',
+          'Pelo menos 2 departamentos além dos setores iniciais',
+          additionalDepartmentsOk
+            ? `${additionalDepartments.length} departamento(s) adicional(is) encontrado(s) além de Administração, Financeiro e Atendimento.`
+            : `A empresa possui ${additionalDepartments.length} departamento(s) adicional(is). Para esta expansão, o mínimo é 2.`
+        ),
+        criterion(
+          expansionEquipmentCount >= 12 ? 'done' : 'missing',
+          'Novo andar com pelo menos 12 equipamentos',
+          expansion
+            ? `${expansionFloorName}: ${expansionEquipmentCount} equipamento(s). O mínimo é 12.`
+            : 'Ainda não existe um andar adicional com equipamentos.'
+        ),
+        criterion(
+          expansionComputerCount >= 8 ? 'done' : 'missing',
+          'Pelo menos 8 novos computadores no andar de expansão',
+          expansion
+            ? `${expansionFloorName}: ${expansionComputerCount} computador(es). O mínimo é 8.`
+            : 'Criem o novo andar e adicionem os computadores da expansão.'
+        ),
+        criterion(
+          configuredComputerCount >= 8 ? 'done' : 'missing',
+          'Configuração básica dos novos computadores',
+          expansion
+            ? `${configuredComputerCount} de 8 computador(es) do andar de expansão possuem nome, departamento e status Ativo.`
+            : 'Configurem os computadores do novo andar.'
+        ),
+        criterion(
+          representedDepartmentsCount >= 2 ? 'done' : 'missing',
+          'Computadores distribuídos em pelo menos 2 novos departamentos',
+          expansion
+            ? `${representedDepartmentsCount} departamento(s) adicional(is) estão representados pelos computadores de ${expansionFloorName}.`
+            : 'Distribuam os computadores do novo andar entre os novos setores da empresa.'
+        ),
+        criterion(
+          (expansion?.switches.length || 0) >= 1 ? 'done' : 'missing',
+          'Pelo menos 1 Switch no novo andar',
+          expansion
+            ? `${expansion.switches.length} Switch(es) encontrado(s) em ${expansionFloorName}.`
+            : 'Adicionem um Switch ao novo andar.'
+        ),
+        criterion(
+          (expansion?.accessPoints.length || 0) >= 1 ? 'done' : 'missing',
+          'Pelo menos 1 Access Point no novo andar',
+          expansion
+            ? `${expansion.accessPoints.length} Access Point(s) encontrado(s) em ${expansionFloorName}.`
+            : 'Adicionem um Access Point ao novo andar.'
+        ),
+        criterion(
+          (expansion?.printers.length || 0) >= 1 ? 'done' : 'missing',
+          'Pelo menos 1 Impressora no novo andar',
+          expansion
+            ? `${expansion.printers.length} impressora(s) encontrada(s) em ${expansionFloorName}.`
+            : 'Adicionem uma impressora ao novo andar.'
+        ),
+        criterion(
+          (expansion?.servers.length || 0) >= 1 ? 'done' : 'missing',
+          'Pelo menos 1 Servidor no novo andar',
+          expansion
+            ? `${expansion.servers.length} servidor(es) encontrado(s) em ${expansionFloorName}.`
+            : 'Adicionem um servidor ao novo andar.'
+        ),
+        criterion(
+          expansionConnectionCount >= 10 ? 'done' : 'missing',
+          'Pelo menos 10 conexões internas no novo andar',
+          expansion
+            ? `${expansionConnectionCount} conexão(ões) entre equipamentos de ${expansionFloorName}. O mínimo é 10.`
+            : 'Depois de adicionar os equipamentos, criem as conexões da nova infraestrutura.'
+        ),
+        criterion(
+          'review',
+          'Organização visual do novo andar',
+          'Revisem com o professor se os equipamentos estão organizados de forma clara e coerente no novo andar.'
+        ),
+        criterion(
+          'review',
+          'Coerência da expansão e das conexões',
+          'Revisem com o professor se a distribuição dos setores, equipamentos e conexões faz sentido para a empresa criada pelo grupo.'
+        )
+      ]
+    };
+  }
+
   function missions() {
-    return [mission01(), mission02(), mission03(), mission04()];
+    return [mission01(), mission02(), mission03(), mission04(), mission05()];
   }
 
   function missionStats(mission) {
