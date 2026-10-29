@@ -34,6 +34,8 @@ let project = emptyProject();
 let editingId = null;
 let connectMode = false;
 let firstConnect = null;
+let disconnectMode = false;
+let firstDisconnect = null;
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => document.querySelectorAll(selector);
@@ -219,6 +221,7 @@ function deleteDepartment(depId) {
 function setupMap() {
   $('#btnAdicionarEquipamento').addEventListener('click', addEquipment);
   $('#btnConectar').addEventListener('click', startConnect);
+  $('#btnDesconectar').addEventListener('click', startDisconnect);
   $('#btnCancelarConexao').addEventListener('click', cancelConnect);
   $('#btnFecharModal').addEventListener('click', closeModal);
   $('#btnSalvarEquipamento').addEventListener('click', saveEquipmentEdit);
@@ -382,6 +385,9 @@ function renderMap() {
       if (connectMode) {
         event.stopPropagation();
         selectConnect(equipment.id);
+      } else if (disconnectMode) {
+        event.stopPropagation();
+        selectDisconnect(equipment.id);
       }
     });
 
@@ -392,7 +398,7 @@ function renderMap() {
 }
 
 function dragStart(event) {
-  if (connectMode) return;
+  if (connectMode || disconnectMode) return;
 
   const el = event.currentTarget;
   const equipment = project.equipment.find(item => item.id === el.dataset.id);
@@ -444,22 +450,56 @@ function dragStart(event) {
 
 function startConnect() {
   if (project.equipment.length < 2) return alert('Adicione pelo menos dois equipamentos.');
+  disconnectMode = false;
+  firstDisconnect = null;
   connectMode = true;
   firstConnect = null;
   $('#btnConectar').classList.add('hidden');
+  $('#btnDesconectar').classList.add('hidden');
   $('#btnCancelarConexao').classList.remove('hidden');
   $('#statusConexao').textContent = 'Modo conectar: clique no primeiro equipamento.';
+  $('#statusConexao').classList.add('active');
+}
+
+function visibleConnectionCount() {
+  const visibleIds = new Set(
+    Array.from(document.querySelectorAll('.equipment[data-id]'))
+      .map(element => element.dataset.id)
+      .filter(Boolean)
+  );
+
+  return project.connections.filter(connection =>
+    visibleIds.has(connection.from) && visibleIds.has(connection.to)
+  ).length;
+}
+
+function startDisconnect() {
+  if (visibleConnectionCount() < 1) {
+    return alert('Não há conexões neste andar para desconectar.');
+  }
+
+  connectMode = false;
+  firstConnect = null;
+  disconnectMode = true;
+  firstDisconnect = null;
+  $('#btnConectar').classList.add('hidden');
+  $('#btnDesconectar').classList.add('hidden');
+  $('#btnCancelarConexao').classList.remove('hidden');
+  $('#statusConexao').textContent = 'Modo desconectar: clique no primeiro equipamento da conexão.';
   $('#statusConexao').classList.add('active');
 }
 
 function cancelConnect() {
   connectMode = false;
   firstConnect = null;
+  disconnectMode = false;
+  firstDisconnect = null;
   $('#btnConectar').classList.remove('hidden');
+  $('#btnDesconectar').classList.remove('hidden');
   $('#btnCancelarConexao').classList.add('hidden');
   $('#statusConexao').textContent = 'Arraste os equipamentos para organizar a rede. Arraste o fundo quadriculado para navegar. Dê dois cliques para editar.';
   $('#statusConexao').classList.remove('active');
-  $$('.equipment').forEach(el => el.classList.remove('selected'));
+  $('.equipment').forEach(el => el.classList.remove('selected'));
 }
 
 function selectConnect(eqId) {
@@ -486,6 +526,40 @@ function selectConnect(eqId) {
   const b = project.equipment.find(e => e.id === eqId);
   project.connections.push({ id: id('con'), from: firstConnect, to: eqId });
   addHistory('Configuração', `Conexão criada entre "${a.name}" e "${b.name}".`);
+  cancelConnect();
+  renderAll();
+}
+
+function selectDisconnect(eqId) {
+  if (!firstDisconnect) {
+    firstDisconnect = eqId;
+    document.querySelector(`.equipment[data-id="${eqId}"]`)?.classList.add('selected');
+    $('#statusConexao').textContent = 'Agora clique no equipamento que está conectado a ele.';
+    return;
+  }
+
+  if (firstDisconnect === eqId) return alert('Escolha outro equipamento.');
+
+  const connection = project.connections.find(item =>
+    (item.from === firstDisconnect && item.to === eqId) ||
+    (item.from === eqId && item.to === firstDisconnect)
+  );
+
+  if (!connection) {
+    alert('Esses equipamentos não possuem uma conexão direta entre eles.');
+    $('#statusConexao').textContent = 'Eles não estão conectados. Escolha outro segundo equipamento.';
+    return;
+  }
+
+  const a = project.equipment.find(equipment => equipment.id === firstDisconnect);
+  const b = project.equipment.find(equipment => equipment.id === eqId);
+
+  project.connections = project.connections.filter(item => item.id !== connection.id);
+  addHistory(
+    'Correção',
+    `Conexão removida entre "${a?.name || 'Equipamento'}" e "${b?.name || 'Equipamento'}".`
+  );
+
   cancelConnect();
   renderAll();
 }
