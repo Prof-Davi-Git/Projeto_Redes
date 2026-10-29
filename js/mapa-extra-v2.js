@@ -80,7 +80,10 @@
     if (event.button !== 0) return;
     if (event.target.closest('.equipment')) return;
     if (event.target.closest('button, input, select, textarea, label')) return;
-    if (typeof connectMode !== 'undefined' && connectMode) return;
+    if (
+      (typeof connectMode !== 'undefined' && connectMode) ||
+      (typeof disconnectMode !== 'undefined' && disconnectMode)
+    ) return;
 
     arrastandoFundo = true;
     inicioX = event.clientX;
