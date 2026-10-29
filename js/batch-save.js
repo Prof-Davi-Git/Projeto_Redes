@@ -55,6 +55,7 @@
       text.includes('adicionado ao mapa do andar') ||
       text.startsWith('Andar "') ||
       text.startsWith('Conexão criada entre') ||
+      text.startsWith('Conexão removida entre') ||
       (text.startsWith('Equipamento "') && text.includes('alterado:')) ||
       (text.startsWith('Equipamento "') && text.includes('foi removido da rede')) ||
       (text.startsWith('Equipamento "') && text.includes('foi movido do andar'))
