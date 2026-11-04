@@ -365,6 +365,98 @@ textarea { resize: vertical; }
 .equipment strong { display: block; margin-top: 5px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .equipment small { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; }
 
+.equipment-edit-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 10;
+  width: 27px;
+  height: 27px;
+  padding: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 50%;
+  background: #fff;
+  color: #475569;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(.9);
+  transition: opacity .15s ease, transform .15s ease, border-color .15s ease;
+}
+
+.equipment:hover .equipment-edit-btn,
+.equipment-edit-btn:focus-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.equipment-edit-btn:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.network-world.is-connecting .equipment {
+  cursor: crosshair;
+}
+
+.network-world.is-connecting .equipment:not(.selected):hover {
+  border-color: #16a34a;
+  box-shadow: 0 0 0 4px #dcfce7;
+}
+
+.connection-preview {
+  stroke: #2563eb;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 10 8;
+  opacity: .9;
+  pointer-events: none;
+}
+
+.connection-line {
+  transition: stroke .12s ease, opacity .12s ease, stroke-width .12s ease;
+}
+
+.connection-line.connection-line-danger {
+  stroke: #dc2626 !important;
+  stroke-width: 6 !important;
+  opacity: 1 !important;
+}
+
+.connection-remove-handle {
+  position: absolute;
+  z-index: 12;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  transform: translate(-50%, -50%) scale(.82);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #dc2626;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(127, 29, 29, .35);
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 24px;
+  text-align: center;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: auto;
+  transition: opacity .12s ease, transform .12s ease;
+}
+
+.connection-remove-handle:hover,
+.connection-remove-handle:focus-visible {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  outline: none;
+}
+
+.connection-remove-handle:focus-visible {
+  box-shadow: 0 0 0 4px #fecaca, 0 4px 12px rgba(127, 29, 29, .35);
+}
+
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; min-width: 780px; }
 th, td { padding: 12px 10px; border-bottom: 1px solid var(--border); text-align: left; font-size: 13px; }
