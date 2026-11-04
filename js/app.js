@@ -34,8 +34,8 @@ let project = emptyProject();
 let editingId = null;
 let connectMode = false;
 let firstConnect = null;
-let disconnectMode = false;
-let firstDisconnect = null;
+let connectionPointer = null;
+let suppressConnectionDoubleClickUntil = 0;
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => document.querySelectorAll(selector);
@@ -220,9 +220,6 @@ function deleteDepartment(depId) {
 
 function setupMap() {
   $('#btnAdicionarEquipamento').addEventListener('click', addEquipment);
-  $('#btnConectar').addEventListener('click', startConnect);
-  $('#btnDesconectar').addEventListener('click', startDisconnect);
-  $('#btnCancelarConexao').addEventListener('click', cancelConnect);
   $('#btnFecharModal').addEventListener('click', closeModal);
   $('#btnSalvarEquipamento').addEventListener('click', saveEquipmentEdit);
   $('#btnExcluirEquipamento').addEventListener('click', deleteCurrentEquipment);
@@ -237,6 +234,17 @@ function setupMap() {
     event.preventDefault();
     changeZoom(event.deltaY < 0 ? MAP_LIMITS.zoomStep : -MAP_LIMITS.zoomStep);
   }, { passive: false });
+
+  canvas?.addEventListener('pointermove', updateConnectionPreview);
+  canvas?.addEventListener('click', event => {
+    if (!connectMode) return;
+    if (event.target.closest('.equipment')) return;
+    cancelConnect();
+  });
+
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && connectMode) cancelConnect();
+  });
 
   window.addEventListener('resize', () => {
     updateMapGeometry();
@@ -371,24 +379,43 @@ function renderMap() {
 
     const dep = project.departments.find(d => d.id === equipment.departmentId);
     el.innerHTML = `
+      <button
+        type="button"
+        class="equipment-edit-btn"
+        title="Editar configuração"
+        aria-label="Editar configuração de ${escapeHtml(equipment.name)}"
+      >⚙</button>
       <span class="icon">${icons[equipment.type] || '🔧'}</span>
       <strong>${escapeHtml(equipment.name)}</strong>
       <small>${escapeHtml(equipment.ip || (dep ? dep.name : 'Sem configuração'))}</small>
     `;
 
-    el.addEventListener('pointerdown', dragStart);
-    el.addEventListener('dblclick', event => {
+    const editButton = el.querySelector('.equipment-edit-btn');
+    editButton?.addEventListener('pointerdown', event => {
+      event.preventDefault();
       event.stopPropagation();
+    });
+    editButton?.addEventListener('click', event => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (connectMode) cancelConnect();
       openModal(equipment.id);
     });
+
+    el.addEventListener('pointerdown', dragStart);
+    el.addEventListener('dblclick', event => {
+      if (event.target.closest('.equipment-edit-btn, .connection-remove-handle')) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (Date.now() < suppressConnectionDoubleClickUntil) return;
+      startConnectionFrom(equipment.id, event);
+    });
     el.addEventListener('click', event => {
-      if (connectMode) {
-        event.stopPropagation();
-        selectConnect(equipment.id);
-      } else if (disconnectMode) {
-        event.stopPropagation();
-        selectDisconnect(equipment.id);
-      }
+      if (event.target.closest('.equipment-edit-btn, .connection-remove-handle')) return;
+      if (!connectMode) return;
+      event.preventDefault();
+      event.stopPropagation();
+      selectConnect(equipment.id);
     });
 
     world.appendChild(el);
@@ -398,7 +425,7 @@ function renderMap() {
 }
 
 function dragStart(event) {
-  if (connectMode || disconnectMode) return;
+  if (connectMode || event.target.closest('.equipment-edit-btn, .connection-remove-handle')) return;
 
   const el = event.currentTarget;
   const equipment = project.equipment.find(item => item.id === el.dataset.id);
@@ -448,73 +475,133 @@ function dragStart(event) {
   el.addEventListener('pointerup', up);
 }
 
+function defaultMapStatus() {
+  return 'Arraste os equipamentos para organizar a rede. Dê dois cliques em um equipamento para iniciar uma conexão. Use ⚙ para editar. Passe o mouse sobre a saída de um cabo para desconectar.';
+}
+
+function mapPointFromEvent(event) {
+  const canvas = $('#networkCanvas');
+  const view = ensureMapView();
+  if (!canvas || !event) return null;
+
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: (event.clientX - rect.left + canvas.scrollLeft) / view.zoom,
+    y: (event.clientY - rect.top + canvas.scrollTop) / view.zoom
+  };
+}
+
+function equipmentCenter(element) {
+  return {
+    x: element.offsetLeft + element.offsetWidth / 2,
+    y: element.offsetTop + element.offsetHeight / 2
+  };
+}
+
+function equipmentAnchor(element, targetX, targetY) {
+  const center = equipmentCenter(element);
+  const dx = targetX - center.x;
+  const dy = targetY - center.y;
+
+  if (Math.abs(dx) < 0.001 && Math.abs(dy) < 0.001) return center;
+
+  const halfWidth = Math.max(1, element.offsetWidth / 2);
+  const halfHeight = Math.max(1, element.offsetHeight / 2);
+  const tx = Math.abs(dx) < 0.001 ? Number.POSITIVE_INFINITY : halfWidth / Math.abs(dx);
+  const ty = Math.abs(dy) < 0.001 ? Number.POSITIVE_INFINITY : halfHeight / Math.abs(dy);
+  const scale = Math.min(tx, ty);
+
+  return {
+    x: center.x + dx * scale,
+    y: center.y + dy * scale
+  };
+}
+
 function startConnect() {
-  if (project.equipment.length < 2) return alert('Adicione pelo menos dois equipamentos.');
-  disconnectMode = false;
-  firstDisconnect = null;
-  connectMode = true;
-  firstConnect = null;
-  $('#btnConectar').classList.add('hidden');
-  $('#btnDesconectar').classList.add('hidden');
-  $('#btnCancelarConexao').classList.remove('hidden');
-  $('#statusConexao').textContent = 'Modo conectar: clique no primeiro equipamento.';
-  $('#statusConexao').classList.add('active');
+  // Compatibilidade com extensões antigas. A conexão agora começa pelo duplo clique.
+  const status = $('#statusConexao');
+  if (status) {
+    status.textContent = 'Dê dois cliques no equipamento de origem para liberar o cabo.';
+    status.classList.add('active');
+  }
 }
 
-function visibleConnectionCount() {
-  const visibleIds = new Set(
-    Array.from(document.querySelectorAll('.equipment[data-id]'))
-      .map(element => element.dataset.id)
-      .filter(Boolean)
-  );
-
-  return project.connections.filter(connection =>
-    visibleIds.has(connection.from) && visibleIds.has(connection.to)
-  ).length;
-}
-
-function startDisconnect() {
-  if (visibleConnectionCount() < 1) {
-    return alert('Não há conexões neste andar para desconectar.');
+function startConnectionFrom(eqId, event = null) {
+  const visibleEquipment = Array.from(document.querySelectorAll('.equipment[data-id]'));
+  if (visibleEquipment.length < 2) {
+    return alert('Adicione pelo menos dois equipamentos neste andar.');
   }
 
-  connectMode = false;
-  firstConnect = null;
-  disconnectMode = true;
-  firstDisconnect = null;
-  $('#btnConectar').classList.add('hidden');
-  $('#btnDesconectar').classList.add('hidden');
-  $('#btnCancelarConexao').classList.remove('hidden');
-  $('#statusConexao').textContent = 'Modo desconectar: clique no primeiro equipamento da conexão.';
-  $('#statusConexao').classList.add('active');
+  const source = document.querySelector(`.equipment[data-id="${eqId}"]`);
+  const equipment = project.equipment.find(item => item.id === eqId);
+  if (!source || !equipment) return;
+
+  connectMode = true;
+  firstConnect = eqId;
+  connectionPointer = mapPointFromEvent(event) || equipmentCenter(source);
+
+  document.querySelectorAll('.equipment').forEach(element => element.classList.remove('selected'));
+  source.classList.add('selected');
+  $('#networkWorld')?.classList.add('is-connecting');
+
+  const status = $('#statusConexao');
+  if (status) {
+    status.textContent = `Cabo liberado de "${equipment.name}". Mova o mouse e clique no equipamento de destino. Pressione ESC para cancelar.`;
+    status.classList.add('active');
+  }
+
+  drawConnections();
 }
 
-function cancelConnect() {
+function cancelConnect(resetStatus = true) {
   connectMode = false;
   firstConnect = null;
-  disconnectMode = false;
-  firstDisconnect = null;
-  $('#btnConectar').classList.remove('hidden');
-  $('#btnDesconectar').classList.remove('hidden');
-  $('#btnCancelarConexao').classList.add('hidden');
-  $('#statusConexao').textContent = 'Arraste os equipamentos para organizar a rede. Arraste o fundo quadriculado para navegar. Dê dois cliques para editar.';
-  $('#statusConexao').classList.remove('active');
-  $('.equipment').forEach(el => el.classList.remove('selected'));
+  connectionPointer = null;
+
+  $('#networkWorld')?.classList.remove('is-connecting');
+  document.querySelectorAll('.equipment').forEach(element => element.classList.remove('selected'));
+
+  if (resetStatus) {
+    const status = $('#statusConexao');
+    if (status) {
+      status.textContent = defaultMapStatus();
+      status.classList.remove('active');
+    }
+  }
+
+  drawConnections();
+}
+
+function updateConnectionPreview(event) {
+  if (!connectMode || !firstConnect) return;
+
+  connectionPointer = mapPointFromEvent(event);
+  if (!connectionPointer) return;
+
+  const source = document.querySelector(`.equipment[data-id="${firstConnect}"]`);
+  if (!source) return cancelConnect();
+
+  let preview = document.querySelector('#connectionPreviewLine');
+  if (!preview) {
+    drawConnections();
+    preview = document.querySelector('#connectionPreviewLine');
+    if (!preview) return;
+  }
+
+  const anchor = equipmentAnchor(source, connectionPointer.x, connectionPointer.y);
+  preview.setAttribute('x1', anchor.x);
+  preview.setAttribute('y1', anchor.y);
+  preview.setAttribute('x2', connectionPointer.x);
+  preview.setAttribute('y2', connectionPointer.y);
 }
 
 function selectConnect(eqId) {
-  if (!firstConnect) {
-    firstConnect = eqId;
-    document.querySelector(`.equipment[data-id="${eqId}"]`)?.classList.add('selected');
-    $('#statusConexao').textContent = 'Agora clique no segundo equipamento.';
-    return;
-  }
+  if (!connectMode || !firstConnect) return;
+  if (firstConnect === eqId) return;
 
-  if (firstConnect === eqId) return alert('Escolha outro equipamento.');
-
-  const exists = project.connections.some(c =>
-    (c.from === firstConnect && c.to === eqId) ||
-    (c.from === eqId && c.to === firstConnect)
+  const exists = project.connections.some(connection =>
+    (connection.from === firstConnect && connection.to === eqId) ||
+    (connection.from === eqId && connection.to === firstConnect)
   );
 
   if (exists) {
@@ -522,46 +609,102 @@ function selectConnect(eqId) {
     return cancelConnect();
   }
 
-  const a = project.equipment.find(e => e.id === firstConnect);
-  const b = project.equipment.find(e => e.id === eqId);
+  const source = project.equipment.find(equipment => equipment.id === firstConnect);
+  const target = project.equipment.find(equipment => equipment.id === eqId);
+  if (!source || !target) return cancelConnect();
+
   project.connections.push({ id: id('con'), from: firstConnect, to: eqId });
-  addHistory('Configuração', `Conexão criada entre "${a.name}" e "${b.name}".`);
-  cancelConnect();
+  addHistory('Configuração', `Conexão criada entre "${source.name}" e "${target.name}".`);
+
+  suppressConnectionDoubleClickUntil = Date.now() + 450;
+  cancelConnect(false);
   renderAll();
+
+  // Desenha imediatamente e repete no próximo frame para evitar o atraso visual
+  // causado pela reconstrução do mapa em alguns navegadores.
+  drawConnections();
+  requestAnimationFrame(() => drawConnections());
+  window.atualizarMissoes?.();
+
+  const status = $('#statusConexao');
+  if (status) {
+    status.textContent = `Conexão criada: "${source.name}" ↔ "${target.name}".`;
+    status.classList.add('active');
+    setTimeout(() => {
+      if (!connectMode && status.isConnected) {
+        status.textContent = defaultMapStatus();
+        status.classList.remove('active');
+      }
+    }, 1400);
+  }
 }
 
-function selectDisconnect(eqId) {
-  if (!firstDisconnect) {
-    firstDisconnect = eqId;
-    document.querySelector(`.equipment[data-id="${eqId}"]`)?.classList.add('selected');
-    $('#statusConexao').textContent = 'Agora clique no equipamento que está conectado a ele.';
-    return;
-  }
+function setConnectionHighlight(connectionId, active) {
+  document.querySelectorAll('.connection-line').forEach(line => {
+    if (line.dataset.connectionId === connectionId) {
+      line.classList.toggle('connection-line-danger', active);
+    }
+  });
+}
 
-  if (firstDisconnect === eqId) return alert('Escolha outro equipamento.');
-
-  const connection = project.connections.find(item =>
-    (item.from === firstDisconnect && item.to === eqId) ||
-    (item.from === eqId && item.to === firstDisconnect)
+function addDisconnectHandle(element, connection, anchor, otherEquipment) {
+  const handle = document.createElement('button');
+  handle.type = 'button';
+  handle.className = 'connection-remove-handle';
+  handle.dataset.connectionId = connection.id;
+  handle.style.left = `${anchor.x - element.offsetLeft}px`;
+  handle.style.top = `${anchor.y - element.offsetTop}px`;
+  handle.textContent = '×';
+  handle.title = `Desconectar de ${otherEquipment?.name || 'equipamento'}`;
+  handle.setAttribute(
+    'aria-label',
+    `Desconectar de ${otherEquipment?.name || 'equipamento'}`
   );
 
-  if (!connection) {
-    alert('Esses equipamentos não possuem uma conexão direta entre eles.');
-    $('#statusConexao').textContent = 'Eles não estão conectados. Escolha outro segundo equipamento.';
-    return;
-  }
+  handle.addEventListener('pointerdown', event => {
+    event.preventDefault();
+    event.stopPropagation();
+  });
+  handle.addEventListener('mouseenter', () => setConnectionHighlight(connection.id, true));
+  handle.addEventListener('mouseleave', () => setConnectionHighlight(connection.id, false));
+  handle.addEventListener('click', event => {
+    event.preventDefault();
+    event.stopPropagation();
+    disconnectConnection(connection.id);
+  });
 
-  const a = project.equipment.find(equipment => equipment.id === firstDisconnect);
-  const b = project.equipment.find(equipment => equipment.id === eqId);
+  element.appendChild(handle);
+}
 
-  project.connections = project.connections.filter(item => item.id !== connection.id);
+function disconnectConnection(connectionId) {
+  const connection = project.connections.find(item => item.id === connectionId);
+  if (!connection) return;
+
+  const source = project.equipment.find(equipment => equipment.id === connection.from);
+  const target = project.equipment.find(equipment => equipment.id === connection.to);
+
+  project.connections = project.connections.filter(item => item.id !== connectionId);
   addHistory(
     'Correção',
-    `Conexão removida entre "${a?.name || 'Equipamento'}" e "${b?.name || 'Equipamento'}".`
+    `Conexão removida entre "${source?.name || 'Equipamento'}" e "${target?.name || 'Equipamento'}".`
   );
 
-  cancelConnect();
   renderAll();
+  drawConnections();
+  requestAnimationFrame(() => drawConnections());
+  window.atualizarMissoes?.();
+
+  const status = $('#statusConexao');
+  if (status) {
+    status.textContent = `Conexão removida: "${source?.name || 'Equipamento'}" ↔ "${target?.name || 'Equipamento'}".`;
+    status.classList.add('active');
+    setTimeout(() => {
+      if (!connectMode && status.isConnected) {
+        status.textContent = defaultMapStatus();
+        status.classList.remove('active');
+      }
+    }, 1400);
+  }
 }
 
 function drawConnections() {
@@ -572,22 +715,51 @@ function drawConnections() {
   svg.setAttribute('viewBox', `0 0 ${view.width} ${view.height}`);
   svg.innerHTML = '';
 
+  document.querySelectorAll('.connection-remove-handle').forEach(handle => handle.remove());
+
   project.connections.forEach(connection => {
     const a = document.querySelector(`.equipment[data-id="${connection.from}"]`);
     const b = document.querySelector(`.equipment[data-id="${connection.to}"]`);
     if (!a || !b) return;
 
+    const centerA = equipmentCenter(a);
+    const centerB = equipmentCenter(b);
+    const anchorA = equipmentAnchor(a, centerB.x, centerB.y);
+    const anchorB = equipmentAnchor(b, centerA.x, centerA.y);
+
     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line.setAttribute('x1', a.offsetLeft + a.offsetWidth / 2);
-    line.setAttribute('y1', a.offsetTop + a.offsetHeight / 2);
-    line.setAttribute('x2', b.offsetLeft + b.offsetWidth / 2);
-    line.setAttribute('y2', b.offsetTop + b.offsetHeight / 2);
+    line.classList.add('connection-line');
+    line.dataset.connectionId = connection.id;
+    line.setAttribute('x1', anchorA.x);
+    line.setAttribute('y1', anchorA.y);
+    line.setAttribute('x2', anchorB.x);
+    line.setAttribute('y2', anchorB.y);
     line.setAttribute('stroke', '#2563eb');
     line.setAttribute('stroke-width', '4');
     line.setAttribute('stroke-linecap', 'round');
-    line.setAttribute('opacity', '.75');
+    line.setAttribute('opacity', '.82');
     svg.appendChild(line);
+
+    const equipmentA = project.equipment.find(item => item.id === connection.from);
+    const equipmentB = project.equipment.find(item => item.id === connection.to);
+    addDisconnectHandle(a, connection, anchorA, equipmentB);
+    addDisconnectHandle(b, connection, anchorB, equipmentA);
   });
+
+  if (connectMode && firstConnect && connectionPointer) {
+    const source = document.querySelector(`.equipment[data-id="${firstConnect}"]`);
+    if (source) {
+      const anchor = equipmentAnchor(source, connectionPointer.x, connectionPointer.y);
+      const preview = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      preview.id = 'connectionPreviewLine';
+      preview.classList.add('connection-preview');
+      preview.setAttribute('x1', anchor.x);
+      preview.setAttribute('y1', anchor.y);
+      preview.setAttribute('x2', connectionPointer.x);
+      preview.setAttribute('y2', connectionPointer.y);
+      svg.appendChild(preview);
+    }
+  }
 }
 
 function fillDepartmentSelect() {
