@@ -80,10 +80,7 @@
     if (event.button !== 0) return;
     if (event.target.closest('.equipment')) return;
     if (event.target.closest('button, input, select, textarea, label')) return;
-    if (
-      (typeof connectMode !== 'undefined' && connectMode) ||
-      (typeof disconnectMode !== 'undefined' && disconnectMode)
-    ) return;
+    if (typeof connectMode !== 'undefined' && connectMode) return;
 
     arrastandoFundo = true;
     inicioX = event.clientX;
@@ -182,7 +179,7 @@
 
     const status = document.querySelector('#statusConexao');
     if (status && !status.textContent.includes('fundo quadriculado')) {
-      status.textContent = 'Arraste os equipamentos para organizar a rede. Arraste o fundo quadriculado para navegar. Perto das bordas, o mapa aumenta automaticamente. Dê dois cliques para editar.';
+      status.textContent = 'Arraste os equipamentos para organizar a rede. Dê dois cliques em um equipamento para iniciar uma conexão. Use ⚙ para editar. Passe o mouse sobre a saída de um cabo para desconectar.';
     }
   });
 })();
