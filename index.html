@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Projeto de Redes - Minha Empresa</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css?v=20261104-conexoes-visuais" />
   <link rel="stylesheet" href="css/mapa-extra.css" />
   <link rel="stylesheet" href="css/floors.css?v=20260830-andares" />
   <link rel="stylesheet" href="css/lgpd.css" />
@@ -116,9 +116,6 @@
           </select>
 
           <button id="btnAdicionarEquipamento" class="btn btn-primary">+ Adicionar equipamento</button>
-          <button id="btnConectar" class="btn btn-secondary">🔗 Conectar equipamentos</button>
-          <button id="btnDesconectar" class="btn btn-secondary">🔓 Desconectar equipamentos</button>
-          <button id="btnCancelarConexao" class="btn btn-danger hidden">Cancelar</button>
 
           <div class="map-zoom-controls" aria-label="Controles de zoom do mapa">
             <button id="btnZoomMenos" class="map-zoom-btn" type="button" title="Diminuir zoom">−</button>
@@ -130,7 +127,7 @@
         </div>
 
         <p id="statusConexao" class="status-message">
-          Arraste os equipamentos para organizar a rede. Perto das bordas, o mapa aumenta automaticamente. Dê dois cliques para editar.
+          Arraste os equipamentos para organizar a rede. Dê dois cliques em um equipamento para iniciar uma conexão. Use ⚙ para editar. Passe o mouse sobre a saída de um cabo para desconectar.
         </p>
 
         <div id="networkCanvas" class="network-canvas">
@@ -214,10 +211,10 @@
     </div>
   </div>
 
-  <script src="js/app.js?v=20261029-desconectar"></script>
+  <script src="js/app.js?v=20261104-conexoes-visuais"></script>
   <script src="js/floors.js?v=20260830-andares"></script>
   <script src="js/batch-save.js?v=20261029-desconectar"></script>
-  <script src="js/mapa-extra-v2.js?v=20261029-desconectar"></script>
+  <script src="js/mapa-extra-v2.js?v=20261104-conexoes-visuais"></script>
   <script src="js/lgpd.js?v=20260910-nuvem-continuidade"></script>
   <script src="js/nuvem.js?v=20260910-nuvem-continuidade-v2"></script>
   <script>
