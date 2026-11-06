@@ -351,3 +351,212 @@
 
   .sdn-simulation-controls .btn { width: 100%; }
 }
+
+
+/* =========================================================
+   CONTROLE SDN SIMPLIFICADO
+   ========================================================= */
+
+.sdn-simple-intro strong + p strong {
+  display: inline;
+  margin: 0;
+  color: inherit;
+  font-size: inherit;
+}
+
+.sdn-simple-steps {
+  display: grid;
+  gap: 8px;
+}
+
+.sdn-simple-step {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.sdn-step-badge {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  margin-top: 4px;
+  border-radius: 50%;
+  background: #2563eb;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 900;
+  box-shadow: 0 7px 18px rgba(37, 99, 235, .22);
+}
+
+.sdn-step-content {
+  min-width: 0;
+}
+
+.sdn-fields-one {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 560px;
+}
+
+.sdn-help-box {
+  display: grid;
+  gap: 4px;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 11px;
+  background: #eff6ff;
+  color: #475569;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.sdn-help-box strong {
+  color: #1d4ed8;
+}
+
+.sdn-rule-simple-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.sdn-simple-rule-card {
+  min-width: 0;
+}
+
+.sdn-simple-final {
+  grid-template-columns: minmax(220px, .8fr) minmax(260px, 1.2fr);
+}
+
+.sdn-simple-final .btn {
+  width: 100%;
+  min-height: 44px;
+}
+
+.sdn-simple-status {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 11px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.sdn-simple-status.pending {
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.sdn-simple-status.error {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.sdn-simple-status.success {
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.sdn-simple-test-result {
+  display: grid;
+  gap: 5px;
+  padding: 16px;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  background: #f0fdf4;
+}
+
+.sdn-simple-test-result.block {
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.sdn-simple-test-result strong {
+  color: #166534;
+}
+
+.sdn-simple-test-result.block strong {
+  color: #991b1b;
+}
+
+.sdn-simple-test-result p {
+  margin: 0;
+  color: #0f172a;
+  font-weight: 800;
+}
+
+.sdn-simple-test-result small {
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.sdn-simple-summary {
+  margin-top: 14px;
+}
+
+.sdn-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.sdn-summary-card {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  padding: 15px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 13px;
+  background: #fff;
+}
+
+.sdn-summary-card > small {
+  color: #2563eb;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .07em;
+}
+
+.sdn-summary-card > strong {
+  color: #0f172a;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.sdn-summary-card > p {
+  margin: 0;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.sdn-summary-card .sdn-rule-action {
+  width: fit-content;
+}
+
+.sdn-summary-wide {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 850px) {
+  .sdn-simple-step {
+    grid-template-columns: 1fr;
+  }
+
+  .sdn-step-badge {
+    width: 36px;
+    height: 36px;
+  }
+
+  .sdn-rule-simple-grid,
+  .sdn-summary-grid,
+  .sdn-simple-final {
+    grid-template-columns: 1fr;
+  }
+
+  .sdn-summary-wide {
+    grid-column: auto;
+  }
+}
