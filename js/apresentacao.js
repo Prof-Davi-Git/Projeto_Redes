@@ -81,48 +81,53 @@
 
   const NOTE_PROMPTS = {
     capa: [
-      'Apresentem o nome da empresa e os integrantes.',
-      'Expliquem em uma frase qual foi o objetivo do projeto.'
+      'Apresentem a empresa e os integrantes.',
+      'Digam em uma frase o que o público vai conhecer durante a apresentação.'
     ],
     empresa: [
-      'O que a empresa faz?',
-      'Quais setores foram necessários para ela funcionar?',
-      'Por que uma rede organizada é importante para essa empresa?'
+      'Contem de forma simples o que a empresa faz.',
+      'Mostrem como ela está dividida em setores.',
+      'Relacionem essa organização com a necessidade de uma boa rede.'
     ],
     infraestrutura: [
-      'Como vocês distribuíram os equipamentos?',
-      'Qual equipamento tem papel central na rede?',
-      'O que mudou quando a empresa cresceu?'
+      'Expliquem quais equipamentos ajudam a empresa a funcionar.',
+      'Citem apenas os equipamentos mais importantes; não é necessário explicar todos um por um.',
+      'Mostrem como a tecnologia atende os diferentes setores.'
     ],
     enderecamento: [
-      'Como vocês escolheram os IPs e prefixos?',
-      'Por que os equipamentos não podem repetir IP?',
-      'Qual é a função do endereço MAC?'
+      'Expliquem que cada equipamento precisa ter uma identificação própria na rede.',
+      'Escolham um equipamento como exemplo e mostrem seu IP e MAC.',
+      'Evitem transformar esta parte em uma aula técnica: o foco é mostrar organização.'
     ],
     seguranca: [
-      'Quais cuidados de segurança foram considerados?',
-      'Como a LGPD influenciou as decisões da empresa?',
-      'Que tipo de dado merece mais atenção?'
+      'Contem quais cuidados ajudam a proteger a empresa e as informações.',
+      'Expliquem de forma simples como os dados de clientes e funcionários são tratados.',
+      'Citem um exemplo de informação que exige mais cuidado.'
     ],
-    nuvem: [
-      'Quais recursos foram colocados na nuvem?',
-      'Como vocês aplicaram permissões, TLS e backup?',
-      'Como a empresa se recuperaria de um problema?'
+    continuidade: [
+      'Expliquem onde ficam os serviços ou dados importantes da empresa.',
+      'Contem como a empresa se prepara para falhas ou perda de informações.',
+      'Destaquem a importância de backup, acesso controlado e conexão protegida.'
     ],
-    sdn: [
-      'Qual switch ficou sob controle do SDN?',
-      'Que rede virtual foi criada?',
-      'O que as regras permitiram ou bloquearam e por quê?'
+    comunicacao: [
+      'Expliquem que nem todos os equipamentos precisam conversar com todos.',
+      'Mostrem um exemplo real de comunicação permitida ou bloqueada.',
+      'Digam por que essa regra ajuda a organização ou a segurança da empresa.'
     ],
-    expansao: [
-      'O que foi acrescentado na expansão da empresa?',
-      'Como os novos setores e equipamentos foram distribuídos?',
-      'Que cuidado foi necessário para manter a rede organizada?'
+    crescimento: [
+      'Contem como a empresa cresceu durante o projeto.',
+      'Mostrem o que foi acrescentado: andar, setores ou equipamentos.',
+      'Expliquem por que a rede também precisou crescer junto com a empresa.'
+    ],
+    mapa: [
+      'Mostrem como a rede ficou organizada neste andar.',
+      'Apontem os setores e os equipamentos mais importantes.',
+      'Usem o mapa como resumo visual do que foi explicado anteriormente.'
     ],
     conclusao: [
-      'O que o grupo aprendeu construindo essa empresa?',
-      'Qual decisão de rede vocês consideram mais importante?',
-      'O que vocês melhorariam em uma próxima versão?'
+      'Retomem em poucas palavras o resultado final da empresa.',
+      'Contem qual foi a principal decisão ou aprendizado do grupo.',
+      'Finalizem mostrando como a solução criada ajuda a empresa a funcionar.'
     ]
   };
 
@@ -372,8 +377,11 @@
       String(item.mac || '').trim()
     );
 
+    const ipExamples = configuredIp.slice(0, 4);
+    const backup = cloud.backup || {};
     const slidesOut = [];
 
+    // 1 — Capa
     slidesOut.push({
       key: 'capa',
       title: 'Capa',
@@ -381,7 +389,7 @@
       html: slideShell({
         eyebrow: 'APRESENTAÇÃO FINAL',
         title: company.name || 'Minha Empresa',
-        subtitle: 'Projeto Integrador de Redes de Computadores',
+        subtitle: 'Projeto de Redes de Computadores',
         number: 1,
         className: 'ap-cover',
         body: `
@@ -404,22 +412,23 @@
                 <small>APRESENTADORES</small>
                 <strong>${esc(company.members || 'Integrantes não informados')}</strong>
               </div>
-              <span>Infraestrutura • Segurança • Nuvem • SDN</span>
+              <span>Empresa • Tecnologia • Redes</span>
             </div>
           </div>
         `
       })
     });
 
+    // 2 — Empresa
     slidesOut.push({
       key: 'empresa',
       title: 'A empresa',
       prompts: NOTE_PROMPTS.empresa,
       html: slideShell({
-        eyebrow: '01 • CONTEXTO',
+        eyebrow: '01 • NOSSA EMPRESA',
         title: 'Conheça nossa empresa',
-        subtitle: 'A rede foi planejada para atender a estrutura e as necessidades desta organização.',
-        number: 2,
+        subtitle: 'Antes de falar da rede, é importante entender quem ela precisa atender.',
+        number: slidesOut.length + 1,
         className: 'ap-company-slide',
         body: `
           <div class="ap-two-col ap-company-main">
@@ -429,7 +438,7 @@
             </div>
 
             <div class="ap-panel ap-departments-panel">
-              <small>DEPARTAMENTOS</small>
+              <small>COMO A EMPRESA ESTÁ ORGANIZADA</small>
               <div class="ap-department-grid count-${Math.min(Math.max(departments.length, 1), 8)}">
                 ${departments.length
                   ? departments.map((dep, index) => `
@@ -438,30 +447,31 @@
                         <strong>${esc(dep.name)}</strong>
                       </div>
                     `).join('')
-                  : `<div class="ap-department-empty">${emptyValue('Nenhum departamento cadastrado')}</div>`}
+                  : `<div class="ap-department-empty">${emptyValue('Nenhum setor cadastrado')}</div>`}
               </div>
             </div>
           </div>
 
           <div class="ap-stats-row">
             ${statCard('🏬', floors.length, 'andares')}
-            ${statCard('🗂️', departments.length, 'departamentos')}
+            ${statCard('🗂️', departments.length, 'setores')}
             ${statCard('💻', equipment.length, 'equipamentos')}
-            ${statCard('🔗', connections.length, 'conexões')}
+            ${statCard('🔗', connections.length, 'ligações')}
           </div>
         `
       })
     });
 
+    // 3 — Estrutura
     slidesOut.push({
       key: 'infraestrutura',
-      title: 'Estrutura da rede',
+      title: 'Tecnologia da empresa',
       prompts: NOTE_PROMPTS.infraestrutura,
       html: slideShell({
-        eyebrow: '02 • INFRAESTRUTURA',
-        title: 'Como nossa rede foi montada',
-        subtitle: 'Os equipamentos foram escolhidos e distribuídos de acordo com a necessidade da empresa.',
-        number: 3,
+        eyebrow: '02 • ESTRUTURA',
+        title: 'A tecnologia que mantém a empresa conectada',
+        subtitle: 'Cada equipamento cumpre uma função para que os setores consigam trabalhar e se comunicar.',
+        number: slidesOut.length + 1,
         className: 'ap-infrastructure-slide',
         body: `
           <div class="ap-equipment-grid">
@@ -478,81 +488,40 @@
           </div>
 
           <div class="ap-callout">
-            <span>💡</span>
+            <span>🏢</span>
             <div>
-              <strong>O que mostrar ao público</strong>
-              <p>Explique por que cada equipamento foi necessário e como os setores foram conectados.</p>
+              <strong>Da necessidade da empresa para a solução</strong>
+              <p>Os equipamentos foram escolhidos para atender os setores e permitir que a empresa funcione de forma organizada.</p>
             </div>
           </div>
         `
       })
     });
 
-    floors.forEach((floor, floorIndex) => {
-      const floorEquipment = equipmentForFloor(floor.id, floors);
-      const floorDepartments = [...new Set(
-        floorEquipment
-          .map(item => item.departmentId)
-          .filter(Boolean)
-          .map(departmentName)
-      )];
-
-      slidesOut.push({
-        key: `mapa-${floor.id}`,
-        title: `Mapa — ${floor.name || 'Andar'}`,
-        prompts: [
-          `Apresentem o mapa do ${floor.name || 'andar'}.`,
-          'Mostrem os principais equipamentos e conexões.',
-          'Expliquem como os setores foram distribuídos neste andar.'
-        ],
-        html: slideShell({
-          eyebrow: `03 • MAPA DA REDE • ${String(floorIndex + 1).padStart(2, '0')}`,
-          title: floor.name || 'Mapa da Rede',
-          subtitle: 'Esta visualização usa as posições e conexões cadastradas no próprio Mapa da Rede.',
-          number: slidesOut.length + 1,
-          className: 'ap-map-slide',
-          body: `
-            <div class="ap-map-layout">
-              ${mapPreview(floor, floorIndex)}
-              <div class="ap-map-side">
-                <div class="ap-mini-stat"><b>${floorEquipment.length}</b><span>equipamentos</span></div>
-                <div class="ap-mini-stat"><b>${connectionsForFloor(floor.id, floors).length}</b><span>conexões</span></div>
-                <div class="ap-map-departments">
-                  <small>SETORES NESTE ANDAR</small>
-                  ${floorDepartments.length
-                    ? floorDepartments.map(name => chip(name)).join('')
-                    : emptyValue('Sem setores definidos')}
-                </div>
-              </div>
-            </div>
-          `
-        })
-      });
-    });
-
+    // 4 — Identificação da rede
     slidesOut.push({
       key: 'enderecamento',
-      title: 'Endereçamento',
+      title: 'Organização da rede',
       prompts: NOTE_PROMPTS.enderecamento,
       html: slideShell({
-        eyebrow: '04 • ENDEREÇAMENTO',
-        title: 'IP, prefixo e endereço MAC',
-        subtitle: 'Cada equipamento precisa ser identificado corretamente para participar da rede.',
+        eyebrow: '03 • ORGANIZAÇÃO DA REDE',
+        title: 'Como identificamos cada equipamento',
+        subtitle: 'Assim como pessoas e salas possuem identificação, os dispositivos também precisam ser reconhecidos dentro da rede.',
         number: slidesOut.length + 1,
         className: 'ap-addressing-slide',
         body: `
           <div class="ap-stats-row">
-            ${statCard('🌐', configuredIp.length, 'equipamentos completos')}
-            ${statCard('📍', equipment.filter(i => i.ip).length, 'com endereço IP')}
-            ${statCard('🏷️', equipment.filter(i => i.mac).length, 'com endereço MAC')}
+            ${statCard('🌐', equipment.filter(i => i.ip).length, 'com identificação de rede')}
+            ${statCard('🏷️', equipment.filter(i => i.mac).length, 'com identificação física')}
+            ${statCard('✅', configuredIp.length, 'configurações completas')}
           </div>
 
           <div class="ap-table-card">
             <div class="ap-table-head">
               <span>Equipamento</span><span>IP</span><span>Prefixo</span><span>MAC</span>
             </div>
-            ${configuredIp.length
-              ? configuredIp.slice(0, 6).map(item => `
+            ${ipExamples.length
+              ? ipExamples.map(item => `
                   <div class="ap-table-row">
                     <span>${esc(item.name || 'Equipamento')}</span>
                     <span>${esc(item.ip)}</span>
@@ -560,87 +529,102 @@
                     <span>${esc(item.mac)}</span>
                   </div>
                 `).join('')
-              : `<div class="ap-table-empty">Aguardando configuração dos endereços.</div>`}
+              : `<div class="ap-table-empty">As identificações da rede ainda não foram concluídas.</div>`}
+          </div>
+
+          <div class="ap-public-explain">
+            <strong>Em linguagem simples:</strong>
+            <span>IP ajuda a localizar o equipamento na rede; MAC identifica fisicamente o dispositivo.</span>
           </div>
         `
       })
     });
 
+    // 5 — Proteção
     slidesOut.push({
       key: 'seguranca',
-      title: 'Segurança e LGPD',
+      title: 'Proteção da empresa',
       prompts: NOTE_PROMPTS.seguranca,
       html: slideShell({
-        eyebrow: '05 • SEGURANÇA E DADOS',
-        title: 'Proteção da empresa e dos dados',
-        subtitle: 'A rede também precisa considerar segurança, privacidade e uso responsável das informações.',
+        eyebrow: '04 • PROTEÇÃO',
+        title: 'Como protegemos a empresa e os dados',
+        subtitle: 'A infraestrutura não precisa apenas funcionar: ela também precisa proteger pessoas, informações e acessos.',
         number: slidesOut.length + 1,
         className: 'ap-security-slide',
         body: `
           <div class="ap-three-col">
             <div class="ap-feature-card">
               <span>🛡️</span>
-              <small>SEGURANÇA</small>
-              <strong>Reduzir vulnerabilidades</strong>
-              <p>Atualizações, validação de entradas e decisões de proteção ajudam a reduzir riscos.</p>
+              <small>AMBIENTE PROTEGIDO</small>
+              <strong>Menos riscos para a operação</strong>
+              <p>Atualizações e boas práticas ajudam a reduzir falhas e acessos indevidos.</p>
             </div>
             <div class="ap-feature-card">
-              <span>⚖️</span>
-              <small>LGPD</small>
-              <strong>${lgpd.count} cadastro(s) analisado(s)</strong>
-              <p>Finalidade, titular, necessidade e uso dos dados fazem parte da análise.</p>
+              <span>👤</span>
+              <small>PRIVACIDADE</small>
+              <strong>${lgpd.count} tipo(s) de cadastro revisado(s)</strong>
+              <p>Os dados são usados com finalidade definida e apenas quando necessários para a empresa.</p>
             </div>
             <div class="ap-feature-card">
               <span>🔐</span>
-              <small>DADOS SENSÍVEIS</small>
-              <strong>${lgpd.sensitiveCount} cadastro(s) com classificação</strong>
-              <p>O grupo deve explicar quais informações exigem maior cuidado.</p>
+              <small>INFORMAÇÕES SENSÍVEIS</small>
+              <strong>${lgpd.sensitiveCount} caso(s) exigem atenção extra</strong>
+              <p>Informações mais delicadas recebem cuidado maior no armazenamento e no acesso.</p>
             </div>
           </div>
 
-          <div class="ap-chip-list ap-bottom-chips">
-            ${lgpd.examples.length
-              ? lgpd.examples.map(chip).join('')
-              : emptyValue('Cadastros da LGPD ainda não registrados')}
+          <div class="ap-callout">
+            <span>⚖️</span>
+            <div>
+              <strong>Privacidade também faz parte da infraestrutura</strong>
+              <p>A empresa precisa saber quais dados possui, por que utiliza essas informações e quem realmente precisa acessá-las.</p>
+            </div>
           </div>
         `
       })
     });
 
-    const backup = cloud.backup || {};
+    // 6 — Continuidade
     slidesOut.push({
       key: 'nuvem',
-      title: 'Nuvem e continuidade',
-      prompts: NOTE_PROMPTS.nuvem,
+      title: 'Continuidade da empresa',
+      prompts: NOTE_PROMPTS.continuidade,
       html: slideShell({
-        eyebrow: '06 • NUVEM E CONTINUIDADE',
-        title: 'A empresa precisa continuar funcionando',
-        subtitle: 'Recursos em nuvem, permissões, criptografia e backup ajudam a manter os dados disponíveis e protegidos.',
+        eyebrow: '05 • CONTINUIDADE',
+        title: 'Como mantemos a empresa funcionando',
+        subtitle: 'Serviços online, cópias de segurança e controle de acesso ajudam a empresa a continuar mesmo diante de falhas.',
         number: slidesOut.length + 1,
         className: 'ap-cloud-slide',
         body: `
           <div class="ap-two-col ap-cloud-layout">
             <div class="ap-panel">
-              <small>RECURSOS EM NUVEM</small>
+              <small>SERVIÇOS E DADOS IMPORTANTES</small>
               <div class="ap-resource-list">
                 ${cloud.resources.length
                   ? cloud.resources.slice(0, 4).map(resource => `
                       <div>
                         <span>☁️</span>
-                        <p><strong>${esc(resource.name || 'Recurso')}</strong><small>${esc(resource.purpose || 'Finalidade não informada')}</small></p>
-                        <b>${resource.transport === 'tls13' ? 'TLS 1.3' : 'TLS pendente'}</b>
+                        <p>
+                          <strong>${esc(resource.name || 'Serviço online')}</strong>
+                          <small>${esc(resource.purpose || 'Usado para apoiar a operação da empresa')}</small>
+                        </p>
+                        <b>${resource.transport === 'tls13' ? 'Conexão protegida' : 'Proteção a revisar'}</b>
                       </div>
                     `).join('')
-                  : emptyValue('Nenhum recurso de nuvem cadastrado')}
+                  : emptyValue('Os serviços online ainda não foram definidos')}
               </div>
             </div>
 
             <div class="ap-panel">
-              <small>PLANO DE BACKUP</small>
+              <small>PREPARAÇÃO PARA IMPREVISTOS</small>
               <div class="ap-backup-visual">
-                <div><span>💾</span><strong>${esc(backup.dataAmount || '—')}</strong><small>quantidade de dados</small></div>
-                <div><span>📅</span><strong>${esc(backup.fullDay || '—')}</strong><small>dia do Full</small></div>
-                <div><span>⚡</span><strong>${esc(backup.restoreEstimateMinutes || '—')}</strong><small>min. de Restore</small></div>
+                <div><span>💾</span><strong>${esc(backup.dataAmount || '—')}</strong><small>dados protegidos</small></div>
+                <div><span>📅</span><strong>${esc(backup.fullDay || '—')}</strong><small>dia da cópia completa</small></div>
+                <div><span>⚡</span><strong>${esc(backup.restoreEstimateMinutes || '—')}</strong><small>min. para recuperação</small></div>
+              </div>
+              <div class="ap-public-explain">
+                <strong>Objetivo:</strong>
+                <span>reduzir o impacto de falhas e recuperar as informações importantes da empresa.</span>
               </div>
             </div>
           </div>
@@ -648,63 +632,60 @@
       })
     });
 
+    // 7 — Controle da comunicação (traduz SDN para o público)
     slidesOut.push({
       key: 'sdn',
-      title: 'SDN e virtualização',
-      prompts: NOTE_PROMPTS.sdn,
+      title: 'Controle da comunicação',
+      prompts: NOTE_PROMPTS.comunicacao,
       html: slideShell({
-        eyebrow: '07 • CONTROLE SDN',
-        title: 'O controlador pensa e o switch executa',
-        subtitle: 'A equipe definiu como a comunicação da rede seria controlada.',
+        eyebrow: '06 • CONTROLE DE ACESSO',
+        title: 'Quem pode se comunicar com quem?',
+        subtitle: 'A rede possui regras para organizar a comunicação entre os equipamentos e evitar acessos desnecessários.',
         number: slidesOut.length + 1,
         className: 'ap-sdn-slide',
         body: `
-          <div class="ap-sdn-flow">
-            <div class="ap-sdn-box controller">
-              <span>🧠</span>
-              <small>CONTROLADOR</small>
-              <strong>${sdn.active ? 'Ativo' : 'Não configurado'}</strong>
+          <div class="ap-public-control">
+            <div class="ap-public-control-main">
+              <span>🎛️</span>
+              <div>
+                <small>CONTROLE CENTRAL DA REDE</small>
+                <strong>${sdn.active ? 'Ativo e configurado' : 'Ainda não configurado'}</strong>
+                <p>As decisões de comunicação são aplicadas de forma organizada aos equipamentos da empresa.</p>
+              </div>
             </div>
-            <div class="ap-sdn-arrow">→</div>
-            <div class="ap-sdn-box">
-              <span>🔌</span>
-              <small>SWITCH CONTROLADO</small>
-              <strong>${esc(sdn.switchName)}</strong>
-            </div>
-            <div class="ap-sdn-arrow">→</div>
-            <div class="ap-sdn-box">
-              <span>🌐</span>
-              <small>REDE VIRTUAL</small>
-              <strong>${esc(sdn.vnet?.name || 'Não definida')}</strong>
+            <div class="ap-public-control-summary">
+              <span><b>🔌</b><strong>${esc(sdn.switchName)}</strong><small>ponto controlado</small></span>
+              <span><b>🌐</b><strong>${esc(sdn.vnet?.name || 'Rede da empresa')}</strong><small>grupo de comunicação</small></span>
             </div>
           </div>
 
-          <div class="ap-rule-grid">
+          <div class="ap-rule-grid ap-public-rules">
             ${sdn.rules.length
               ? sdn.rules.map((rule, index) => `
                   <div class="ap-rule-card ${rule.action === 'bloquear' ? 'block' : 'allow'}">
-                    <small>REGRA ${index + 1}</small>
+                    <small>EXEMPLO ${index + 1}</small>
                     <strong>${esc(equipmentName(rule.sourceId))} → ${esc(equipmentName(rule.destinationId))}</strong>
-                    <span>${rule.action === 'bloquear' ? '⛔ BLOQUEAR' : '✅ PERMITIR'}</span>
-                    <p>${esc(rule.reason || 'Sem justificativa')}</p>
+                    <span>${rule.action === 'bloquear' ? '⛔ Comunicação bloqueada' : '✅ Comunicação permitida'}</span>
+                    <p>${esc(rule.reason || 'Regra criada para organizar a comunicação da empresa.')}</p>
                   </div>
                 `).join('')
-              : emptyValue('As regras do SDN ainda não foram salvas')}
+              : emptyValue('As regras de comunicação ainda não foram definidas')}
           </div>
         `
       })
     });
 
+    // 8 — Crescimento
     const lastFloor = floors[floors.length - 1];
     const lastFloorEquipment = equipmentForFloor(lastFloor.id, floors);
     slidesOut.push({
       key: 'expansao',
-      title: 'Expansão',
-      prompts: NOTE_PROMPTS.expansao,
+      title: 'Crescimento da empresa',
+      prompts: NOTE_PROMPTS.crescimento,
       html: slideShell({
-        eyebrow: '08 • EXPANSÃO',
-        title: 'A empresa cresceu — e a rede também',
-        subtitle: 'A expansão exigiu novos setores, equipamentos e conexões sem perder a organização do projeto.',
+        eyebrow: '07 • CRESCIMENTO',
+        title: 'A empresa cresceu — e a tecnologia acompanhou',
+        subtitle: 'Novos espaços e setores exigiram que a infraestrutura também fosse ampliada.',
         number: slidesOut.length + 1,
         className: 'ap-expansion-slide',
         body: `
@@ -712,7 +693,7 @@
             <div class="ap-big-number">
               <span>${floors.length}</span>
               <strong>ANDARES</strong>
-              <small>estrutura física atual</small>
+              <small>espaços atendidos</small>
             </div>
 
             <div class="ap-expansion-arrow">＋</div>
@@ -726,46 +707,87 @@
             <div class="ap-expansion-arrow">＋</div>
 
             <div class="ap-big-number">
-              <span>${lastFloorEquipment.length}</span>
+              <span>${equipment.length}</span>
               <strong>EQUIPAMENTOS</strong>
-              <small>no último andar criado</small>
+              <small>infraestrutura total</small>
             </div>
           </div>
 
           <div class="ap-callout">
-            <span>🏗️</span>
+            <span>📈</span>
             <div>
-              <strong>${esc(lastFloor.name || 'Novo andar')}</strong>
-              <p>A equipe deve explicar como organizou a expansão e por que essa distribuição faz sentido para a empresa.</p>
+              <strong>${esc(lastFloor.name || 'Novo espaço')} faz parte dessa expansão</strong>
+              <p>Esse andar reúne ${lastFloorEquipment.length} equipamento(s) e mostra como a rede acompanhou o crescimento físico da empresa.</p>
             </div>
           </div>
         `
       })
     });
 
+    // 9+ — Mapas: somente no final, antes da conclusão
+    floors.forEach((floor, floorIndex) => {
+      const floorEquipment = equipmentForFloor(floor.id, floors);
+      const floorConnections = connectionsForFloor(floor.id, floors);
+      const floorDepartments = [...new Set(
+        floorEquipment
+          .map(item => item.departmentId)
+          .filter(Boolean)
+          .map(departmentName)
+      )];
+
+      slidesOut.push({
+        key: `mapa-${floor.id}`,
+        title: `Rede — ${floor.name || 'Andar'}`,
+        prompts: NOTE_PROMPTS.mapa,
+        html: slideShell({
+          eyebrow: '08 • NOSSA REDE NA PRÁTICA',
+          title: floor.name || 'Mapa da Rede',
+          subtitle: 'Depois de todas as decisões, este é o resultado visual da rede montada pela equipe.',
+          number: slidesOut.length + 1,
+          className: 'ap-map-slide',
+          body: `
+            <div class="ap-map-layout">
+              ${mapPreview(floor, floorIndex)}
+              <div class="ap-map-side">
+                <div class="ap-mini-stat"><b>${floorEquipment.length}</b><span>equipamentos</span></div>
+                <div class="ap-mini-stat"><b>${floorConnections.length}</b><span>ligações</span></div>
+                <div class="ap-map-departments">
+                  <small>SETORES DESTE ANDAR</small>
+                  ${floorDepartments.length
+                    ? floorDepartments.map(name => chip(name)).join('')
+                    : emptyValue('Sem setores definidos')}
+                </div>
+              </div>
+            </div>
+          `
+        })
+      });
+    });
+
+    // Último — Conclusão
     slidesOut.push({
       key: 'conclusao',
       title: 'Conclusão',
       prompts: NOTE_PROMPTS.conclusao,
       html: slideShell({
-        eyebrow: '09 • CONCLUSÃO',
-        title: 'Uma empresa conectada, organizada e preparada para crescer',
-        subtitle: 'O projeto reuniu infraestrutura, endereçamento, segurança, dados, nuvem e controle de rede.',
+        eyebrow: '09 • RESULTADO FINAL',
+        title: 'Uma empresa conectada e preparada para funcionar',
+        subtitle: 'A solução final reúne organização, comunicação, proteção e capacidade de crescimento.',
         number: slidesOut.length + 1,
         className: 'ap-conclusion',
         body: `
           <div class="ap-conclusion-grid">
-            ${statCard('🏬', floors.length, 'andares')}
-            ${statCard('🗂️', departments.length, 'departamentos')}
+            ${statCard('🏬', floors.length, 'andares atendidos')}
+            ${statCard('🗂️', departments.length, 'setores conectados')}
             ${statCard('💻', equipment.length, 'equipamentos')}
-            ${statCard('🔗', connections.length, 'conexões')}
+            ${statCard('🔗', connections.length, 'ligações de rede')}
           </div>
 
           <div class="ap-final-message">
             <span>✓</span>
             <div>
-              <strong>Projeto de Redes concluído pela equipe</strong>
-              <p>Agora o grupo deve fechar a apresentação contando as principais decisões, dificuldades e aprendizados.</p>
+              <strong>Da ideia da empresa até uma infraestrutura completa</strong>
+              <p>O grupo planejou uma rede capaz de atender os setores, proteger informações, manter serviços importantes e acompanhar o crescimento da organização.</p>
             </div>
           </div>
         `
