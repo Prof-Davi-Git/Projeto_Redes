@@ -2401,3 +2401,176 @@
     radial-gradient(circle at 18% 22%, rgba(255,255,255,.95), transparent 34%),
     linear-gradient(135deg, #f8fafc 0%, #e8edf3 58%, #d7dee7 100%) !important;
 }
+
+
+/* =========================================================
+   ACESSIBILIDADE DE CONTRASTE — TODOS OS TEMAS
+   Nenhum texto de destaque pode se confundir com o fundo.
+   ========================================================= */
+
+/* Tema escuro: acentos claros de alto contraste. */
+.theme-tech-blue .ap-brand,
+.theme-tech-blue .ap-slide-heading p,
+.theme-tech-blue .ap-cover-footer,
+.theme-tech-blue .ap-feature-card p,
+.theme-tech-blue .ap-callout p,
+.theme-tech-blue .ap-resource-list small,
+.theme-tech-blue .ap-backup-visual small,
+.theme-tech-blue .ap-rule-card p,
+.theme-tech-blue .ap-big-number small,
+.theme-tech-blue .ap-stat small,
+.theme-tech-blue .ap-equipment-card small {
+  color: #cbd5e1;
+}
+
+.theme-tech-blue .ap-brand b,
+.theme-tech-blue .ap-slide-number,
+.theme-tech-blue .ap-slide-heading > small,
+.theme-tech-blue .ap-panel > small,
+.theme-tech-blue .ap-highlight-panel > small,
+.theme-tech-blue .ap-feature-card > small,
+.theme-tech-blue .ap-map-departments small,
+.theme-tech-blue .ap-sdn-box small,
+.theme-tech-blue .ap-big-number strong {
+  color: #67e8f9;
+}
+
+.theme-tech-blue .ap-slide-heading h2,
+.theme-tech-blue .ap-highlight-panel p,
+.theme-tech-blue .ap-feature-card strong,
+.theme-tech-blue .ap-resource-list strong,
+.theme-tech-blue .ap-backup-visual strong,
+.theme-tech-blue .ap-sdn-box strong,
+.theme-tech-blue .ap-rule-card strong,
+.theme-tech-blue .ap-big-number > span,
+.theme-tech-blue .ap-final-message strong,
+.theme-tech-blue .ap-stat strong,
+.theme-tech-blue .ap-equipment-card strong,
+.theme-tech-blue .ap-mini-stat b,
+.theme-tech-blue .ap-cover-footer b {
+  color: #ffffff;
+}
+
+/* Verde claro: acento verde escuro. */
+.theme-matrix-green .ap-brand b,
+.theme-matrix-green .ap-slide-number,
+.theme-matrix-green .ap-slide-heading > small,
+.theme-matrix-green .ap-panel > small,
+.theme-matrix-green .ap-highlight-panel > small,
+.theme-matrix-green .ap-feature-card > small,
+.theme-matrix-green .ap-map-departments small,
+.theme-matrix-green .ap-sdn-box small,
+.theme-matrix-green .ap-big-number strong,
+.theme-matrix-green .ap-resource-list b {
+  color: #166534 !important;
+}
+
+.theme-matrix-green .ap-empty,
+.theme-matrix-green .ap-mini-stat span,
+.theme-matrix-green .ap-rule-card > small {
+  color: #4b6354 !important;
+}
+
+/* Roxo claro: acento violeta escuro. */
+.theme-neon-violet .ap-brand b,
+.theme-neon-violet .ap-slide-number,
+.theme-neon-violet .ap-slide-heading > small,
+.theme-neon-violet .ap-panel > small,
+.theme-neon-violet .ap-highlight-panel > small,
+.theme-neon-violet .ap-feature-card > small,
+.theme-neon-violet .ap-map-departments small,
+.theme-neon-violet .ap-sdn-box small,
+.theme-neon-violet .ap-big-number strong,
+.theme-neon-violet .ap-resource-list b {
+  color: #6d28d9 !important;
+}
+
+.theme-neon-violet .ap-empty,
+.theme-neon-violet .ap-mini-stat span,
+.theme-neon-violet .ap-rule-card > small {
+  color: #6b5b73 !important;
+}
+
+/* Claro corporativo: azul forte para etiquetas e títulos auxiliares. */
+.theme-corporate-light .ap-brand b,
+.theme-corporate-light .ap-slide-number,
+.theme-corporate-light .ap-slide-heading > small,
+.theme-corporate-light .ap-panel > small,
+.theme-corporate-light .ap-highlight-panel > small,
+.theme-corporate-light .ap-feature-card > small,
+.theme-corporate-light .ap-map-departments small,
+.theme-corporate-light .ap-sdn-box small,
+.theme-corporate-light .ap-big-number strong,
+.theme-corporate-light .ap-resource-list b {
+  color: #1d4ed8 !important;
+}
+
+.theme-corporate-light .ap-empty,
+.theme-corporate-light .ap-mini-stat span,
+.theme-corporate-light .ap-rule-card > small {
+  color: #475569 !important;
+}
+
+/* Infra claro: vermelho escuro para etiquetas; texto principal grafite. */
+.theme-infra-red .ap-brand b,
+.theme-infra-red .ap-slide-number,
+.theme-infra-red .ap-slide-heading > small,
+.theme-infra-red .ap-panel > small,
+.theme-infra-red .ap-highlight-panel > small,
+.theme-infra-red .ap-feature-card > small,
+.theme-infra-red .ap-map-departments small,
+.theme-infra-red .ap-sdn-box small,
+.theme-infra-red .ap-big-number strong,
+.theme-infra-red .ap-resource-list b {
+  color: #b91c1c !important;
+}
+
+.theme-infra-red .ap-empty,
+.theme-infra-red .ap-mini-stat span,
+.theme-infra-red .ap-rule-card > small {
+  color: #4b5563 !important;
+}
+
+/* Cards claros não podem herdar textos brancos dos estilos base. */
+.theme-matrix-green .ap-callout strong,
+.theme-matrix-green .ap-resource-list strong,
+.theme-matrix-green .ap-backup-visual strong,
+.theme-matrix-green .ap-sdn-box strong,
+.theme-matrix-green .ap-rule-card strong,
+.theme-neon-violet .ap-callout strong,
+.theme-neon-violet .ap-resource-list strong,
+.theme-neon-violet .ap-backup-visual strong,
+.theme-neon-violet .ap-sdn-box strong,
+.theme-neon-violet .ap-rule-card strong,
+.theme-corporate-light .ap-callout strong,
+.theme-corporate-light .ap-resource-list strong,
+.theme-corporate-light .ap-backup-visual strong,
+.theme-corporate-light .ap-sdn-box strong,
+.theme-corporate-light .ap-rule-card strong,
+.theme-infra-red .ap-callout strong,
+.theme-infra-red .ap-resource-list strong,
+.theme-infra-red .ap-backup-visual strong,
+.theme-infra-red .ap-sdn-box strong,
+.theme-infra-red .ap-rule-card strong {
+  color: #111827;
+}
+
+/* Chips e estados também precisam de contraste. */
+.theme-matrix-green .ap-chip { color: #14532d; }
+.theme-neon-violet .ap-chip { color: #581c87; }
+.theme-corporate-light .ap-chip { color: #1e40af; }
+.theme-infra-red .ap-chip { color: #991b1b; }
+
+/* Regra visual extra para as duas palavras citadas:
+   ENSINO TÉCNICO e APRESENTAÇÃO FINAL. */
+.theme-matrix-green .ap-brand b,
+.theme-matrix-green .ap-slide-heading > small,
+.theme-neon-violet .ap-brand b,
+.theme-neon-violet .ap-slide-heading > small,
+.theme-corporate-light .ap-brand b,
+.theme-corporate-light .ap-slide-heading > small,
+.theme-infra-red .ap-brand b,
+.theme-infra-red .ap-slide-heading > small {
+  text-shadow: none;
+  font-weight: 1000;
+}
