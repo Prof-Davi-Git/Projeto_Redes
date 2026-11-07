@@ -1013,6 +1013,13 @@
 
   window.apresentacaoPossuiRascunho = () => dirty;
 
+  document.addEventListener('fullscreenchange', () => {
+    const overlay = E('#apPresenter');
+    if (overlay?.classList.contains('active') && !document.fullscreenElement) {
+      overlay.classList.remove('active');
+    }
+  });
+
   function start() {
     ensurePresentationData();
     draftNotes = { ...(project.company.presentation.notes || {}) };
