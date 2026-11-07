@@ -632,7 +632,7 @@
       })
     });
 
-    // 7 — Controle da comunicação (traduz SDN para o público)
+    // 7 — Controle da comunicação
     slidesOut.push({
       key: 'sdn',
       title: 'Controle da comunicação',
