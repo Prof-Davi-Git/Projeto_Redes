@@ -50,32 +50,32 @@
     {
       id: 'tech-blue',
       name: 'Azul Tecnológico',
-      description: 'Escuro, técnico e moderno.',
+      description: 'Azul profundo com círculos tecnológicos.',
       swatches: ['#08111f', '#2563eb', '#22d3ee']
     },
     {
       id: 'matrix-green',
       name: 'Verde Matrix',
-      description: 'Grafite com verde de infraestrutura.',
-      swatches: ['#07110d', '#16a34a', '#86efac']
+      description: 'Verde claro com grade e blocos digitais.',
+      swatches: ['#ecfdf5', '#15803d', '#86efac']
     },
     {
       id: 'neon-violet',
       name: 'Roxo Neon',
-      description: 'Tecnologia com roxo e magenta.',
-      swatches: ['#140a24', '#7c3aed', '#f472b6']
+      description: 'Lilás vibrante com formas flutuantes.',
+      swatches: ['#f5f3ff', '#7c3aed', '#f472b6']
     },
     {
       id: 'corporate-light',
       name: 'Claro Corporativo',
-      description: 'Limpo, claro e profissional.',
+      description: 'Branco, azul e faixas corporativas.',
       swatches: ['#f8fafc', '#1d4ed8', '#f59e0b']
     },
     {
       id: 'infra-red',
       name: 'Vermelho Infra',
-      description: 'Preto, vermelho e visual de operação.',
-      swatches: ['#111111', '#dc2626', '#f59e0b']
+      description: 'Cinza claro com vermelho e formas industriais.',
+      swatches: ['#f8fafc', '#dc2626', '#111827']
     }
   ];
 
@@ -258,6 +258,13 @@
   function slideShell({ eyebrow, title, subtitle = '', body, number, className = '' }) {
     return `
       <article class="ap-slide theme-${esc(draftThemeId)} ${className}">
+        <div class="ap-theme-art" aria-hidden="true">
+          <i class="shape-a"></i>
+          <i class="shape-b"></i>
+          <i class="shape-c"></i>
+          <i class="shape-d"></i>
+          <i class="shape-e"></i>
+        </div>
         <div class="ap-slide-top">
           <div class="ap-brand">
             <span class="ap-brand-mark">R</span>
