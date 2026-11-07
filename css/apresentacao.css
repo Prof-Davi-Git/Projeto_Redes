@@ -2574,3 +2574,578 @@
   text-shadow: none;
   font-weight: 1000;
 }
+
+
+/* =========================================================
+   APRESENTAÇÃO PÚBLICA — LEITURA À DISTÂNCIA E MELHOR OCUPAÇÃO
+   ========================================================= */
+
+/* Tipografia geral maior para projeção. */
+.ap-slide {
+  padding: 3.1% 4%;
+}
+
+.ap-brand {
+  font-size: clamp(9px, .82vw, 13px);
+}
+
+.ap-brand-mark {
+  width: 28px;
+  height: 28px;
+  font-size: 13px;
+}
+
+.ap-slide-number {
+  font-size: clamp(11px, .95vw, 15px);
+}
+
+.ap-slide-heading {
+  max-width: 86%;
+  margin-top: 3%;
+}
+
+.ap-slide-heading > small {
+  font-size: clamp(9px, .88vw, 14px);
+}
+
+.ap-slide-heading h2 {
+  margin-top: .7%;
+  font-size: clamp(28px, 3.4vw, 56px);
+  line-height: 1;
+}
+
+.ap-slide-heading p {
+  max-width: 900px;
+  font-size: clamp(10px, 1.08vw, 17px);
+  line-height: 1.4;
+}
+
+.ap-slide-body {
+  height: 64%;
+  margin-top: 2.5%;
+}
+
+.ap-panel > small,
+.ap-highlight-panel > small,
+.ap-feature-card > small {
+  font-size: clamp(9px, .78vw, 12px);
+}
+
+.ap-chip {
+  padding: 8px 12px;
+  font-size: clamp(8px, .82vw, 12px);
+}
+
+.ap-empty {
+  font-size: clamp(9px, .84vw, 13px);
+}
+
+.ap-stat {
+  min-height: 62px;
+  padding: 4.5% 7%;
+}
+
+.ap-stat > span {
+  font-size: clamp(20px, 2.25vw, 35px);
+}
+
+.ap-stat strong {
+  font-size: clamp(18px, 1.95vw, 30px);
+}
+
+.ap-stat small {
+  font-size: clamp(8px, .8vw, 12px);
+}
+
+/* Capa: nomes dos apresentadores grandes e sem nome de grupo. */
+.ap-cover .ap-slide-heading {
+  max-width: 82%;
+  margin-top: 5.2%;
+}
+
+.ap-cover .ap-slide-heading h2 {
+  font-size: clamp(38px, 5.4vw, 84px);
+}
+
+.ap-cover .ap-slide-body {
+  height: 64%;
+  margin-top: 1.8%;
+}
+
+.ap-cover-logo-stage {
+  min-height: 0;
+  padding: 2%;
+}
+
+.ap-cover-logo-stage img {
+  width: min(74%, 680px);
+  max-height: 300px;
+}
+
+.ap-cover-footer-presenters {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4%;
+  align-items: end;
+}
+
+.ap-presenters {
+  display: grid;
+  gap: 4px;
+}
+
+.ap-presenters small {
+  color: currentColor;
+  opacity: .78;
+  font-size: clamp(8px, .78vw, 12px);
+  font-weight: 900;
+  letter-spacing: .1em;
+}
+
+.ap-presenters strong {
+  color: inherit;
+  font-size: clamp(15px, 1.55vw, 24px);
+  line-height: 1.22;
+}
+
+.ap-cover-footer-presenters > span {
+  max-width: 360px;
+  text-align: right;
+  font-size: clamp(8px, .76vw, 11px);
+}
+
+/* Conheça nossa empresa: os dois blocos passam a ocupar o espaço de verdade. */
+.ap-company-slide .ap-slide-body {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 2.4%;
+  height: 65%;
+}
+
+.ap-company-main {
+  height: auto;
+  min-height: 0;
+  grid-template-columns: 1fr 1.12fr;
+  gap: 2.3%;
+}
+
+.ap-company-description,
+.ap-departments-panel {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.ap-company-description {
+  justify-content: center;
+}
+
+.ap-company-description > small,
+.ap-departments-panel > small {
+  flex: 0 0 auto;
+}
+
+.ap-company-description p {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  margin: 4% 0 0;
+  font-size: clamp(16px, 1.65vw, 27px);
+  line-height: 1.35;
+}
+
+.ap-departments-panel {
+  padding: 4.5%;
+}
+
+.ap-department-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: minmax(48px, 1fr);
+  gap: 9px;
+  flex: 1;
+  margin-top: 4%;
+  min-height: 0;
+}
+
+.ap-department-grid.count-1,
+.ap-department-grid.count-2 {
+  grid-template-columns: 1fr;
+}
+
+.ap-department-grid.count-3 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.ap-department-grid.count-3 .ap-department-card:first-child {
+  grid-column: 1 / -1;
+}
+
+.ap-department-card {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 9px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid rgba(148,163,184,.2);
+  border-radius: 10px;
+  background: rgba(255,255,255,.05);
+}
+
+.ap-department-card > span {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 8px;
+  background: rgba(37,99,235,.18);
+  color: inherit;
+  font-size: clamp(8px, .72vw, 11px);
+  font-weight: 1000;
+}
+
+.ap-department-card strong {
+  overflow-wrap: anywhere;
+  font-size: clamp(11px, 1.02vw, 16px);
+  line-height: 1.15;
+}
+
+.ap-department-empty {
+  grid-column: 1 / -1;
+  display: grid;
+  place-items: center;
+}
+
+.ap-company-slide .ap-stats-row {
+  margin-top: 0;
+}
+
+/* Infraestrutura: os cards ganham altura e textos maiores. */
+.ap-infrastructure-slide .ap-slide-body {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 2.2%;
+}
+
+.ap-infrastructure-slide .ap-equipment-grid {
+  height: auto;
+  min-height: 0;
+}
+
+.ap-equipment-card {
+  min-height: 0;
+  padding: 5% 3%;
+}
+
+.ap-equipment-card > span {
+  font-size: clamp(22px, 3vw, 48px);
+}
+
+.ap-equipment-card strong {
+  font-size: clamp(20px, 2.45vw, 38px);
+}
+
+.ap-equipment-card small {
+  font-size: clamp(8px, .82vw, 12px);
+}
+
+.ap-callout {
+  margin-top: 0;
+  padding: 2.5% 3%;
+}
+
+.ap-callout strong {
+  font-size: clamp(11px, 1.1vw, 17px);
+}
+
+.ap-callout p {
+  font-size: clamp(8px, .82vw, 12px);
+}
+
+/* Mapas: aumenta textos laterais e aproveita mais altura. */
+.ap-map-slide .ap-slide-body {
+  height: 68%;
+  margin-top: 1.8%;
+}
+
+.ap-map-layout {
+  grid-template-columns: minmax(0, 1fr) 20%;
+}
+
+.ap-map-head strong {
+  font-size: clamp(10px, .95vw, 14px);
+}
+
+.ap-map-head span {
+  font-size: clamp(8px, .72vw, 11px);
+}
+
+.ap-mini-stat b {
+  font-size: clamp(22px, 2.75vw, 42px);
+}
+
+.ap-mini-stat span,
+.ap-map-departments small {
+  font-size: clamp(8px, .76vw, 11px);
+}
+
+/* Endereçamento: tabela e indicadores maiores. */
+.ap-addressing-slide .ap-slide-body {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 2.5%;
+}
+
+.ap-addressing-slide .ap-stats-row {
+  margin-top: 0;
+}
+
+.ap-addressing-slide .ap-table-card {
+  min-height: 0;
+}
+
+.ap-table-head,
+.ap-table-row {
+  padding: 1.45% 2.2%;
+}
+
+.ap-table-head {
+  font-size: clamp(8px, .76vw, 11px);
+}
+
+.ap-table-row {
+  font-size: clamp(9px, .84vw, 13px);
+}
+
+/* Segurança: três cards realmente ocupam o corpo do slide. */
+.ap-security-slide .ap-slide-body {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 2.2%;
+}
+
+.ap-security-slide .ap-three-col {
+  height: auto;
+  min-height: 0;
+}
+
+.ap-feature-card {
+  justify-content: center;
+  gap: 5%;
+}
+
+.ap-feature-card > span {
+  font-size: clamp(28px, 3.4vw, 54px);
+}
+
+.ap-feature-card strong {
+  font-size: clamp(14px, 1.5vw, 23px);
+}
+
+.ap-feature-card p {
+  font-size: clamp(9px, .88vw, 13px);
+}
+
+/* Nuvem e backup: ocupa toda a área disponível. */
+.ap-cloud-slide .ap-slide-body,
+.ap-cloud-layout {
+  height: 100%;
+}
+
+.ap-cloud-layout > .ap-panel {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.ap-resource-list,
+.ap-backup-visual {
+  flex: 1;
+}
+
+.ap-resource-list > div {
+  padding: 10px;
+}
+
+.ap-resource-list strong {
+  font-size: clamp(10px, .95vw, 14px);
+}
+
+.ap-resource-list small,
+.ap-resource-list b {
+  font-size: clamp(8px, .72vw, 11px);
+}
+
+.ap-backup-visual {
+  align-items: stretch;
+}
+
+.ap-backup-visual > div {
+  min-height: 0;
+  height: 100%;
+}
+
+.ap-backup-visual strong {
+  font-size: clamp(15px, 1.55vw, 24px);
+}
+
+.ap-backup-visual small {
+  font-size: clamp(8px, .76vw, 11px);
+}
+
+/* SDN: blocos e regras maiores. */
+.ap-sdn-slide .ap-slide-body {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 2.5%;
+}
+
+.ap-sdn-box {
+  min-height: 112px;
+}
+
+.ap-sdn-box > span {
+  font-size: clamp(24px, 2.9vw, 46px);
+}
+
+.ap-sdn-box small {
+  font-size: clamp(8px, .74vw, 11px);
+}
+
+.ap-sdn-box strong {
+  font-size: clamp(10px, 1vw, 15px);
+}
+
+.ap-rule-grid {
+  margin-top: 0;
+  min-height: 0;
+}
+
+.ap-rule-card {
+  display: grid;
+  align-content: center;
+  padding: 4%;
+}
+
+.ap-rule-card > small {
+  font-size: clamp(8px, .72vw, 11px);
+}
+
+.ap-rule-card strong {
+  font-size: clamp(10px, 1vw, 15px);
+}
+
+.ap-rule-card > span {
+  font-size: clamp(9px, .86vw, 13px);
+}
+
+.ap-rule-card p {
+  font-size: clamp(8px, .76vw, 11px);
+}
+
+/* Expansão e conclusão: números maiores e melhor preenchimento. */
+.ap-expansion-slide .ap-slide-body {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 2.4%;
+}
+
+.ap-expansion-layout {
+  height: auto;
+  min-height: 0;
+}
+
+.ap-big-number {
+  min-height: 0;
+  height: 100%;
+}
+
+.ap-big-number > span {
+  font-size: clamp(42px, 5.6vw, 88px);
+}
+
+.ap-big-number strong {
+  font-size: clamp(10px, .95vw, 15px);
+}
+
+.ap-big-number small {
+  font-size: clamp(8px, .74vw, 11px);
+}
+
+.ap-conclusion-grid .ap-stat {
+  min-height: 85px;
+}
+
+.ap-final-message {
+  margin-top: 4%;
+  padding: 4.5%;
+}
+
+.ap-final-message strong {
+  font-size: clamp(16px, 1.65vw, 26px);
+}
+
+.ap-final-message p {
+  font-size: clamp(9px, .88vw, 13px);
+}
+
+/* Departamentos precisam respeitar os cinco temas. */
+.theme-tech-blue .ap-department-card {
+  border-color: rgba(103,232,249,.2);
+  background: rgba(255,255,255,.055);
+  color: #f8fafc;
+}
+.theme-tech-blue .ap-department-card > span { background: rgba(37,99,235,.3); color: #bfdbfe; }
+
+.theme-matrix-green .ap-department-card {
+  border-color: rgba(22,163,74,.18);
+  background: rgba(255,255,255,.72);
+  color: #052e16;
+}
+.theme-matrix-green .ap-department-card > span { background: #dcfce7; color: #166534; }
+
+.theme-neon-violet .ap-department-card {
+  border-color: rgba(124,58,237,.18);
+  background: rgba(255,255,255,.72);
+  color: #2e1065;
+}
+.theme-neon-violet .ap-department-card > span { background: #ede9fe; color: #6d28d9; }
+
+.theme-corporate-light .ap-department-card {
+  border-color: #dbe4ef;
+  background: rgba(255,255,255,.9);
+  color: #0f172a;
+}
+.theme-corporate-light .ap-department-card > span { background: #dbeafe; color: #1d4ed8; }
+
+.theme-infra-red .ap-department-card {
+  border-color: rgba(220,38,38,.15);
+  background: rgba(255,255,255,.82);
+  color: #111827;
+}
+.theme-infra-red .ap-department-card > span { background: #fee2e2; color: #b91c1c; }
+
+/* Nomes da capa mantêm contraste em todos os temas claros. */
+.theme-matrix-green .ap-presenters strong,
+.theme-neon-violet .ap-presenters strong,
+.theme-corporate-light .ap-presenters strong,
+.theme-infra-red .ap-presenters strong {
+  color: #111827;
+}
+
+.theme-tech-blue .ap-presenters strong {
+  color: #ffffff;
+}
+
+@media (max-width: 900px) {
+  .ap-company-main {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ap-department-grid {
+    gap: 5px;
+  }
+
+  .ap-department-card {
+    padding: 7px 8px;
+  }
+}
