@@ -223,71 +223,228 @@
     ctx.stroke();
   }
 
-  function equipmentPoint(item, floorId, data, W, H) {
+  function originalNormalizedPoint(item, floorId, data) {
     const view = data.floorViews?.[floorId] || project.mapView || {};
     const mapW = Math.max(1, Number(view.width) || 1400);
     const mapH = Math.max(1, Number(view.height) || 900);
 
-    // O mapa guarda o canto superior esquerdo do equipamento; deslocamos para o centro.
-    const x = clamp((Number(item.x) + 60) / mapW, 0.04, 0.96);
-    const y = clamp((Number(item.y) + 48) / mapH, 0.05, 0.95);
-
     return {
-      x: 110 + x * (W - 220),
-      y: 110 + y * (H - 220)
+      x: clamp((Number(item.x) + 60) / mapW, 0.02, 0.98),
+      y: clamp((Number(item.y) + 48) / mapH, 0.02, 0.98)
     };
   }
 
-  function drawDepartmentZones(ctx, items, floorId, data, W, H) {
+  function buildDepartmentGroups(items, floorId, data) {
     const grouped = new Map();
 
     items.forEach(item => {
-      const depId = item.departmentId || '__none__';
-      if (!grouped.has(depId)) grouped.set(depId, []);
-      grouped.get(depId).push(item);
+      const key = item.departmentId || '__none__';
+      if (!grouped.has(key)) grouped.set(key, []);
+      grouped.get(key).push(item);
     });
 
-    const zones = [];
+    return [...grouped.entries()].map(([depId, groupItems]) => {
+      const original = groupItems.map(item => originalNormalizedPoint(item, floorId, data));
+      const centroid = {
+        x: original.reduce((sum, p) => sum + p.x, 0) / original.length,
+        y: original.reduce((sum, p) => sum + p.y, 0) / original.length
+      };
 
-    grouped.forEach((groupItems, depId) => {
-      if (depId === '__none__') return;
+      return {
+        depId,
+        name: depId === '__none__'
+          ? 'Infraestrutura compartilhada'
+          : (depById(depId, data)?.name || 'Departamento'),
+        items: groupItems,
+        centroid
+      };
+    });
+  }
 
-      const points = groupItems.map(item => equipmentPoint(item, floorId, data, W, H));
-      if (!points.length) return;
+  function chooseGrid(groupCount) {
+    if (groupCount <= 1) return { cols: 1, rows: 1 };
+    if (groupCount === 2) return { cols: 2, rows: 1 };
+    if (groupCount === 3) return { cols: 3, rows: 1 };
+    if (groupCount === 4) return { cols: 2, rows: 2 };
+    if (groupCount <= 6) return { cols: 3, rows: 2 };
 
-      const xs = points.map(p => p.x);
-      const ys = points.map(p => p.y);
+    const cols = Math.min(4, Math.ceil(Math.sqrt(groupCount)));
+    return { cols, rows: Math.ceil(groupCount / cols) };
+  }
 
-      let x = Math.min(...xs) - 78;
-      let y = Math.min(...ys) - 68;
-      let x2 = Math.max(...xs) + 78;
-      let y2 = Math.max(...ys) + 78;
+  function assignGroupsToSlots(groups, slots, rows) {
+    const remaining = [...slots];
+    const sortedGroups = [...groups].sort((a, b) => {
+      if (rows === 1) return a.centroid.x - b.centroid.x;
+      const rowDelta = a.centroid.y - b.centroid.y;
+      if (Math.abs(rowDelta) > 0.12) return rowDelta;
+      return a.centroid.x - b.centroid.x;
+    });
 
-      if (groupItems.length === 1) {
-        x -= 42; x2 += 42; y -= 24; y2 += 24;
+    const assigned = [];
+
+    sortedGroups.forEach(group => {
+      let bestIndex = 0;
+      let bestScore = Infinity;
+
+      remaining.forEach((slot, index) => {
+        const dx = group.centroid.x - slot.nx;
+        const dy = group.centroid.y - slot.ny;
+        const score = dx * dx + dy * dy * 1.25;
+        if (score < bestScore) {
+          bestScore = score;
+          bestIndex = index;
+        }
+      });
+
+      const slot = remaining.splice(bestIndex, 1)[0];
+      assigned.push({ ...group, ...slot });
+    });
+
+    return assigned;
+  }
+
+  function buildOfficeLayout(items, floorId, data, W, H) {
+    const groups = buildDepartmentGroups(items, floorId, data);
+    if (!groups.length) return { zones: [], pointMap: new Map() };
+
+    const { cols, rows } = chooseGrid(groups.length);
+    const area = {
+      x: 120,
+      y: 205,
+      w: W - 240,
+      h: H - 360
+    };
+
+    const gapX = 34;
+    const gapY = 34;
+    const slotW = (area.w - gapX * (cols - 1)) / cols;
+    const slotH = (area.h - gapY * (rows - 1)) / rows;
+    const slots = [];
+
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        const x = area.x + col * (slotW + gapX);
+        const y = area.y + row * (slotH + gapY);
+        slots.push({
+          x,
+          y,
+          w: slotW,
+          h: slotH,
+          nx: cols === 1 ? .5 : col / (cols - 1),
+          ny: rows === 1 ? .5 : row / (rows - 1)
+        });
+      }
+    }
+
+    const assigned = assignGroupsToSlots(groups, slots, rows);
+    const pointMap = new Map();
+
+    const zones = assigned.map(zone => {
+      const infrastructure = zone.items.filter(item =>
+        !['computador', 'notebook'].includes(item.type)
+      );
+      const workstations = zone.items.filter(item =>
+        ['computador', 'notebook'].includes(item.type)
+      );
+
+      const headerH = 62;
+      const pad = 26;
+      const infraH = infrastructure.length ? 128 : 22;
+      const workX = zone.x + pad;
+      const workY = zone.y + headerH + 18;
+      const workW = zone.w - pad * 2;
+      const workH = Math.max(110, zone.h - headerH - infraH - 42);
+
+      if (workstations.length) {
+        const desiredCols = Math.ceil(Math.sqrt(workstations.length * Math.max(1.15, workW / Math.max(1, workH))));
+        const stationCols = clamp(desiredCols, 1, Math.min(4, workstations.length));
+        const stationRows = Math.ceil(workstations.length / stationCols);
+        const cellW = workW / stationCols;
+        const cellH = workH / stationRows;
+
+        workstations.forEach((item, index) => {
+          const col = index % stationCols;
+          const row = Math.floor(index / stationCols);
+          pointMap.set(item.id, {
+            x: workX + cellW * (col + .5),
+            y: workY + cellH * (row + .5),
+            zoneId: zone.depId
+          });
+        });
       }
 
-      x = clamp(x, 95, W - 235);
-      y = clamp(y, 95, H - 205);
-      x2 = clamp(x2, x + 180, W - 95);
-      y2 = clamp(y2, y + 130, H - 95);
+      if (infrastructure.length) {
+        const infraY = zone.y + zone.h - 66;
+        const usableW = zone.w - pad * 2;
+        const step = usableW / infrastructure.length;
 
-      const dep = depById(depId, data);
-      const [fill, accent] = departmentStyle(depId, data);
+        infrastructure.forEach((item, index) => {
+          pointMap.set(item.id, {
+            x: zone.x + pad + step * (index + .5),
+            y: infraY,
+            zoneId: zone.depId
+          });
+        });
+      }
+
+      return {
+        ...zone,
+        workstations,
+        infrastructure
+      };
+    });
+
+    return { zones, pointMap };
+  }
+
+  function drawDepartmentZones(ctx, zones, data) {
+    zones.forEach(zone => {
+      const [fill, accent] = departmentStyle(zone.depId, data);
 
       ctx.save();
-      ctx.globalAlpha = .58;
-      roundRect(ctx, x, y, x2 - x, y2 - y, 18, fill, accent, 3);
+      ctx.globalAlpha = .68;
+      roundRect(ctx, zone.x, zone.y, zone.w, zone.h, 20, fill, accent, 4);
+      ctx.restore();
+
+      // Cabeçalho do setor
+      ctx.save();
+      ctx.globalAlpha = .94;
+      roundRect(ctx, zone.x + 10, zone.y + 10, zone.w - 20, 46, 12, '#ffffff');
       ctx.restore();
 
       ctx.fillStyle = accent;
-      ctx.font = '800 20px Arial, sans-serif';
-      ctx.fillText(dep?.name || 'Departamento', x + 16, y + 30);
+      ctx.font = '900 23px Arial, sans-serif';
+      ctx.fillText(zone.name, zone.x + 28, zone.y + 41);
 
-      zones.push({ x, y, x2, y2, depId, accent });
+      ctx.fillStyle = '#64748b';
+      ctx.font = '700 12px Arial, sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(
+        `${zone.items.length} equipamento(s)`,
+        zone.x + zone.w - 28,
+        zone.y + 40
+      );
+      ctx.textAlign = 'start';
+
+      if (zone.infrastructure.length) {
+        const lineY = zone.y + zone.h - 126;
+        ctx.save();
+        ctx.strokeStyle = accent;
+        ctx.globalAlpha = .28;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([7, 7]);
+        ctx.beginPath();
+        ctx.moveTo(zone.x + 24, lineY);
+        ctx.lineTo(zone.x + zone.w - 24, lineY);
+        ctx.stroke();
+        ctx.restore();
+
+        ctx.fillStyle = '#64748b';
+        ctx.font = '800 11px Arial, sans-serif';
+        ctx.fillText('ÁREA TÉCNICA / INFRAESTRUTURA', zone.x + 26, lineY + 21);
+      }
     });
-
-    return zones;
   }
 
   function drawPlant(ctx, x, y, scale = 1) {
@@ -346,75 +503,64 @@
   }
 
   function drawWorkstation(ctx, x, y, item, data, isNotebook = false) {
-    const dep = depById(item.departmentId, data);
     const [, accent] = departmentStyle(item.departmentId || item.id, data);
 
-    // Tapete / área da estação
     ctx.save();
-    ctx.globalAlpha = .18;
+    ctx.globalAlpha = .13;
     ctx.fillStyle = accent;
     ctx.beginPath();
-    ctx.ellipse(x, y + 8, 66, 46, 0, 0, Math.PI * 2);
+    ctx.ellipse(x, y + 14, 78, 55, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
 
     // Cadeira
-    roundRect(ctx, x - 15, y + 32, 30, 24, 8, '#334155');
+    roundRect(ctx, x - 18, y + 42, 36, 28, 9, '#334155');
     ctx.fillStyle = '#64748b';
     ctx.beginPath();
-    ctx.arc(x, y + 61, 11, 0, Math.PI * 2);
+    ctx.arc(x, y + 76, 12, 0, Math.PI * 2);
     ctx.fill();
 
-    // Mesa
-    withShadow(ctx, 8, 'rgba(15,23,42,.16)', 4, () => {
-      roundRect(ctx, x - 48, y - 24, 96, 48, 8, '#b9895a', '#8b5e3c', 2);
+    // Mesa maior para facilitar a leitura
+    withShadow(ctx, 9, 'rgba(15,23,42,.16)', 5, () => {
+      roundRect(ctx, x - 58, y - 28, 116, 56, 9, '#b9895a', '#8b5e3c', 2);
     });
 
-    // Monitor / notebook
     if (isNotebook) {
-      roundRect(ctx, x - 20, y - 12, 40, 24, 4, '#1e293b');
+      roundRect(ctx, x - 24, y - 14, 48, 28, 4, '#1e293b');
       ctx.fillStyle = '#60a5fa';
-      ctx.fillRect(x - 16, y - 9, 32, 16);
+      ctx.fillRect(x - 19, y - 10, 38, 18);
       ctx.strokeStyle = '#475569';
       ctx.lineWidth = 4;
       ctx.beginPath();
-      ctx.moveTo(x - 24, y + 14);
-      ctx.lineTo(x + 24, y + 14);
+      ctx.moveTo(x - 30, y + 17);
+      ctx.lineTo(x + 30, y + 17);
       ctx.stroke();
     } else {
-      roundRect(ctx, x - 24, y - 16, 48, 28, 4, '#1e293b');
-      const screen = ctx.createLinearGradient(x - 20, y - 12, x + 20, y + 8);
+      roundRect(ctx, x - 28, y - 19, 56, 34, 4, '#1e293b');
+      const screen = ctx.createLinearGradient(x - 23, y - 14, x + 23, y + 10);
       screen.addColorStop(0, '#0ea5e9');
       screen.addColorStop(1, '#dbeafe');
       ctx.fillStyle = screen;
-      ctx.fillRect(x - 19, y - 11, 38, 18);
+      ctx.fillRect(x - 23, y - 14, 46, 22);
 
       ctx.strokeStyle = '#475569';
       ctx.lineWidth = 4;
       ctx.beginPath();
-      ctx.moveTo(x, y + 12);
-      ctx.lineTo(x, y + 21);
+      ctx.moveTo(x, y + 15);
+      ctx.lineTo(x, y + 24);
       ctx.stroke();
     }
 
-    // Teclado
-    roundRect(ctx, x - 18, y + 7, 36, 8, 2, '#e2e8f0');
+    roundRect(ctx, x - 21, y + 9, 42, 9, 2, '#e2e8f0');
 
     if (state.showPeople) {
-      drawPerson(ctx, x, y + 61, hashString(item.id));
+      drawPerson(ctx, x, y + 77, hashString(item.id));
     }
 
     ctx.fillStyle = '#0f172a';
-    ctx.font = '700 13px Arial, sans-serif';
+    ctx.font = '800 15px Arial, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(item.name || TYPE_NAMES[item.type], x, y - 38);
-
-    if (dep?.name) {
-      ctx.fillStyle = '#64748b';
-      ctx.font = '600 10px Arial, sans-serif';
-      ctx.fillText(dep.name, x, y - 26);
-    }
-
+    ctx.fillText(String(item.name || TYPE_NAMES[item.type]).slice(0, 22), x, y - 45);
     ctx.textAlign = 'start';
   }
 
@@ -600,8 +746,8 @@
     const items = equipmentOnFloor(floor.id, data);
     const connections = connectionsOnFloor(floor.id, data);
 
-    const W = 1600;
-    const H = 900;
+    const W = 1800;
+    const H = 1100;
     canvas.width = W;
     canvas.height = H;
 
@@ -609,14 +755,15 @@
     if (!ctx) return;
 
     drawFloorBase(ctx, W, H);
-    drawDepartmentZones(ctx, items, floor.id, data, W, H);
-    drawDecor(ctx, W, H, project.company?.name || 'empresa');
 
-    const pointMap = new Map(
-      items.map(item => [item.id, equipmentPoint(item, floor.id, data, W, H)])
-    );
+    const layout = buildOfficeLayout(items, floor.id, data, W, H);
+    drawDepartmentZones(ctx, layout.zones, data);
 
-    drawConnections(ctx, connections, pointMap);
+    // Decoração apenas nas bordas, sem disputar espaço com os departamentos.
+    drawPlant(ctx, 112, H - 120, 1);
+    drawPlant(ctx, W - 112, H - 120, 1);
+
+    drawConnections(ctx, connections, layout.pointMap);
 
     const priority = {
       computador: 2,
@@ -630,26 +777,37 @@
 
     [...items]
       .sort((a, b) => (priority[a.type] || 1) - (priority[b.type] || 1))
-      .forEach(item => drawEquipment(ctx, item, pointMap.get(item.id), data));
+      .forEach(item => {
+        const point = layout.pointMap.get(item.id);
+        if (point) drawEquipment(ctx, item, point, data);
+      });
+
+    // Área de espera central junto à entrada, fora das zonas.
+    const receptionY = H - 125;
+    roundRect(ctx, W / 2 - 118, receptionY - 22, 80, 38, 10, '#64748b');
+    roundRect(ctx, W / 2 + 38, receptionY - 22, 80, 38, 10, '#64748b');
+    roundRect(ctx, W / 2 - 28, receptionY - 12, 56, 26, 8, '#c59b6d');
 
     // Cabeçalho da imagem
     const company = project.company?.name || 'Minha Empresa';
     ctx.save();
-    ctx.fillStyle = 'rgba(255,255,255,.92)';
-    roundRect(ctx, 95, 95, 440, 76, 14, 'rgba(255,255,255,.92)', '#cbd5e1', 2);
+    roundRect(ctx, 105, 102, 520, 82, 15, 'rgba(255,255,255,.95)', '#cbd5e1', 2);
     ctx.fillStyle = '#0f172a';
-    ctx.font = '800 24px Arial, sans-serif';
-    ctx.fillText(company, 118, 128);
+    ctx.font = '900 27px Arial, sans-serif';
+    ctx.fillText(company, 130, 138);
     ctx.fillStyle = '#475569';
-    ctx.font = '700 15px Arial, sans-serif';
-    ctx.fillText(`${floor.name || 'Andar'} • ${items.length} equipamentos • ${connections.length} conexões`, 118, 154);
+    ctx.font = '700 16px Arial, sans-serif';
+    ctx.fillText(
+      `${floor.name || 'Andar'} • ${items.length} equipamentos • ${connections.length} conexões`,
+      130,
+      166
+    );
     ctx.restore();
 
-    // Marca discreta
     ctx.fillStyle = 'rgba(71,85,105,.72)';
     ctx.font = '600 12px Arial, sans-serif';
     ctx.textAlign = 'right';
-    ctx.fillText('Visualização gerada a partir do Mapa da Rede', W - 95, H - 92);
+    ctx.fillText('Organização baseada no Mapa da Rede', W - 100, H - 88);
     ctx.textAlign = 'start';
 
     updateStats(floor, items, connections, data);
@@ -769,7 +927,7 @@
         </div>
 
         <div class="empresa-real-note">
-          <span>💡 A posição dos objetos acompanha aproximadamente o Mapa da Rede.</span>
+          <span>💡 Os departamentos seguem a organização do mapa; os equipamentos são espaçados automaticamente para facilitar a leitura.</span>
           <span>🔄 Se o mapa mudar, clique em <strong>Gerar / Atualizar</strong>.</span>
         </div>
       </section>
