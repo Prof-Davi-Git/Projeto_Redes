@@ -3149,3 +3149,185 @@
     padding: 7px 8px;
   }
 }
+
+
+/* =========================================================
+   APRESENTAÇÃO PARA O PÚBLICO — TRADUÇÃO DOS CONCEITOS TÉCNICOS
+   ========================================================= */
+
+.ap-public-explain {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2%;
+  padding: 10px 14px;
+  border: 1px solid rgba(148,163,184,.18);
+  border-radius: 10px;
+  background: rgba(255,255,255,.05);
+}
+
+.ap-public-explain strong {
+  flex: 0 0 auto;
+  font-size: clamp(9px, .86vw, 13px);
+}
+
+.ap-public-explain span {
+  font-size: clamp(8px, .82vw, 12px);
+  line-height: 1.35;
+}
+
+.ap-public-control {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 2%;
+}
+
+.ap-public-control-main,
+.ap-public-control-summary {
+  border: 1px solid rgba(148,163,184,.18);
+  border-radius: 14px;
+  background: rgba(16,35,61,.78);
+}
+
+.ap-public-control-main {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: center;
+  padding: 4%;
+}
+
+.ap-public-control-main > span {
+  font-size: clamp(30px, 3.6vw, 58px);
+}
+
+.ap-public-control-main small {
+  display: block;
+  margin-bottom: 4px;
+  color: #67e8f9;
+  font-size: clamp(8px, .75vw, 11px);
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+
+.ap-public-control-main strong {
+  display: block;
+  color: #fff;
+  font-size: clamp(14px, 1.5vw, 23px);
+}
+
+.ap-public-control-main p {
+  margin: 5px 0 0;
+  color: #9fb0c7;
+  font-size: clamp(8px, .78vw, 12px);
+  line-height: 1.35;
+}
+
+.ap-public-control-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 4%;
+}
+
+.ap-public-control-summary > span {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 8px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.04);
+  text-align: center;
+}
+
+.ap-public-control-summary b {
+  font-size: clamp(20px, 2.4vw, 38px);
+}
+
+.ap-public-control-summary strong {
+  max-width: 100%;
+  overflow: hidden;
+  color: #fff;
+  font-size: clamp(9px, .9vw, 14px);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ap-public-control-summary small {
+  color: #8fa2bb;
+  font-size: clamp(7px, .68vw, 10px);
+}
+
+.ap-public-rules {
+  min-height: 0;
+}
+
+/* Os temas claros precisam traduzir os novos cards para cores legíveis. */
+.theme-matrix-green .ap-public-explain,
+.theme-matrix-green .ap-public-control-main,
+.theme-matrix-green .ap-public-control-summary,
+.theme-neon-violet .ap-public-explain,
+.theme-neon-violet .ap-public-control-main,
+.theme-neon-violet .ap-public-control-summary,
+.theme-corporate-light .ap-public-explain,
+.theme-corporate-light .ap-public-control-main,
+.theme-corporate-light .ap-public-control-summary,
+.theme-infra-red .ap-public-explain,
+.theme-infra-red .ap-public-control-main,
+.theme-infra-red .ap-public-control-summary {
+  background: rgba(255,255,255,.76);
+  border-color: rgba(100,116,139,.16);
+}
+
+.theme-matrix-green .ap-public-control-summary > span,
+.theme-neon-violet .ap-public-control-summary > span,
+.theme-corporate-light .ap-public-control-summary > span,
+.theme-infra-red .ap-public-control-summary > span {
+  background: rgba(15,23,42,.035);
+}
+
+.theme-matrix-green .ap-public-control-main strong,
+.theme-matrix-green .ap-public-control-summary strong,
+.theme-neon-violet .ap-public-control-main strong,
+.theme-neon-violet .ap-public-control-summary strong,
+.theme-corporate-light .ap-public-control-main strong,
+.theme-corporate-light .ap-public-control-summary strong,
+.theme-infra-red .ap-public-control-main strong,
+.theme-infra-red .ap-public-control-summary strong {
+  color: #111827;
+}
+
+.theme-matrix-green .ap-public-control-main p,
+.theme-matrix-green .ap-public-control-summary small,
+.theme-neon-violet .ap-public-control-main p,
+.theme-neon-violet .ap-public-control-summary small,
+.theme-corporate-light .ap-public-control-main p,
+.theme-corporate-light .ap-public-control-summary small,
+.theme-infra-red .ap-public-control-main p,
+.theme-infra-red .ap-public-control-summary small {
+  color: #475569;
+}
+
+.theme-matrix-green .ap-public-control-main small { color: #166534; }
+.theme-neon-violet .ap-public-control-main small { color: #6d28d9; }
+.theme-corporate-light .ap-public-control-main small { color: #1d4ed8; }
+.theme-infra-red .ap-public-control-main small { color: #b91c1c; }
+
+.theme-matrix-green .ap-public-explain { color: #14532d; }
+.theme-neon-violet .ap-public-explain { color: #4c1d95; }
+.theme-corporate-light .ap-public-explain { color: #1e3a8a; }
+.theme-infra-red .ap-public-explain { color: #7f1d1d; }
+
+/* O slide de controle usa espaço maior para explicação ao público. */
+.ap-sdn-slide .ap-slide-body {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 2.4%;
+}
+
+/* O slide de continuidade ganha espaço para a explicação final. */
+.ap-cloud-slide .ap-public-explain {
+  margin-top: auto;
+}
