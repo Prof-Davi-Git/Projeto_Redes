@@ -399,9 +399,11 @@
               }
             </div>
 
-            <div class="ap-cover-footer">
-              <span><b>Grupo:</b> ${esc(company.group || 'Não informado')}</span>
-              <span><b>Integrantes:</b> ${esc(company.members || 'Não informados')}</span>
+            <div class="ap-cover-footer ap-cover-footer-presenters">
+              <div class="ap-presenters">
+                <small>APRESENTADORES</small>
+                <strong>${esc(company.members || 'Integrantes não informados')}</strong>
+              </div>
               <span>Infraestrutura • Segurança • Nuvem • SDN</span>
             </div>
           </div>
@@ -418,19 +420,25 @@
         title: 'Conheça nossa empresa',
         subtitle: 'A rede foi planejada para atender a estrutura e as necessidades desta organização.',
         number: 2,
+        className: 'ap-company-slide',
         body: `
-          <div class="ap-two-col">
-            <div class="ap-highlight-panel">
+          <div class="ap-two-col ap-company-main">
+            <div class="ap-highlight-panel ap-company-description">
               <small>O QUE A EMPRESA FAZ</small>
               <p>${esc(company.description || 'A descrição da empresa será apresentada pelo grupo.')}</p>
             </div>
 
-            <div class="ap-panel">
+            <div class="ap-panel ap-departments-panel">
               <small>DEPARTAMENTOS</small>
-              <div class="ap-chip-list">
+              <div class="ap-department-grid count-${Math.min(Math.max(departments.length, 1), 8)}">
                 ${departments.length
-                  ? departments.map(dep => chip(dep.name)).join('')
-                  : emptyValue('Nenhum departamento cadastrado')}
+                  ? departments.map((dep, index) => `
+                      <div class="ap-department-card">
+                        <span>${String(index + 1).padStart(2, '0')}</span>
+                        <strong>${esc(dep.name)}</strong>
+                      </div>
+                    `).join('')
+                  : `<div class="ap-department-empty">${emptyValue('Nenhum departamento cadastrado')}</div>`}
               </div>
             </div>
           </div>
@@ -454,6 +462,7 @@
         title: 'Como nossa rede foi montada',
         subtitle: 'Os equipamentos foram escolhidos e distribuídos de acordo com a necessidade da empresa.',
         number: 3,
+        className: 'ap-infrastructure-slide',
         body: `
           <div class="ap-equipment-grid">
             ${Object.keys(TYPE_NAMES).map(type => {
@@ -530,6 +539,7 @@
         title: 'IP, prefixo e endereço MAC',
         subtitle: 'Cada equipamento precisa ser identificado corretamente para participar da rede.',
         number: slidesOut.length + 1,
+        className: 'ap-addressing-slide',
         body: `
           <div class="ap-stats-row">
             ${statCard('🌐', configuredIp.length, 'equipamentos completos')}
@@ -565,6 +575,7 @@
         title: 'Proteção da empresa e dos dados',
         subtitle: 'A rede também precisa considerar segurança, privacidade e uso responsável das informações.',
         number: slidesOut.length + 1,
+        className: 'ap-security-slide',
         body: `
           <div class="ap-three-col">
             <div class="ap-feature-card">
@@ -606,6 +617,7 @@
         title: 'A empresa precisa continuar funcionando',
         subtitle: 'Recursos em nuvem, permissões, criptografia e backup ajudam a manter os dados disponíveis e protegidos.',
         number: slidesOut.length + 1,
+        className: 'ap-cloud-slide',
         body: `
           <div class="ap-two-col ap-cloud-layout">
             <div class="ap-panel">
@@ -645,6 +657,7 @@
         title: 'O controlador pensa e o switch executa',
         subtitle: 'A equipe definiu como a comunicação da rede seria controlada.',
         number: slidesOut.length + 1,
+        className: 'ap-sdn-slide',
         body: `
           <div class="ap-sdn-flow">
             <div class="ap-sdn-box controller">
@@ -693,6 +706,7 @@
         title: 'A empresa cresceu — e a rede também',
         subtitle: 'A expansão exigiu novos setores, equipamentos e conexões sem perder a organização do projeto.',
         number: slidesOut.length + 1,
+        className: 'ap-expansion-slide',
         body: `
           <div class="ap-expansion-layout">
             <div class="ap-big-number">
