@@ -255,6 +255,11 @@
     }
 
     if (hasLgpdDraft()) areas.push('LGPD e Dados');
+
+    if (typeof window.apresentacaoPossuiRascunho === 'function' && window.apresentacaoPossuiRascunho()) {
+      areas.push('Roteiro da apresentação');
+    }
+
     return [...new Set(areas)];
   }
 
