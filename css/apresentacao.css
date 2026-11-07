@@ -1846,3 +1846,558 @@
     height: 76px;
   }
 }
+
+
+/* =========================================================
+   REFINO VISUAL V2 — LOGO LEGÍVEL + 5 TEMAS REALMENTE DIFERENTES
+   ========================================================= */
+
+/* Placa padrão do logo: permanece igual em qualquer tema para
+   garantir contraste mesmo com logos claros ou escuros. */
+.ap-cover-logo-stage,
+.ap-cover-logo-stage.has-logo,
+.theme-corporate-light .ap-cover-logo-stage,
+.theme-matrix-green .ap-cover-logo-stage,
+.theme-neon-violet .ap-cover-logo-stage,
+.theme-infra-red .ap-cover-logo-stage {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(100,116,139,.34) !important;
+  background:
+    radial-gradient(circle at 18% 22%, rgba(255,255,255,.95), transparent 34%),
+    linear-gradient(135deg, #f8fafc 0%, #e8edf3 58%, #d7dee7 100%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.95),
+    inset 0 -1px 0 rgba(100,116,139,.12),
+    0 18px 34px rgba(15,23,42,.18) !important;
+}
+
+.ap-cover-logo-stage::before {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  z-index: 0;
+  border: 1px solid rgba(148,163,184,.22);
+  border-radius: 13px;
+  pointer-events: none;
+}
+
+.ap-cover-logo-stage img,
+.ap-cover-logo-placeholder {
+  position: relative;
+  z-index: 2;
+}
+
+.ap-cover-logo-stage img {
+  filter:
+    drop-shadow(0 0 1px rgba(255,255,255,.98))
+    drop-shadow(0 2px 5px rgba(15,23,42,.34))
+    drop-shadow(0 11px 18px rgba(15,23,42,.16)) !important;
+}
+
+.ap-cover-logo-placeholder > span {
+  border-color: #94a3b8;
+  color: #475569;
+  background: rgba(255,255,255,.55);
+}
+
+.ap-cover-logo-placeholder strong {
+  color: #334155 !important;
+}
+
+.ap-cover-logo-placeholder small {
+  color: #64748b !important;
+}
+
+/* As formas de fundo são decorativas e ficam atrás do conteúdo. */
+.ap-theme-art {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ap-theme-art i {
+  position: absolute;
+  display: block;
+}
+
+.ap-slide-top,
+.ap-slide-heading,
+.ap-slide-body {
+  position: relative;
+  z-index: 2;
+}
+
+/* Remove a arte genérica antiga para que cada tema tenha desenho próprio. */
+.ap-slide::after {
+  display: none;
+}
+
+/* =========================================================
+   TEMA 1 — AZUL TECNOLÓGICO
+   Círculos, órbitas e pequenos nós
+   ========================================================= */
+
+.ap-slide.theme-tech-blue,
+.theme-tech-blue.ap-cover {
+  background:
+    linear-gradient(145deg, #07111f 0%, #0d2340 58%, #10375f 100%);
+}
+
+.theme-tech-blue .ap-theme-art .shape-a {
+  width: 280px;
+  height: 280px;
+  right: -68px;
+  top: -72px;
+  border: 2px solid rgba(34,211,238,.24);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 38px rgba(37,99,235,.07),
+    0 0 0 82px rgba(34,211,238,.035);
+}
+
+.theme-tech-blue .ap-theme-art .shape-b {
+  width: 110px;
+  height: 110px;
+  right: 17%;
+  bottom: -32px;
+  border: 18px solid rgba(37,99,235,.11);
+  border-radius: 50%;
+}
+
+.theme-tech-blue .ap-theme-art .shape-c,
+.theme-tech-blue .ap-theme-art .shape-d,
+.theme-tech-blue .ap-theme-art .shape-e {
+  width: 13px;
+  height: 13px;
+  border: 3px solid rgba(103,232,249,.46);
+  border-radius: 50%;
+}
+
+.theme-tech-blue .ap-theme-art .shape-c { right: 25%; top: 18%; }
+.theme-tech-blue .ap-theme-art .shape-d { right: 12%; top: 46%; }
+.theme-tech-blue .ap-theme-art .shape-e { left: 7%; bottom: 8%; }
+
+/* =========================================================
+   TEMA 2 — VERDE GRID
+   Fundo claro com grade, quadrados e blocos digitais
+   ========================================================= */
+
+.ap-slide.theme-matrix-green,
+.theme-matrix-green.ap-cover {
+  background:
+    linear-gradient(rgba(21,128,61,.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(21,128,61,.055) 1px, transparent 1px),
+    linear-gradient(145deg, #f0fdf4 0%, #dcfce7 62%, #ecfdf5 100%);
+  background-size: 34px 34px, 34px 34px, auto;
+  color: #052e16;
+}
+
+.theme-matrix-green .ap-theme-art .shape-a {
+  width: 145px;
+  height: 145px;
+  right: 4%;
+  top: 10%;
+  border: 22px solid rgba(22,163,74,.12);
+  transform: rotate(12deg);
+}
+
+.theme-matrix-green .ap-theme-art .shape-b {
+  width: 76px;
+  height: 76px;
+  right: 24%;
+  bottom: 9%;
+  background: rgba(134,239,172,.32);
+  border: 2px solid rgba(21,128,61,.15);
+  transform: rotate(45deg);
+}
+
+.theme-matrix-green .ap-theme-art .shape-c {
+  width: 26px;
+  height: 110px;
+  left: 2.5%;
+  bottom: 12%;
+  background: rgba(21,128,61,.1);
+}
+
+.theme-matrix-green .ap-theme-art .shape-d {
+  width: 18px;
+  height: 18px;
+  right: 35%;
+  top: 13%;
+  background: #22c55e;
+  opacity: .18;
+}
+
+.theme-matrix-green .ap-theme-art .shape-e {
+  width: 44px;
+  height: 44px;
+  right: 31%;
+  top: 20%;
+  border: 3px solid rgba(22,163,74,.18);
+}
+
+.theme-matrix-green .ap-brand,
+.theme-matrix-green .ap-slide-heading p,
+.theme-matrix-green .ap-feature-card p,
+.theme-matrix-green .ap-callout p,
+.theme-matrix-green .ap-resource-list small,
+.theme-matrix-green .ap-backup-visual small,
+.theme-matrix-green .ap-rule-card p,
+.theme-matrix-green .ap-big-number small,
+.theme-matrix-green .ap-stat small,
+.theme-matrix-green .ap-equipment-card small,
+.theme-matrix-green .ap-cover-footer {
+  color: #3f6b50;
+}
+
+.theme-matrix-green .ap-slide-heading h2,
+.theme-matrix-green .ap-highlight-panel p,
+.theme-matrix-green .ap-feature-card strong,
+.theme-matrix-green .ap-resource-list strong,
+.theme-matrix-green .ap-backup-visual strong,
+.theme-matrix-green .ap-sdn-box strong,
+.theme-matrix-green .ap-rule-card strong,
+.theme-matrix-green .ap-big-number > span,
+.theme-matrix-green .ap-final-message strong,
+.theme-matrix-green .ap-stat strong,
+.theme-matrix-green .ap-equipment-card strong,
+.theme-matrix-green .ap-mini-stat b,
+.theme-matrix-green .ap-cover-footer b {
+  color: #052e16;
+}
+
+.theme-matrix-green .ap-panel,
+.theme-matrix-green .ap-highlight-panel,
+.theme-matrix-green .ap-feature-card,
+.theme-matrix-green .ap-callout,
+.theme-matrix-green .ap-table-card,
+.theme-matrix-green .ap-rule-card,
+.theme-matrix-green .ap-equipment-card,
+.theme-matrix-green .ap-mini-stat,
+.theme-matrix-green .ap-map-departments,
+.theme-matrix-green .ap-sdn-box,
+.theme-matrix-green .ap-big-number,
+.theme-matrix-green .ap-stat {
+  border-color: rgba(22,163,74,.18);
+  background: rgba(255,255,255,.72);
+  box-shadow: 0 8px 20px rgba(22,101,52,.055);
+}
+
+.theme-matrix-green .ap-table-head {
+  background: rgba(22,163,74,.12);
+  color: #166534;
+}
+
+.theme-matrix-green .ap-table-row {
+  color: #14532d;
+  border-color: rgba(22,163,74,.13);
+}
+
+/* =========================================================
+   TEMA 3 — LILÁS / ROXO CRIATIVO
+   Fundo claro violeta com círculos e cápsulas flutuantes
+   ========================================================= */
+
+.ap-slide.theme-neon-violet,
+.theme-neon-violet.ap-cover {
+  background:
+    radial-gradient(circle at 86% 16%, rgba(244,114,182,.18), transparent 24%),
+    linear-gradient(145deg, #faf5ff 0%, #ede9fe 54%, #fdf2f8 100%);
+  color: #2e1065;
+}
+
+.theme-neon-violet .ap-theme-art .shape-a {
+  width: 230px;
+  height: 230px;
+  right: -72px;
+  top: 4%;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(124,58,237,.13), rgba(244,114,182,.16));
+}
+
+.theme-neon-violet .ap-theme-art .shape-b {
+  width: 190px;
+  height: 62px;
+  left: -46px;
+  bottom: 12%;
+  border-radius: 999px;
+  background: rgba(192,132,252,.12);
+  transform: rotate(-18deg);
+}
+
+.theme-neon-violet .ap-theme-art .shape-c {
+  width: 74px;
+  height: 74px;
+  right: 29%;
+  bottom: 4%;
+  border: 9px solid rgba(244,114,182,.16);
+  border-radius: 50%;
+}
+
+.theme-neon-violet .ap-theme-art .shape-d {
+  width: 28px;
+  height: 28px;
+  right: 19%;
+  top: 16%;
+  border-radius: 50%;
+  background: rgba(124,58,237,.24);
+}
+
+.theme-neon-violet .ap-theme-art .shape-e {
+  width: 95px;
+  height: 30px;
+  right: 8%;
+  bottom: 18%;
+  border-radius: 999px;
+  border: 3px solid rgba(124,58,237,.13);
+  transform: rotate(16deg);
+}
+
+.theme-neon-violet .ap-brand,
+.theme-neon-violet .ap-slide-heading p,
+.theme-neon-violet .ap-feature-card p,
+.theme-neon-violet .ap-callout p,
+.theme-neon-violet .ap-resource-list small,
+.theme-neon-violet .ap-backup-visual small,
+.theme-neon-violet .ap-rule-card p,
+.theme-neon-violet .ap-big-number small,
+.theme-neon-violet .ap-stat small,
+.theme-neon-violet .ap-equipment-card small,
+.theme-neon-violet .ap-cover-footer {
+  color: #6b4c7a;
+}
+
+.theme-neon-violet .ap-slide-heading h2,
+.theme-neon-violet .ap-highlight-panel p,
+.theme-neon-violet .ap-feature-card strong,
+.theme-neon-violet .ap-resource-list strong,
+.theme-neon-violet .ap-backup-visual strong,
+.theme-neon-violet .ap-sdn-box strong,
+.theme-neon-violet .ap-rule-card strong,
+.theme-neon-violet .ap-big-number > span,
+.theme-neon-violet .ap-final-message strong,
+.theme-neon-violet .ap-stat strong,
+.theme-neon-violet .ap-equipment-card strong,
+.theme-neon-violet .ap-mini-stat b,
+.theme-neon-violet .ap-cover-footer b {
+  color: #2e1065;
+}
+
+.theme-neon-violet .ap-panel,
+.theme-neon-violet .ap-highlight-panel,
+.theme-neon-violet .ap-feature-card,
+.theme-neon-violet .ap-callout,
+.theme-neon-violet .ap-table-card,
+.theme-neon-violet .ap-rule-card,
+.theme-neon-violet .ap-equipment-card,
+.theme-neon-violet .ap-mini-stat,
+.theme-neon-violet .ap-map-departments,
+.theme-neon-violet .ap-sdn-box,
+.theme-neon-violet .ap-big-number,
+.theme-neon-violet .ap-stat {
+  border-color: rgba(124,58,237,.16);
+  background: rgba(255,255,255,.7);
+  box-shadow: 0 10px 24px rgba(124,58,237,.05);
+}
+
+.theme-neon-violet .ap-table-head {
+  background: rgba(124,58,237,.11);
+  color: #6d28d9;
+}
+
+.theme-neon-violet .ap-table-row {
+  color: #4c1d95;
+  border-color: rgba(124,58,237,.12);
+}
+
+/* =========================================================
+   TEMA 4 — CLARO CORPORATIVO
+   Branco com faixas diagonais, retângulos e quadrados
+   ========================================================= */
+
+.ap-slide.theme-corporate-light,
+.theme-corporate-light.ap-cover {
+  background:
+    linear-gradient(180deg, #ffffff 0%, #f3f7fc 100%);
+  color: #0f172a;
+}
+
+.theme-corporate-light .ap-theme-art .shape-a {
+  width: 380px;
+  height: 78px;
+  right: -90px;
+  top: 24px;
+  background: rgba(37,99,235,.09);
+  transform: rotate(-14deg);
+}
+
+.theme-corporate-light .ap-theme-art .shape-b {
+  width: 290px;
+  height: 42px;
+  right: -50px;
+  top: 94px;
+  background: rgba(245,158,11,.12);
+  transform: rotate(-14deg);
+}
+
+.theme-corporate-light .ap-theme-art .shape-c {
+  width: 72px;
+  height: 72px;
+  right: 7%;
+  bottom: 8%;
+  border: 10px solid rgba(37,99,235,.08);
+}
+
+.theme-corporate-light .ap-theme-art .shape-d {
+  width: 30px;
+  height: 30px;
+  right: 15%;
+  bottom: 18%;
+  background: rgba(245,158,11,.16);
+}
+
+.theme-corporate-light .ap-theme-art .shape-e {
+  width: 140px;
+  height: 8px;
+  left: 0;
+  bottom: 7%;
+  background: #2563eb;
+  opacity: .18;
+}
+
+/* =========================================================
+   TEMA 5 — INFRA VERMELHO
+   Cinza claro industrial com blocos, barras e canto técnico
+   ========================================================= */
+
+.ap-slide.theme-infra-red,
+.theme-infra-red.ap-cover {
+  background:
+    linear-gradient(135deg, rgba(220,38,38,.035), transparent 46%),
+    linear-gradient(180deg, #f8fafc 0%, #e7e9ed 100%);
+  color: #111827;
+}
+
+.theme-infra-red .ap-theme-art .shape-a {
+  width: 220px;
+  height: 220px;
+  right: -70px;
+  bottom: -72px;
+  border: 28px solid rgba(220,38,38,.09);
+  transform: rotate(18deg);
+}
+
+.theme-infra-red .ap-theme-art .shape-b {
+  width: 165px;
+  height: 24px;
+  right: 4%;
+  top: 9%;
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      rgba(220,38,38,.22) 0 13px,
+      rgba(17,24,39,.12) 13px 26px
+    );
+}
+
+.theme-infra-red .ap-theme-art .shape-c {
+  width: 58px;
+  height: 58px;
+  right: 23%;
+  top: 19%;
+  border: 8px solid rgba(17,24,39,.08);
+}
+
+.theme-infra-red .ap-theme-art .shape-d {
+  width: 22px;
+  height: 110px;
+  left: 2.5%;
+  bottom: 8%;
+  background: rgba(220,38,38,.09);
+}
+
+.theme-infra-red .ap-theme-art .shape-e {
+  width: 94px;
+  height: 94px;
+  left: 7%;
+  bottom: -45px;
+  background: rgba(17,24,39,.055);
+  transform: rotate(45deg);
+}
+
+.theme-infra-red .ap-brand,
+.theme-infra-red .ap-slide-heading p,
+.theme-infra-red .ap-feature-card p,
+.theme-infra-red .ap-callout p,
+.theme-infra-red .ap-resource-list small,
+.theme-infra-red .ap-backup-visual small,
+.theme-infra-red .ap-rule-card p,
+.theme-infra-red .ap-big-number small,
+.theme-infra-red .ap-stat small,
+.theme-infra-red .ap-equipment-card small,
+.theme-infra-red .ap-cover-footer {
+  color: #5b6574;
+}
+
+.theme-infra-red .ap-slide-heading h2,
+.theme-infra-red .ap-highlight-panel p,
+.theme-infra-red .ap-feature-card strong,
+.theme-infra-red .ap-resource-list strong,
+.theme-infra-red .ap-backup-visual strong,
+.theme-infra-red .ap-sdn-box strong,
+.theme-infra-red .ap-rule-card strong,
+.theme-infra-red .ap-big-number > span,
+.theme-infra-red .ap-final-message strong,
+.theme-infra-red .ap-stat strong,
+.theme-infra-red .ap-equipment-card strong,
+.theme-infra-red .ap-mini-stat b,
+.theme-infra-red .ap-cover-footer b {
+  color: #111827;
+}
+
+.theme-infra-red .ap-panel,
+.theme-infra-red .ap-highlight-panel,
+.theme-infra-red .ap-feature-card,
+.theme-infra-red .ap-callout,
+.theme-infra-red .ap-table-card,
+.theme-infra-red .ap-rule-card,
+.theme-infra-red .ap-equipment-card,
+.theme-infra-red .ap-mini-stat,
+.theme-infra-red .ap-map-departments,
+.theme-infra-red .ap-sdn-box,
+.theme-infra-red .ap-big-number,
+.theme-infra-red .ap-stat {
+  border-color: rgba(220,38,38,.13);
+  background: rgba(255,255,255,.78);
+  box-shadow: 0 7px 18px rgba(17,24,39,.045);
+}
+
+.theme-infra-red .ap-table-head {
+  background: rgba(220,38,38,.1);
+  color: #b91c1c;
+}
+
+.theme-infra-red .ap-table-row {
+  color: #374151;
+  border-color: rgba(17,24,39,.1);
+}
+
+.theme-infra-red .ap-chip {
+  border-color: rgba(220,38,38,.2);
+  background: rgba(254,226,226,.82);
+  color: #b91c1c;
+}
+
+/* A placa do logo não muda de cor junto com o tema. */
+.theme-tech-blue .ap-cover-logo-stage,
+.theme-matrix-green .ap-cover-logo-stage,
+.theme-neon-violet .ap-cover-logo-stage,
+.theme-corporate-light .ap-cover-logo-stage,
+.theme-infra-red .ap-cover-logo-stage {
+  background:
+    radial-gradient(circle at 18% 22%, rgba(255,255,255,.95), transparent 34%),
+    linear-gradient(135deg, #f8fafc 0%, #e8edf3 58%, #d7dee7 100%) !important;
+}
