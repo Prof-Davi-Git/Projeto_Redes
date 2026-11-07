@@ -283,11 +283,208 @@
     `).join('');
   }
 
+  function box3d({ x, y, z, w, h, d, cls = '', front = '#eef2f7', side = '#cbd5e1', top = '#f8fafc' }) {
+    return `
+      <div
+        class="e3d-proc-box ${cls}"
+        style="
+          --x:${x}px;--y:${y}px;--z:${z}px;
+          --w:${w}px;--h:${h}px;--d:${d}px;
+          --front:${front};--side:${side};--top:${top};
+        "
+      >
+        <i class="face front"></i>
+        <i class="face back"></i>
+        <i class="face right"></i>
+        <i class="face left"></i>
+        <i class="face top"></i>
+        <i class="face bottom"></i>
+      </div>
+    `;
+  }
+
+  function corporateWindows() {
+    const front = [];
+    const side = [];
+
+    const frontXs = [-205, -135, -65, 65, 135, 205];
+    const sideZs = [-110, -40, 40, 110];
+
+    [-48, 48].forEach(y => {
+      frontXs.forEach(x => {
+        front.push(box3d({
+          x, y, z: 153,
+          w: 58, h: 68, d: 4,
+          cls: 'glass',
+          front: 'linear-gradient(145deg,#0f4c75,#3f88b8)',
+          side: '#173d57',
+          top: '#7dd3fc'
+        }));
+      });
+
+      sideZs.forEach(z => {
+        side.push(box3d({
+          x: 263, y, z,
+          w: 4, h: 68, d: 58,
+          cls: 'glass side-glass',
+          front: '#173d57',
+          side: 'linear-gradient(145deg,#0f4c75,#3f88b8)',
+          top: '#7dd3fc'
+        }));
+      });
+    });
+
+    return front.join('') + side.join('');
+  }
+
+  function renderCorporate3D(data) {
+    const viewer = $('#empresa3dViewer');
+    if (!viewer) return;
+
+    viewer.innerHTML = `
+      <div class="e3d-proc-stage" id="e3dProcStage">
+        <div class="e3d-proc-help">
+          <span>🖱️ Arraste para girar</span>
+          <span>🔍 Use o scroll para zoom</span>
+        </div>
+
+        <div class="e3d-proc-controls">
+          <button type="button" data-e3d-zoom="in" title="Aproximar">＋</button>
+          <button type="button" data-e3d-zoom="out" title="Afastar">−</button>
+          <button type="button" data-e3d-reset title="Centralizar">↺</button>
+        </div>
+
+        <div class="e3d-proc-shadow"></div>
+
+        <div class="e3d-proc-scene" id="e3dProcScene">
+          <div class="e3d-proc-world" id="e3dProcWorld">
+            ${box3d({ x:0,y:150,z:0,w:760,h:12,d:520,cls:'ground',front:'#d9dde2',side:'#c7ccd2',top:'#dfe3e7' })}
+
+            ${box3d({ x:0,y:15,z:0,w:520,h:220,d:300,cls:'building-shell',front:'#f4f6f8',side:'#d8dde3',top:'#e4e8ed' })}
+
+            ${corporateWindows()}
+
+            ${box3d({ x:-15,y:54,z:196,w:190,h:12,d:92,cls:'canopy',front:'#cfd5dc',side:'#aeb6c0',top:'#e8ebee' })}
+            ${box3d({ x:-15,y:68,z:154,w:154,h:82,d:6,cls:'entrance-glass',front:'linear-gradient(145deg,#7fb1cf,#d7ecf8)',side:'#6e91a8',top:'#dbeafe' })}
+
+            ${box3d({ x:-170,y:125,z:170,w:150,h:18,d:48,cls:'planter',front:'#d1d5db',side:'#b6bec8',top:'#e5e7eb' })}
+            ${box3d({ x:185,y:125,z:170,w:130,h:18,d:48,cls:'planter',front:'#d1d5db',side:'#b6bec8',top:'#e5e7eb' })}
+
+            ${box3d({ x:-120,y:-112,z:-35,w:74,h:30,d:58,cls:'roof-unit',front:'#b8bec6',side:'#8d98a5',top:'#d6dbe1' })}
+            ${box3d({ x:10,y:-112,z:15,w:88,h:32,d:64,cls:'roof-unit',front:'#b8bec6',side:'#8d98a5',top:'#d6dbe1' })}
+            ${box3d({ x:165,y:-122,z:-38,w:98,h:50,d:82,cls:'roof-room',front:'#e5e7eb',side:'#cbd5e1',top:'#f3f4f6' })}
+
+            <div class="e3d-proc-roof-rail rail-front"></div>
+            <div class="e3d-proc-roof-rail rail-right"></div>
+          </div>
+        </div>
+
+        <div class="e3d-proc-caption">
+          <strong>Modelo 1 — Corporativo Moderno</strong>
+          <span>2 andares • fachada branca • vidro azul • cobertura plana</span>
+        </div>
+
+        <div class="e3d-proc-summary">
+          <span>🏬 ${data.floors.length} andar(es) no projeto</span>
+          <span>💻 ${data.equipment.length} equipamentos cadastrados</span>
+        </div>
+      </div>
+    `;
+
+    bindCorporate3DControls();
+  }
+
+  function bindCorporate3DControls() {
+    const stage = $('#e3dProcStage');
+    const world = $('#e3dProcWorld');
+    if (!stage || !world) return;
+
+    let yaw = -34;
+    let pitch = -18;
+    let zoom = 0.92;
+    let dragging = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    const apply = () => {
+      world.style.setProperty('--yaw', yaw + 'deg');
+      world.style.setProperty('--pitch', pitch + 'deg');
+      world.style.setProperty('--zoom', zoom);
+    };
+
+    const reset = () => {
+      yaw = -34;
+      pitch = -18;
+      zoom = 0.92;
+      apply();
+    };
+
+    stage.addEventListener('pointerdown', event => {
+      if (event.target.closest('.e3d-proc-controls')) return;
+      dragging = true;
+      lastX = event.clientX;
+      lastY = event.clientY;
+      stage.setPointerCapture?.(event.pointerId);
+      stage.classList.add('dragging');
+    });
+
+    stage.addEventListener('pointermove', event => {
+      if (!dragging) return;
+      const dx = event.clientX - lastX;
+      const dy = event.clientY - lastY;
+      yaw += dx * 0.45;
+      pitch = clamp(pitch - dy * 0.28, -52, 18);
+      lastX = event.clientX;
+      lastY = event.clientY;
+      apply();
+    });
+
+    const stop = event => {
+      dragging = false;
+      stage.classList.remove('dragging');
+      try { stage.releasePointerCapture?.(event.pointerId); } catch (_) {}
+    };
+
+    stage.addEventListener('pointerup', stop);
+    stage.addEventListener('pointercancel', stop);
+
+    stage.addEventListener('wheel', event => {
+      event.preventDefault();
+      zoom = clamp(zoom + (event.deltaY < 0 ? 0.08 : -0.08), 0.55, 1.65);
+      apply();
+    }, { passive: false });
+
+    stage.querySelector('[data-e3d-zoom="in"]')?.addEventListener('click', event => {
+      event.stopPropagation();
+      zoom = clamp(zoom + 0.12, 0.55, 1.65);
+      apply();
+    });
+
+    stage.querySelector('[data-e3d-zoom="out"]')?.addEventListener('click', event => {
+      event.stopPropagation();
+      zoom = clamp(zoom - 0.12, 0.55, 1.65);
+      apply();
+    });
+
+    stage.querySelector('[data-e3d-reset]')?.addEventListener('click', event => {
+      event.stopPropagation();
+      reset();
+    });
+
+    apply();
+  }
+
   function renderExterior() {
     const viewer = $('#empresa3dViewer');
     if (!viewer) return;
 
     const data = getBuildingData();
+
+    if (selectedModel === 'corporativo') {
+      renderCorporate3D(data);
+      return;
+    }
+
     const model = currentModel();
     const companyName = project.company?.name || 'Minha Empresa';
 
@@ -295,7 +492,6 @@
       <div class="e3d-external model-${esc(model.id)}">
         <div class="e3d-cloud cloud-a"></div>
         <div class="e3d-cloud cloud-b"></div>
-
         <div class="e3d-lawn lawn-a"></div>
         <div class="e3d-lawn lawn-b"></div>
         <div class="e3d-road"></div>
