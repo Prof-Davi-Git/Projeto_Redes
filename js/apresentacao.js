@@ -46,6 +46,39 @@
     'access-point': 'Access Points'
   };
 
+  const THEMES = [
+    {
+      id: 'tech-blue',
+      name: 'Azul Tecnológico',
+      description: 'Escuro, técnico e moderno.',
+      swatches: ['#08111f', '#2563eb', '#22d3ee']
+    },
+    {
+      id: 'matrix-green',
+      name: 'Verde Matrix',
+      description: 'Grafite com verde de infraestrutura.',
+      swatches: ['#07110d', '#16a34a', '#86efac']
+    },
+    {
+      id: 'neon-violet',
+      name: 'Roxo Neon',
+      description: 'Tecnologia com roxo e magenta.',
+      swatches: ['#140a24', '#7c3aed', '#f472b6']
+    },
+    {
+      id: 'corporate-light',
+      name: 'Claro Corporativo',
+      description: 'Limpo, claro e profissional.',
+      swatches: ['#f8fafc', '#1d4ed8', '#f59e0b']
+    },
+    {
+      id: 'infra-red',
+      name: 'Vermelho Infra',
+      description: 'Preto, vermelho e visual de operação.',
+      swatches: ['#111111', '#dc2626', '#f59e0b']
+    }
+  ];
+
   const NOTE_PROMPTS = {
     capa: [
       'Apresentem o nome da empresa e os integrantes.',
@@ -96,6 +129,9 @@
   let currentIndex = 0;
   let slides = [];
   let draftNotes = {};
+  let draftThemeId = 'tech-blue';
+  let draftLogoDataUrl = '';
+  let draftLogoFileName = '';
   let dirty = false;
   let loadWatch = null;
 
@@ -106,9 +142,16 @@
       ? project.company.presentation
       : {};
 
+    const themeId = THEMES.some(theme => theme.id === old.themeId)
+      ? old.themeId
+      : 'tech-blue';
+
     project.company.presentation = {
-      version: 1,
+      version: 2,
       notes: old.notes && typeof old.notes === 'object' ? old.notes : {},
+      themeId,
+      logoDataUrl: typeof old.logoDataUrl === 'string' ? old.logoDataUrl : '',
+      logoFileName: typeof old.logoFileName === 'string' ? old.logoFileName : '',
       updatedAt: String(old.updatedAt || '')
     };
 
@@ -214,7 +257,7 @@
 
   function slideShell({ eyebrow, title, subtitle = '', body, number, className = '' }) {
     return `
-      <article class="ap-slide ${className}">
+      <article class="ap-slide theme-${esc(draftThemeId)} ${className}">
         <div class="ap-slide-top">
           <div class="ap-brand">
             <span class="ap-brand-mark">R</span>
@@ -335,20 +378,24 @@
         number: 1,
         className: 'ap-cover',
         body: `
-          <div class="ap-cover-layout">
-            <div class="ap-cover-main">
-              <div class="ap-network-symbol">
-                <i></i><i></i><i></i><i></i><i></i>
-              </div>
-              <div class="ap-cover-meta">
-                <span><b>Grupo:</b> ${esc(company.group || 'Não informado')}</span>
-                <span><b>Integrantes:</b> ${esc(company.members || 'Não informados')}</span>
-              </div>
+          <div class="ap-cover-logo-layout">
+            <div class="ap-cover-logo-stage ${draftLogoDataUrl ? 'has-logo' : ''}">
+              ${draftLogoDataUrl
+                ? `<img src="${draftLogoDataUrl}" alt="Logo da empresa" />`
+                : `
+                  <div class="ap-cover-logo-placeholder">
+                    <span>LOGO</span>
+                    <strong>Importe o logo da empresa</strong>
+                    <small>PNG sem fundo</small>
+                  </div>
+                `
+              }
             </div>
-            <div class="ap-cover-side">
-              <span>REDES</span>
-              <strong>Infraestrutura • Segurança • Nuvem • SDN</strong>
-              <small>Curso Técnico em Desenvolvimento de Sistemas</small>
+
+            <div class="ap-cover-footer">
+              <span><b>Grupo:</b> ${esc(company.group || 'Não informado')}</span>
+              <span><b>Integrantes:</b> ${esc(company.members || 'Não informados')}</span>
+              <span>Infraestrutura • Segurança • Nuvem • SDN</span>
             </div>
           </div>
         `
@@ -719,14 +766,14 @@
           <h2>Apresentação da Empresa</h2>
         </div>
         <div class="ap-page-actions">
-          <span id="apSaveStatus" class="ap-save-status">Roteiro salvo</span>
+          <span id="apSaveStatus" class="ap-save-status">Apresentação salva</span>
           <button
             id="btnSalvarRoteiro"
             class="btn btn-primary"
             type="button"
-            data-auth-action="salvar o roteiro da apresentação"
+            data-auth-action="salvar a apresentação do projeto"
           >
-            💾 Salvar roteiro
+            💾 Salvar apresentação
           </button>
           <button id="btnIniciarApresentacao" class="btn btn-secondary" type="button">
             ▶ Apresentar
@@ -745,6 +792,41 @@
           <span>3. Apresente</span>
         </div>
       </div>
+
+      <section class="ap-customize">
+        <div class="ap-customize-head">
+          <div>
+            <small>IDENTIDADE DA APRESENTAÇÃO</small>
+            <h3>Escolha o design e adicione o logo da empresa</h3>
+          </div>
+          <span>As escolhas ficam salvas no projeto do grupo</span>
+        </div>
+
+        <div class="ap-customize-grid">
+          <div>
+            <small class="ap-customize-label">DESIGN DOS SLIDES</small>
+            <div id="apThemePicker" class="ap-theme-picker"></div>
+          </div>
+
+          <div class="ap-logo-control">
+            <small class="ap-customize-label">LOGO DA EMPRESA</small>
+            <div class="ap-logo-control-box">
+              <div id="apLogoPreview" class="ap-logo-preview"></div>
+              <div class="ap-logo-control-copy">
+                <strong>PNG transparente</strong>
+                <span>O fundo precisa estar removido. Máximo: 2 MB.</span>
+                <div>
+                  <label class="btn btn-secondary ap-logo-file">
+                    📁 Importar logo
+                    <input id="apLogoInput" type="file" accept="image/png,.png" />
+                  </label>
+                  <button id="btnRemoverLogo" class="btn btn-secondary" type="button">Remover</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <div class="ap-workspace">
         <aside id="apThumbs" class="ap-thumbs"></aside>
@@ -789,6 +871,8 @@
     E('#btnApProximo')?.addEventListener('click', () => goTo(currentIndex + 1));
     E('#btnSalvarRoteiro')?.addEventListener('click', saveNotes);
     E('#btnIniciarApresentacao')?.addEventListener('click', startPresentation);
+    E('#apLogoInput')?.addEventListener('change', handleLogoImport);
+    E('#btnRemoverLogo')?.addEventListener('click', removeLogo);
 
     E('#apNote')?.addEventListener('input', event => {
       const slide = slides[currentIndex];
@@ -812,6 +896,148 @@
       if (event.key === 'End') goTo(slides.length - 1);
       if (event.key === 'Escape' && E('#apPresenter')?.classList.contains('active')) stopPresentation();
     });
+  }
+
+  function currentTheme() {
+    return THEMES.find(theme => theme.id === draftThemeId) || THEMES[0];
+  }
+
+  function renderThemePicker() {
+    const box = E('#apThemePicker');
+    if (!box) return;
+
+    box.innerHTML = THEMES.map(theme => `
+      <button
+        type="button"
+        class="ap-theme-card ${theme.id === draftThemeId ? 'active' : ''}"
+        data-theme-id="${esc(theme.id)}"
+      >
+        <span class="ap-theme-swatches">
+          ${theme.swatches.map(color => `<i style="background:${color}"></i>`).join('')}
+        </span>
+        <strong>${esc(theme.name)}</strong>
+        <small>${esc(theme.description)}</small>
+      </button>
+    `).join('');
+
+    box.querySelectorAll('[data-theme-id]').forEach(button => {
+      button.addEventListener('click', () => {
+        const themeId = button.dataset.themeId;
+        if (!THEMES.some(theme => theme.id === themeId) || themeId === draftThemeId) return;
+
+        draftThemeId = themeId;
+        dirty = true;
+        renderThemePicker();
+        refreshSlides();
+        updateSaveStatus();
+      });
+    });
+  }
+
+  function renderLogoPreview() {
+    const preview = E('#apLogoPreview');
+    const remove = E('#btnRemoverLogo');
+    if (!preview) return;
+
+    preview.innerHTML = draftLogoDataUrl
+      ? `<img src="${draftLogoDataUrl}" alt="Logo importado" />`
+      : '<span>PNG</span>';
+
+    preview.classList.toggle('has-logo', !!draftLogoDataUrl);
+    if (remove) remove.disabled = !draftLogoDataUrl;
+  }
+
+  function fileToDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ''));
+      reader.onerror = () => reject(new Error('Não foi possível ler o arquivo.'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function loadImage(dataUrl) {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error('Não foi possível abrir a imagem.'));
+      image.src = dataUrl;
+    });
+  }
+
+  async function pngHasTransparency(dataUrl) {
+    const image = await loadImage(dataUrl);
+    const max = 280;
+    const scale = Math.min(1, max / Math.max(image.naturalWidth || 1, image.naturalHeight || 1));
+    const width = Math.max(1, Math.round(image.naturalWidth * scale));
+    const height = Math.max(1, Math.round(image.naturalHeight * scale));
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return false;
+
+    ctx.clearRect(0, 0, width, height);
+    ctx.drawImage(image, 0, 0, width, height);
+
+    const pixels = ctx.getImageData(0, 0, width, height).data;
+    for (let i = 3; i < pixels.length; i += 4) {
+      if (pixels[i] < 250) return true;
+    }
+
+    return false;
+  }
+
+  async function handleLogoImport(event) {
+    const input = event.currentTarget;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'image/png' && !file.name.toLowerCase().endsWith('.png')) {
+      alert('Use somente um arquivo PNG.');
+      input.value = '';
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert('O logo precisa ter no máximo 2 MB.');
+      input.value = '';
+      return;
+    }
+
+    try {
+      const dataUrl = await fileToDataUrl(file);
+      const transparent = await pngHasTransparency(dataUrl);
+
+      if (!transparent) {
+        alert('Esse PNG não possui transparência. Remova o fundo do logo e tente novamente.');
+        input.value = '';
+        return;
+      }
+
+      draftLogoDataUrl = dataUrl;
+      draftLogoFileName = file.name;
+      dirty = true;
+      renderLogoPreview();
+      refreshSlides();
+      updateSaveStatus();
+    } catch (error) {
+      alert(error?.message || 'Não foi possível importar o logo.');
+    } finally {
+      input.value = '';
+    }
+  }
+
+  function removeLogo() {
+    if (!draftLogoDataUrl) return;
+
+    draftLogoDataUrl = '';
+    draftLogoFileName = '';
+    dirty = true;
+    renderLogoPreview();
+    refreshSlides();
+    updateSaveStatus();
   }
 
   function renderThumbs() {
@@ -878,21 +1104,26 @@
     const status = E('#apSaveStatus');
     if (!status) return;
 
-    status.textContent = dirty ? 'Alterações não salvas' : 'Roteiro salvo';
+    status.textContent = dirty ? 'Alterações não salvas' : 'Apresentação salva';
     status.classList.toggle('pending', dirty);
   }
 
   function saveNotes() {
     const data = ensurePresentationData();
     data.notes = { ...draftNotes };
+    data.themeId = draftThemeId;
+    data.logoDataUrl = draftLogoDataUrl;
+    data.logoFileName = draftLogoFileName;
     data.updatedAt = new Date().toISOString();
     dirty = false;
 
     if (typeof addHistory === 'function') {
-      addHistory('Apresentação', 'Roteiro da apresentação do projeto foi atualizado.');
+      addHistory('Apresentação', 'Apresentação do projeto foi atualizada: roteiro, design e identidade visual.');
     }
 
     updateSaveStatus();
+    renderThemePicker();
+    renderLogoPreview();
     renderThumbs();
   }
 
@@ -967,8 +1198,13 @@
 
     if (!dirty) {
       draftNotes = { ...(data.notes || {}) };
+      draftThemeId = data.themeId || 'tech-blue';
+      draftLogoDataUrl = data.logoDataUrl || '';
+      draftLogoFileName = data.logoFileName || '';
     }
 
+    renderThemePicker();
+    renderLogoPreview();
     refreshSlides();
     updateSaveStatus();
   }
@@ -1004,6 +1240,9 @@
             currentIndex = 0;
             const data = ensurePresentationData();
             draftNotes = { ...(data.notes || {}) };
+            draftThemeId = data.themeId || 'tech-blue';
+            draftLogoDataUrl = data.logoDataUrl || '';
+            draftLogoFileName = data.logoFileName || '';
             if (E('#apresentacao')?.classList.contains('active')) renderScreen();
           }
         }
@@ -1021,8 +1260,11 @@
   });
 
   function start() {
-    ensurePresentationData();
-    draftNotes = { ...(project.company.presentation.notes || {}) };
+    const data = ensurePresentationData();
+    draftNotes = { ...(data.notes || {}) };
+    draftThemeId = data.themeId || 'tech-blue';
+    draftLogoDataUrl = data.logoDataUrl || '';
+    draftLogoFileName = data.logoFileName || '';
     inject();
     bindNav();
     watchProjectOpen();
