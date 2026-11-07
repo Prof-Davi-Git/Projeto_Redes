@@ -1,10 +1,10 @@
 /* =========================================================
-   EMPRESA 3D - Projeto de Redes
-   - 5 modelos visuais para os grupos escolherem
-   - vista externa + vista interna automática
-   - a vista interna usa os andares, posições, equipamentos
+   VISUALIZAÇÃO REALISTA DA EMPRESA
+   - Gera uma imagem do andar diretamente no navegador
+   - Usa os andares, departamentos, equipamentos, posições
      e conexões já existentes no Mapa da Rede
-   - não altera a topologia e não duplica cadastros
+   - Sem API, sem biblioteca externa e sem créditos
+   - Permite baixar cada andar em PNG
    ========================================================= */
 
 (() => {
@@ -20,24 +20,6 @@
       .replaceAll('"', '&quot;')
       .replaceAll("'", '&#039;');
 
-  const MODELS = [
-    { id: 'corporativo', name: 'Corporativo', icon: '🏢', desc: 'Fachada empresarial moderna com vidro.' },
-    { id: 'tecnologico', name: 'Tecnológico', icon: '💠', desc: 'Sede de tecnologia com visual digital.' },
-    { id: 'industrial', name: 'Industrial', icon: '🏭', desc: 'Estrutura robusta para indústria e logística.' },
-    { id: 'criativo', name: 'Criativo', icon: '🎨', desc: 'Escritório contemporâneo e mais colorido.' },
-    { id: 'campus', name: 'Campus', icon: '🌳', desc: 'Sede horizontal com áreas verdes.' }
-  ];
-
-  const ICONS = {
-    computador: '💻',
-    notebook: '💼',
-    switch: '🔌',
-    roteador: '🌐',
-    servidor: '🗄️',
-    impressora: '🖨️',
-    'access-point': '📶'
-  };
-
   const TYPE_NAMES = {
     computador: 'Computador',
     notebook: 'Notebook',
@@ -48,54 +30,62 @@
     'access-point': 'Access Point'
   };
 
-  let selectedModel = 'corporativo';
-  let currentView = 'external';
+  const DEPARTMENT_COLORS = [
+    ['#dbeafe', '#2563eb'],
+    ['#dcfce7', '#16a34a'],
+    ['#fef3c7', '#d97706'],
+    ['#fce7f3', '#db2777'],
+    ['#ede9fe', '#7c3aed'],
+    ['#cffafe', '#0891b2'],
+    ['#fee2e2', '#dc2626'],
+    ['#e2e8f0', '#475569']
+  ];
+
+  const state = {
+    floorId: '',
+    showPeople: true,
+    showCables: true,
+    presentation: false
+  };
+
   let loadWatch = null;
+  let resizeTimer = null;
 
-  function clamp(value, min, max) {
-    return Math.min(max, Math.max(min, value));
-  }
-
-  function ensureVisual() {
+  function ensureVisualPrefs() {
     if (!project.company || typeof project.company !== 'object') project.company = {};
-
     const old = project.company.visual && typeof project.company.visual === 'object'
       ? project.company.visual
       : {};
 
-    const legacyMap = {
-      moderno: 'corporativo',
-      empresarial: 'corporativo',
-      tecnologico: 'tecnologico'
-    };
-
-    const candidate =
-      old.modelId ||
-      legacyMap[old.buildingStyle] ||
-      'corporativo';
-
-    const modelId = MODELS.some(model => model.id === candidate)
-      ? candidate
-      : 'corporativo';
-
     project.company.visual = {
       ...old,
-      visualVersion: 4,
-      modelId,
-      updatedAt: String(old.updatedAt || '')
+      visualVersion: 5,
+      officeView: {
+        showPeople: old.officeView?.showPeople !== false,
+        showCables: old.officeView?.showCables !== false
+      }
     };
+
+    state.showPeople = project.company.visual.officeView.showPeople;
+    state.showCables = project.company.visual.officeView.showCables;
 
     return project.company.visual;
   }
 
-  function getBuildingData() {
+  function getData() {
     const building = project.company?.building;
     const floors = Array.isArray(building?.floors) && building.floors.length
       ? building.floors
       : [{ id: 'floor_terreo', name: 'Térreo' }];
 
-    const floorIds = new Set(floors.map(floor => floor.id));
+    const floorIds = new Set(floors.map(f => f.id));
     const fallbackFloorId = floors[0].id;
+
+    if (!state.floorId || !floorIds.has(state.floorId)) {
+      state.floorId = building?.activeFloorId && floorIds.has(building.activeFloorId)
+        ? building.activeFloorId
+        : floors[0].id;
+    }
 
     return {
       floors,
@@ -110,621 +100,819 @@
     };
   }
 
-  function equipmentFloorId(item, data) {
-    return data.floorIds.has(item.floorId)
-      ? item.floorId
-      : data.fallbackFloorId;
+  function floorIdForEquipment(item, data) {
+    return data.floorIds.has(item.floorId) ? item.floorId : data.fallbackFloorId;
   }
 
   function equipmentOnFloor(floorId, data) {
-    return data.equipment.filter(item => equipmentFloorId(item, data) === floorId);
+    return data.equipment.filter(item => floorIdForEquipment(item, data) === floorId);
   }
 
   function connectionsOnFloor(floorId, data) {
     const ids = new Set(equipmentOnFloor(floorId, data).map(item => item.id));
-    return data.connections.filter(connection =>
-      ids.has(connection.from) && ids.has(connection.to)
+    return data.connections.filter(c => ids.has(c.from) && ids.has(c.to));
+  }
+
+  function depById(id, data) {
+    return data.departments.find(dep => dep.id === id) || null;
+  }
+
+  function hashString(text) {
+    let h = 2166136261;
+    for (const ch of String(text || '')) {
+      h ^= ch.charCodeAt(0);
+      h = Math.imul(h, 16777619);
+    }
+    return Math.abs(h >>> 0);
+  }
+
+  function departmentStyle(depId, data) {
+    const index = hashString(depId || 'sem-setor') % DEPARTMENT_COLORS.length;
+    return DEPARTMENT_COLORS[index];
+  }
+
+  function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+  }
+
+  function roundRect(ctx, x, y, w, h, r, fill, stroke = null, lineWidth = 1) {
+    const radius = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.arcTo(x + w, y, x + w, y + h, radius);
+    ctx.arcTo(x + w, y + h, x, y + h, radius);
+    ctx.arcTo(x, y + h, x, y, radius);
+    ctx.arcTo(x, y, x + w, y, radius);
+    ctx.closePath();
+
+    if (fill) {
+      ctx.fillStyle = fill;
+      ctx.fill();
+    }
+
+    if (stroke) {
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = lineWidth;
+      ctx.stroke();
+    }
+  }
+
+  function withShadow(ctx, blur, color, offsetY, fn) {
+    ctx.save();
+    ctx.shadowBlur = blur;
+    ctx.shadowColor = color;
+    ctx.shadowOffsetY = offsetY;
+    fn();
+    ctx.restore();
+  }
+
+  function drawFloorBase(ctx, W, H) {
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, '#f8fafc');
+    bg.addColorStop(1, '#e5e7eb');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    withShadow(ctx, 28, 'rgba(15,23,42,.18)', 12, () => {
+      roundRect(ctx, 70, 70, W - 140, H - 140, 20, '#f3efe8', '#cbd5e1', 4);
+    });
+
+    // Padrão de piso discreto
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(76, 76, W - 152, H - 152);
+    ctx.clip();
+    ctx.strokeStyle = 'rgba(148,163,184,.12)';
+    ctx.lineWidth = 1;
+
+    for (let x = 76; x < W - 76; x += 58) {
+      ctx.beginPath();
+      ctx.moveTo(x, 76);
+      ctx.lineTo(x, H - 76);
+      ctx.stroke();
+    }
+    for (let y = 76; y < H - 76; y += 58) {
+      ctx.beginPath();
+      ctx.moveTo(76, y);
+      ctx.lineTo(W - 76, y);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // Paredes externas
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 14;
+    ctx.strokeRect(76, 76, W - 152, H - 152);
+
+    // Janelas na parede superior
+    ctx.strokeStyle = '#7dd3fc';
+    ctx.lineWidth = 8;
+    for (let x = 145; x < W - 160; x += 150) {
+      ctx.beginPath();
+      ctx.moveTo(x, 76);
+      ctx.lineTo(Math.min(x + 86, W - 90), 76);
+      ctx.stroke();
+    }
+
+    // Entrada
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 9;
+    ctx.beginPath();
+    ctx.moveTo(W / 2 - 55, H - 76);
+    ctx.lineTo(W / 2 + 55, H - 76);
+    ctx.stroke();
+  }
+
+  function equipmentPoint(item, floorId, data, W, H) {
+    const view = data.floorViews?.[floorId] || project.mapView || {};
+    const mapW = Math.max(1, Number(view.width) || 1400);
+    const mapH = Math.max(1, Number(view.height) || 900);
+
+    // O mapa guarda o canto superior esquerdo do equipamento; deslocamos para o centro.
+    const x = clamp((Number(item.x) + 60) / mapW, 0.04, 0.96);
+    const y = clamp((Number(item.y) + 48) / mapH, 0.05, 0.95);
+
+    return {
+      x: 110 + x * (W - 220),
+      y: 110 + y * (H - 220)
+    };
+  }
+
+  function drawDepartmentZones(ctx, items, floorId, data, W, H) {
+    const grouped = new Map();
+
+    items.forEach(item => {
+      const depId = item.departmentId || '__none__';
+      if (!grouped.has(depId)) grouped.set(depId, []);
+      grouped.get(depId).push(item);
+    });
+
+    const zones = [];
+
+    grouped.forEach((groupItems, depId) => {
+      if (depId === '__none__') return;
+
+      const points = groupItems.map(item => equipmentPoint(item, floorId, data, W, H));
+      if (!points.length) return;
+
+      const xs = points.map(p => p.x);
+      const ys = points.map(p => p.y);
+
+      let x = Math.min(...xs) - 78;
+      let y = Math.min(...ys) - 68;
+      let x2 = Math.max(...xs) + 78;
+      let y2 = Math.max(...ys) + 78;
+
+      if (groupItems.length === 1) {
+        x -= 42; x2 += 42; y -= 24; y2 += 24;
+      }
+
+      x = clamp(x, 95, W - 235);
+      y = clamp(y, 95, H - 205);
+      x2 = clamp(x2, x + 180, W - 95);
+      y2 = clamp(y2, y + 130, H - 95);
+
+      const dep = depById(depId, data);
+      const [fill, accent] = departmentStyle(depId, data);
+
+      ctx.save();
+      ctx.globalAlpha = .58;
+      roundRect(ctx, x, y, x2 - x, y2 - y, 18, fill, accent, 3);
+      ctx.restore();
+
+      ctx.fillStyle = accent;
+      ctx.font = '800 20px Arial, sans-serif';
+      ctx.fillText(dep?.name || 'Departamento', x + 16, y + 30);
+
+      zones.push({ x, y, x2, y2, depId, accent });
+    });
+
+    return zones;
+  }
+
+  function drawPlant(ctx, x, y, scale = 1) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(scale, scale);
+
+    ctx.fillStyle = '#8b5e3c';
+    roundRect(ctx, -13, 4, 26, 20, 6, '#9a6a43');
+
+    ctx.strokeStyle = '#15803d';
+    ctx.lineWidth = 5;
+    [
+      [-2, 4, -14, -15],
+      [1, 4, 13, -18],
+      [0, 3, 0, -24],
+      [-1, 4, -18, -3],
+      [2, 4, 18, -5]
+    ].forEach(([x1,y1,x2,y2]) => {
+      ctx.beginPath();
+      ctx.moveTo(x1,y1);
+      ctx.lineTo(x2,y2);
+      ctx.stroke();
+    });
+
+    ctx.fillStyle = '#22c55e';
+    [[-14,-16],[13,-18],[0,-25],[-19,-4],[18,-6]].forEach(([lx,ly]) => {
+      ctx.beginPath();
+      ctx.ellipse(lx, ly, 8, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.restore();
+  }
+
+  function drawPerson(ctx, x, y, seed) {
+    const shirts = ['#2563eb','#0f766e','#7c3aed','#be123c','#b45309','#475569'];
+    const skin = ['#f1c27d','#e0ac69','#c68642','#8d5524'][seed % 4];
+    const shirt = shirts[seed % shirts.length];
+
+    ctx.save();
+    ctx.translate(x, y);
+
+    ctx.fillStyle = skin;
+    ctx.beginPath();
+    ctx.arc(0, -10, 7, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = shirt;
+    roundRect(ctx, -8, -2, 16, 20, 7, shirt);
+
+    ctx.fillStyle = '#334155';
+    roundRect(ctx, -11, 16, 8, 15, 3, '#334155');
+    roundRect(ctx, 3, 16, 8, 15, 3, '#334155');
+
+    ctx.restore();
+  }
+
+  function drawWorkstation(ctx, x, y, item, data, isNotebook = false) {
+    const dep = depById(item.departmentId, data);
+    const [, accent] = departmentStyle(item.departmentId || item.id, data);
+
+    // Tapete / área da estação
+    ctx.save();
+    ctx.globalAlpha = .18;
+    ctx.fillStyle = accent;
+    ctx.beginPath();
+    ctx.ellipse(x, y + 8, 66, 46, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // Cadeira
+    roundRect(ctx, x - 15, y + 32, 30, 24, 8, '#334155');
+    ctx.fillStyle = '#64748b';
+    ctx.beginPath();
+    ctx.arc(x, y + 61, 11, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Mesa
+    withShadow(ctx, 8, 'rgba(15,23,42,.16)', 4, () => {
+      roundRect(ctx, x - 48, y - 24, 96, 48, 8, '#b9895a', '#8b5e3c', 2);
+    });
+
+    // Monitor / notebook
+    if (isNotebook) {
+      roundRect(ctx, x - 20, y - 12, 40, 24, 4, '#1e293b');
+      ctx.fillStyle = '#60a5fa';
+      ctx.fillRect(x - 16, y - 9, 32, 16);
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(x - 24, y + 14);
+      ctx.lineTo(x + 24, y + 14);
+      ctx.stroke();
+    } else {
+      roundRect(ctx, x - 24, y - 16, 48, 28, 4, '#1e293b');
+      const screen = ctx.createLinearGradient(x - 20, y - 12, x + 20, y + 8);
+      screen.addColorStop(0, '#0ea5e9');
+      screen.addColorStop(1, '#dbeafe');
+      ctx.fillStyle = screen;
+      ctx.fillRect(x - 19, y - 11, 38, 18);
+
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(x, y + 12);
+      ctx.lineTo(x, y + 21);
+      ctx.stroke();
+    }
+
+    // Teclado
+    roundRect(ctx, x - 18, y + 7, 36, 8, 2, '#e2e8f0');
+
+    if (state.showPeople) {
+      drawPerson(ctx, x, y + 61, hashString(item.id));
+    }
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '700 13px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(item.name || TYPE_NAMES[item.type], x, y - 38);
+
+    if (dep?.name) {
+      ctx.fillStyle = '#64748b';
+      ctx.font = '600 10px Arial, sans-serif';
+      ctx.fillText(dep.name, x, y - 26);
+    }
+
+    ctx.textAlign = 'start';
+  }
+
+  function drawPrinter(ctx, x, y, item) {
+    withShadow(ctx, 7, 'rgba(15,23,42,.18)', 4, () => {
+      roundRect(ctx, x - 30, y - 24, 60, 48, 8, '#e5e7eb', '#94a3b8', 2);
+    });
+    roundRect(ctx, x - 22, y - 35, 44, 22, 4, '#f8fafc', '#cbd5e1');
+    ctx.fillStyle = '#334155';
+    ctx.fillRect(x - 17, y - 2, 34, 13);
+    ctx.fillStyle = '#22c55e';
+    ctx.beginPath();
+    ctx.arc(x + 20, y - 12, 3, 0, Math.PI * 2);
+    ctx.fill();
+    labelEquipment(ctx, x, y + 43, item.name || 'Impressora');
+  }
+
+  function drawServer(ctx, x, y, item) {
+    withShadow(ctx, 9, 'rgba(15,23,42,.2)', 5, () => {
+      roundRect(ctx, x - 27, y - 44, 54, 88, 6, '#1e293b', '#0f172a', 2);
+    });
+
+    for (let i = 0; i < 6; i++) {
+      ctx.fillStyle = i % 2 ? '#334155' : '#475569';
+      roundRect(ctx, x - 21, y - 35 + i * 12, 42, 8, 2, ctx.fillStyle);
+      ctx.fillStyle = '#22c55e';
+      ctx.beginPath();
+      ctx.arc(x + 14, y - 31 + i * 12, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    labelEquipment(ctx, x, y + 59, item.name || 'Servidor');
+  }
+
+  function drawSwitch(ctx, x, y, item) {
+    withShadow(ctx, 6, 'rgba(15,23,42,.17)', 3, () => {
+      roundRect(ctx, x - 42, y - 18, 84, 36, 6, '#334155', '#0f172a', 2);
+    });
+
+    for (let i = 0; i < 8; i++) {
+      ctx.fillStyle = i % 3 === 0 ? '#22c55e' : '#94a3b8';
+      ctx.fillRect(x - 32 + i * 9, y - 4, 5, 5);
+    }
+    labelEquipment(ctx, x, y + 34, item.name || 'Switch');
+  }
+
+  function drawRouter(ctx, x, y, item) {
+    roundRect(ctx, x - 38, y - 16, 76, 32, 8, '#1e293b', '#0f172a', 2);
+
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 4;
+    [-25, 25].forEach(dx => {
+      ctx.beginPath();
+      ctx.moveTo(x + dx, y - 14);
+      ctx.lineTo(x + dx, y - 43);
+      ctx.stroke();
+      ctx.fillStyle = '#64748b';
+      ctx.beginPath();
+      ctx.arc(x + dx, y - 45, 3, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    for (let i = 0; i < 4; i++) {
+      ctx.fillStyle = '#22c55e';
+      ctx.beginPath();
+      ctx.arc(x - 15 + i * 10, y + 1, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    labelEquipment(ctx, x, y + 34, item.name || 'Roteador');
+  }
+
+  function drawAccessPoint(ctx, x, y, item) {
+    withShadow(ctx, 5, 'rgba(15,23,42,.12)', 2, () => {
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, y, 26, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    });
+
+    ctx.strokeStyle = '#0ea5e9';
+    ctx.lineWidth = 3;
+    [8, 14, 20].forEach(r => {
+      ctx.beginPath();
+      ctx.arc(x, y + 4, r, Math.PI * 1.15, Math.PI * 1.85);
+      ctx.stroke();
+    });
+    ctx.fillStyle = '#0ea5e9';
+    ctx.beginPath();
+    ctx.arc(x, y + 8, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    labelEquipment(ctx, x, y + 41, item.name || 'Access Point');
+  }
+
+  function labelEquipment(ctx, x, y, text) {
+    ctx.fillStyle = '#334155';
+    ctx.font = '700 12px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(String(text).slice(0, 24), x, y);
+    ctx.textAlign = 'start';
+  }
+
+  function drawEquipment(ctx, item, point, data) {
+    switch (item.type) {
+      case 'computador':
+        drawWorkstation(ctx, point.x, point.y, item, data, false);
+        break;
+      case 'notebook':
+        drawWorkstation(ctx, point.x, point.y, item, data, true);
+        break;
+      case 'impressora':
+        drawPrinter(ctx, point.x, point.y, item);
+        break;
+      case 'servidor':
+        drawServer(ctx, point.x, point.y, item);
+        break;
+      case 'switch':
+        drawSwitch(ctx, point.x, point.y, item);
+        break;
+      case 'roteador':
+        drawRouter(ctx, point.x, point.y, item);
+        break;
+      case 'access-point':
+        drawAccessPoint(ctx, point.x, point.y, item);
+        break;
+      default:
+        labelEquipment(ctx, point.x, point.y, item.name || item.type);
+    }
+  }
+
+  function drawConnections(ctx, connections, pointMap) {
+    if (!state.showCables) return;
+
+    ctx.save();
+    ctx.strokeStyle = 'rgba(37,99,235,.28)';
+    ctx.lineWidth = 3;
+    ctx.setLineDash([10, 8]);
+
+    connections.forEach(connection => {
+      const a = pointMap.get(connection.from);
+      const b = pointMap.get(connection.to);
+      if (!a || !b) return;
+
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      const midX = (a.x + b.x) / 2;
+      ctx.bezierCurveTo(midX, a.y, midX, b.y, b.x, b.y);
+      ctx.stroke();
+    });
+
+    ctx.restore();
+  }
+
+  function drawDecor(ctx, W, H, seedBase) {
+    const positions = [
+      [120, 130], [W - 120, 130], [120, H - 130], [W - 120, H - 130]
+    ];
+
+    positions.forEach((p, index) => {
+      if ((hashString(seedBase + index) % 3) !== 0) {
+        drawPlant(ctx, p[0], p[1], .9);
+      }
+    });
+
+    // Pequena área de espera próxima à entrada.
+    const cx = W / 2;
+    const cy = H - 130;
+    roundRect(ctx, cx - 100, cy - 28, 70, 36, 9, '#64748b');
+    roundRect(ctx, cx + 30, cy - 28, 70, 36, 9, '#64748b');
+    roundRect(ctx, cx - 22, cy - 18, 44, 25, 8, '#c59b6d');
+  }
+
+  function renderCanvas() {
+    const canvas = $('#empresaRealCanvas');
+    if (!canvas) return;
+
+    const data = getData();
+    const floor = data.floors.find(f => f.id === state.floorId) || data.floors[0];
+    const items = equipmentOnFloor(floor.id, data);
+    const connections = connectionsOnFloor(floor.id, data);
+
+    const W = 1600;
+    const H = 900;
+    canvas.width = W;
+    canvas.height = H;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    drawFloorBase(ctx, W, H);
+    drawDepartmentZones(ctx, items, floor.id, data, W, H);
+    drawDecor(ctx, W, H, project.company?.name || 'empresa');
+
+    const pointMap = new Map(
+      items.map(item => [item.id, equipmentPoint(item, floor.id, data, W, H)])
     );
+
+    drawConnections(ctx, connections, pointMap);
+
+    const priority = {
+      computador: 2,
+      notebook: 2,
+      impressora: 3,
+      switch: 4,
+      roteador: 4,
+      servidor: 5,
+      'access-point': 6
+    };
+
+    [...items]
+      .sort((a, b) => (priority[a.type] || 1) - (priority[b.type] || 1))
+      .forEach(item => drawEquipment(ctx, item, pointMap.get(item.id), data));
+
+    // Cabeçalho da imagem
+    const company = project.company?.name || 'Minha Empresa';
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,255,255,.92)';
+    roundRect(ctx, 95, 95, 440, 76, 14, 'rgba(255,255,255,.92)', '#cbd5e1', 2);
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '800 24px Arial, sans-serif';
+    ctx.fillText(company, 118, 128);
+    ctx.fillStyle = '#475569';
+    ctx.font = '700 15px Arial, sans-serif';
+    ctx.fillText(`${floor.name || 'Andar'} • ${items.length} equipamentos • ${connections.length} conexões`, 118, 154);
+    ctx.restore();
+
+    // Marca discreta
+    ctx.fillStyle = 'rgba(71,85,105,.72)';
+    ctx.font = '600 12px Arial, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('Visualização gerada a partir do Mapa da Rede', W - 95, H - 92);
+    ctx.textAlign = 'start';
+
+    updateStats(floor, items, connections, data);
   }
 
-  function departmentName(id, data) {
-    return data.departments.find(dep => dep.id === id)?.name || '';
+  function updateStats(floor, items, connections, data) {
+    const floorName = $('#empresaRealFloorName');
+    const floorMeta = $('#empresaRealFloorMeta');
+    if (floorName) floorName.textContent = floor?.name || 'Andar';
+
+    if (floorMeta) {
+      const depCount = new Set(items.map(item => item.departmentId).filter(Boolean)).size;
+      floorMeta.textContent =
+        `${items.length} equipamento(s) • ${connections.length} conexão(ões) • ${depCount} departamento(s)`;
+    }
+
+    const empty = $('#empresaRealEmpty');
+    if (empty) empty.classList.toggle('hidden', items.length > 0);
   }
 
-  function currentModel() {
-    return MODELS.find(model => model.id === selectedModel) || MODELS[0];
+  function renderFloorTabs() {
+    const data = getData();
+    const box = $('#empresaRealFloorTabs');
+    if (!box) return;
+
+    box.innerHTML = data.floors.map((floor, index) => {
+      const items = equipmentOnFloor(floor.id, data);
+      return `
+        <button
+          type="button"
+          class="empresa-real-floor-tab ${floor.id === state.floorId ? 'active' : ''}"
+          data-floor-id="${esc(floor.id)}"
+        >
+          <span>${index === 0 ? '🏢' : '🏬'}</span>
+          <strong>${esc(floor.name || 'Andar')}</strong>
+          <small>${items.length} equipamentos</small>
+        </button>
+      `;
+    }).join('');
+
+    box.querySelectorAll('[data-floor-id]').forEach(button => {
+      button.addEventListener('click', () => {
+        state.floorId = button.dataset.floorId;
+        renderFloorTabs();
+        renderCanvas();
+      });
+    });
   }
 
   function inject() {
     const screen = $('#empresa3d');
-    if (!screen || screen.dataset.empresa3dReady === '1') return;
+    if (!screen) return;
 
     screen.dataset.empresa3dReady = '1';
     screen.innerHTML = `
-      <div class="section-title e3d-title">
+      <div class="section-title empresa-real-title">
         <div>
           <p class="eyebrow">VISUALIZAÇÃO DA EMPRESA</p>
-          <h2>Minha Empresa 3D</h2>
+          <h2>Ambiente Realista da Empresa</h2>
         </div>
-        <span class="e3d-tag">Visual complementar</span>
+        <span class="empresa-real-badge">Gerado pelo próprio projeto</span>
       </div>
 
-      <div class="e3d-intro">
+      <div class="empresa-real-intro">
         <div>
-          <strong>🏢 A sede visual da empresa criada pelo grupo</strong>
+          <strong>🏢 Transforme o Mapa da Rede em um ambiente empresarial</strong>
           <p>
-            Escolham um modelo de prédio. A visão interna será criada automaticamente
-            usando os mesmos andares e equipamentos do Mapa da Rede.
+            O sistema usa os andares, departamentos, posições e equipamentos que a equipe
+            já cadastrou. Não é necessário preencher nada novamente.
           </p>
         </div>
-        <div class="e3d-intro-list">
-          <span>✓ Não altera o mapa</span>
-          <span>✓ Não cria equipamentos extras</span>
-          <span>✓ Pode ser usada na apresentação</span>
+        <div class="empresa-real-intro-list">
+          <span>✓ Cada andar gera uma imagem diferente</span>
+          <span>✓ Pessoas e mobiliário são adicionados automaticamente</span>
+          <span>✓ A imagem pode ser usada no relatório e na apresentação</span>
         </div>
       </div>
 
-      <section class="e3d-model-area">
-        <div class="e3d-section-head">
-          <div>
-            <small>MODELO DA SEDE</small>
-            <h3>Escolha uma das 5 opções</h3>
-          </div>
-          <button
-            id="btnSalvarEmpresa3D"
-            class="btn btn-primary"
-            type="button"
-            data-auth-action="salvar o modelo visual da Empresa 3D"
-          >
-            💾 Salvar modelo escolhido
+      <div class="empresa-real-toolbar">
+        <div id="empresaRealFloorTabs" class="empresa-real-floor-tabs"></div>
+
+        <div class="empresa-real-actions">
+          <button id="btnEmpresaRealAtualizar" class="btn btn-primary" type="button">
+            ✨ Gerar / Atualizar
+          </button>
+          <button id="btnEmpresaRealPessoas" class="btn btn-secondary" type="button"></button>
+          <button id="btnEmpresaRealCabos" class="btn btn-secondary" type="button"></button>
+          <button id="btnEmpresaRealApresentacao" class="btn btn-secondary" type="button">
+            🎥 Apresentação
           </button>
         </div>
-        <div id="empresa3dModelGrid" class="e3d-model-grid"></div>
-      </section>
+      </div>
 
-      <section class="e3d-view-shell">
-        <div class="e3d-toolbar">
-          <div class="e3d-view-tabs">
-            <button id="btnEmpresa3DExterna" class="e3d-view-btn active" type="button">
-              🏢 Vista externa
-            </button>
-            <button id="btnEmpresa3DInterna" class="e3d-view-btn" type="button">
-              🧩 Ver por dentro
-            </button>
+      <section id="empresaRealViewer" class="empresa-real-viewer">
+        <div class="empresa-real-viewer-head">
+          <div>
+            <small>ANDAR SELECIONADO</small>
+            <h3 id="empresaRealFloorName">Andar</h3>
+            <p id="empresaRealFloorMeta"></p>
           </div>
-
-          <div class="e3d-toolbar-actions">
-            <span id="empresa3dSaveStatus" class="e3d-save-status"></span>
-            <button id="btnEmpresa3DFullscreen" class="btn btn-secondary" type="button">
+          <div class="empresa-real-viewer-actions">
+            <button id="btnEmpresaRealFullscreen" class="btn btn-secondary" type="button">
               ⛶ Tela cheia
             </button>
+            <button id="btnEmpresaRealDownload" class="btn btn-secondary" type="button">
+              ⬇ Baixar PNG
+            </button>
           </div>
         </div>
 
-        <div id="empresa3dViewer" class="e3d-viewer"></div>
+        <div class="empresa-real-canvas-wrap">
+          <canvas id="empresaRealCanvas" aria-label="Visualização do andar da empresa"></canvas>
+          <div id="empresaRealEmpty" class="empresa-real-empty hidden">
+            <strong>Este andar ainda não possui equipamentos.</strong>
+            <span>Volte ao Mapa da Rede, adicione os equipamentos e depois clique em Gerar / Atualizar.</span>
+          </div>
+        </div>
+
+        <div class="empresa-real-note">
+          <span>💡 A posição dos objetos acompanha aproximadamente o Mapa da Rede.</span>
+          <span>🔄 Se o mapa mudar, clique em <strong>Gerar / Atualizar</strong>.</span>
+        </div>
       </section>
-
-      <div id="empresa3dLegend" class="e3d-legend"></div>
     `;
 
-    $('#btnEmpresa3DExterna')?.addEventListener('click', () => setView('external'));
-    $('#btnEmpresa3DInterna')?.addEventListener('click', () => setView('internal'));
-    $('#btnSalvarEmpresa3D')?.addEventListener('click', saveModel);
-    $('#btnEmpresa3DFullscreen')?.addEventListener('click', toggleFullscreen);
+    bind();
+    syncButtons();
   }
 
-  function renderModelOptions() {
-    const grid = $('#empresa3dModelGrid');
-    if (!grid) return;
+  function syncButtons() {
+    const people = $('#btnEmpresaRealPessoas');
+    const cables = $('#btnEmpresaRealCabos');
 
-    grid.innerHTML = MODELS.map(model => `
-      <button
-        class="e3d-model-card ${selectedModel === model.id ? 'active' : ''}"
-        type="button"
-        data-model-id="${esc(model.id)}"
-      >
-        <div class="e3d-mini-building model-${esc(model.id)}">
-          <div class="e3d-mini-roof"></div>
-          <div class="e3d-mini-windows">
-            <i></i><i></i><i></i><i></i><i></i><i></i>
-          </div>
-          <div class="e3d-mini-door"></div>
-        </div>
-        <span>
-          <strong>${model.icon} ${esc(model.name)}</strong>
-          <small>${esc(model.desc)}</small>
-        </span>
-      </button>
-    `).join('');
-
-    grid.querySelectorAll('.e3d-model-card').forEach(button => {
-      button.addEventListener('click', () => {
-        const modelId = button.dataset.modelId;
-        if (!MODELS.some(model => model.id === modelId)) return;
-
-        selectedModel = modelId;
-        renderModelOptions();
-        renderViewer();
-
-        const status = $('#empresa3dSaveStatus');
-        if (status) {
-          const saved = ensureVisual().modelId === selectedModel;
-          status.textContent = saved ? 'Modelo salvo' : 'Modelo ainda não salvo';
-          status.classList.toggle('pending', !saved);
-        }
-      });
-    });
-  }
-
-  function renderLegend() {
-    const box = $('#empresa3dLegend');
-    if (!box) return;
-
-    box.innerHTML = Object.entries(ICONS).map(([type, icon]) => `
-      <span><b>${icon}</b> ${esc(TYPE_NAMES[type] || type)}</span>
-    `).join('');
-  }
-
-  function setView(view) {
-    currentView = view === 'internal' ? 'internal' : 'external';
-    $('#btnEmpresa3DExterna')?.classList.toggle('active', currentView === 'external');
-    $('#btnEmpresa3DInterna')?.classList.toggle('active', currentView === 'internal');
-    renderViewer();
-  }
-
-  function exteriorFloors(count) {
-    const safe = Math.max(1, Math.min(8, count));
-    return Array.from({ length: safe }, () => `
-      <div class="e3d-building-floor">
-        <div class="e3d-window-row">
-          <i></i><i></i><i></i><i></i><i></i><i></i>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  function box3d({ x, y, z, w, h, d, cls = '', front = '#eef2f7', side = '#cbd5e1', top = '#f8fafc' }) {
-    return `
-      <div
-        class="e3d-proc-box ${cls}"
-        style="
-          --x:${x}px;--y:${y}px;--z:${z}px;
-          --w:${w}px;--h:${h}px;--d:${d}px;
-          --front:${front};--side:${side};--top:${top};
-        "
-      >
-        <i class="face front"></i>
-        <i class="face back"></i>
-        <i class="face right"></i>
-        <i class="face left"></i>
-        <i class="face top"></i>
-        <i class="face bottom"></i>
-      </div>
-    `;
-  }
-
-  function corporateWindows() {
-    const front = [];
-    const side = [];
-
-    const frontXs = [-205, -135, -65, 65, 135, 205];
-    const sideZs = [-110, -40, 40, 110];
-
-    [-48, 48].forEach(y => {
-      frontXs.forEach(x => {
-        front.push(box3d({
-          x, y, z: 153,
-          w: 58, h: 68, d: 4,
-          cls: 'glass',
-          front: 'linear-gradient(145deg,#0f4c75,#3f88b8)',
-          side: '#173d57',
-          top: '#7dd3fc'
-        }));
-      });
-
-      sideZs.forEach(z => {
-        side.push(box3d({
-          x: 263, y, z,
-          w: 4, h: 68, d: 58,
-          cls: 'glass side-glass',
-          front: '#173d57',
-          side: 'linear-gradient(145deg,#0f4c75,#3f88b8)',
-          top: '#7dd3fc'
-        }));
-      });
-    });
-
-    return front.join('') + side.join('');
-  }
-
-  function renderCorporate3D(data) {
-    const viewer = $('#empresa3dViewer');
-    if (!viewer) return;
-
-    viewer.innerHTML = `
-      <div class="e3d-proc-stage" id="e3dProcStage">
-        <div class="e3d-proc-help">
-          <span>🖱️ Arraste para girar</span>
-          <span>🔍 Use o scroll para zoom</span>
-        </div>
-
-        <div class="e3d-proc-controls">
-          <button type="button" data-e3d-zoom="in" title="Aproximar">＋</button>
-          <button type="button" data-e3d-zoom="out" title="Afastar">−</button>
-          <button type="button" data-e3d-reset title="Centralizar">↺</button>
-        </div>
-
-        <div class="e3d-proc-shadow"></div>
-
-        <div class="e3d-proc-scene" id="e3dProcScene">
-          <div class="e3d-proc-world" id="e3dProcWorld">
-            ${box3d({ x:0,y:150,z:0,w:760,h:12,d:520,cls:'ground',front:'#d9dde2',side:'#c7ccd2',top:'#dfe3e7' })}
-
-            ${box3d({ x:0,y:15,z:0,w:520,h:220,d:300,cls:'building-shell',front:'#f4f6f8',side:'#d8dde3',top:'#e4e8ed' })}
-
-            ${corporateWindows()}
-
-            ${box3d({ x:-15,y:54,z:196,w:190,h:12,d:92,cls:'canopy',front:'#cfd5dc',side:'#aeb6c0',top:'#e8ebee' })}
-            ${box3d({ x:-15,y:68,z:154,w:154,h:82,d:6,cls:'entrance-glass',front:'linear-gradient(145deg,#7fb1cf,#d7ecf8)',side:'#6e91a8',top:'#dbeafe' })}
-
-            ${box3d({ x:-170,y:125,z:170,w:150,h:18,d:48,cls:'planter',front:'#d1d5db',side:'#b6bec8',top:'#e5e7eb' })}
-            ${box3d({ x:185,y:125,z:170,w:130,h:18,d:48,cls:'planter',front:'#d1d5db',side:'#b6bec8',top:'#e5e7eb' })}
-
-            ${box3d({ x:-120,y:-112,z:-35,w:74,h:30,d:58,cls:'roof-unit',front:'#b8bec6',side:'#8d98a5',top:'#d6dbe1' })}
-            ${box3d({ x:10,y:-112,z:15,w:88,h:32,d:64,cls:'roof-unit',front:'#b8bec6',side:'#8d98a5',top:'#d6dbe1' })}
-            ${box3d({ x:165,y:-122,z:-38,w:98,h:50,d:82,cls:'roof-room',front:'#e5e7eb',side:'#cbd5e1',top:'#f3f4f6' })}
-
-            <div class="e3d-proc-roof-rail rail-front"></div>
-            <div class="e3d-proc-roof-rail rail-right"></div>
-          </div>
-        </div>
-
-        <div class="e3d-proc-caption">
-          <strong>Modelo 1 — Corporativo Moderno</strong>
-          <span>2 andares • fachada branca • vidro azul • cobertura plana</span>
-        </div>
-
-        <div class="e3d-proc-summary">
-          <span>🏬 ${data.floors.length} andar(es) no projeto</span>
-          <span>💻 ${data.equipment.length} equipamentos cadastrados</span>
-        </div>
-      </div>
-    `;
-
-    bindCorporate3DControls();
-  }
-
-  function bindCorporate3DControls() {
-    const stage = $('#e3dProcStage');
-    const world = $('#e3dProcWorld');
-    if (!stage || !world) return;
-
-    let yaw = -34;
-    let pitch = -18;
-    let zoom = 0.92;
-    let dragging = false;
-    let lastX = 0;
-    let lastY = 0;
-
-    const apply = () => {
-      world.style.setProperty('--yaw', yaw + 'deg');
-      world.style.setProperty('--pitch', pitch + 'deg');
-      world.style.setProperty('--zoom', zoom);
-    };
-
-    const reset = () => {
-      yaw = -34;
-      pitch = -18;
-      zoom = 0.92;
-      apply();
-    };
-
-    stage.addEventListener('pointerdown', event => {
-      if (event.target.closest('.e3d-proc-controls')) return;
-      dragging = true;
-      lastX = event.clientX;
-      lastY = event.clientY;
-      stage.setPointerCapture?.(event.pointerId);
-      stage.classList.add('dragging');
-    });
-
-    stage.addEventListener('pointermove', event => {
-      if (!dragging) return;
-      const dx = event.clientX - lastX;
-      const dy = event.clientY - lastY;
-      yaw += dx * 0.45;
-      pitch = clamp(pitch - dy * 0.28, -52, 18);
-      lastX = event.clientX;
-      lastY = event.clientY;
-      apply();
-    });
-
-    const stop = event => {
-      dragging = false;
-      stage.classList.remove('dragging');
-      try { stage.releasePointerCapture?.(event.pointerId); } catch (_) {}
-    };
-
-    stage.addEventListener('pointerup', stop);
-    stage.addEventListener('pointercancel', stop);
-
-    stage.addEventListener('wheel', event => {
-      event.preventDefault();
-      zoom = clamp(zoom + (event.deltaY < 0 ? 0.08 : -0.08), 0.55, 1.65);
-      apply();
-    }, { passive: false });
-
-    stage.querySelector('[data-e3d-zoom="in"]')?.addEventListener('click', event => {
-      event.stopPropagation();
-      zoom = clamp(zoom + 0.12, 0.55, 1.65);
-      apply();
-    });
-
-    stage.querySelector('[data-e3d-zoom="out"]')?.addEventListener('click', event => {
-      event.stopPropagation();
-      zoom = clamp(zoom - 0.12, 0.55, 1.65);
-      apply();
-    });
-
-    stage.querySelector('[data-e3d-reset]')?.addEventListener('click', event => {
-      event.stopPropagation();
-      reset();
-    });
-
-    apply();
-  }
-
-  function renderExterior() {
-    const viewer = $('#empresa3dViewer');
-    if (!viewer) return;
-
-    const data = getBuildingData();
-
-    if (selectedModel === 'corporativo') {
-      renderCorporate3D(data);
-      return;
+    if (people) {
+      people.textContent = state.showPeople ? '👥 Pessoas: ON' : '👥 Pessoas: OFF';
+      people.classList.toggle('active-toggle', state.showPeople);
     }
 
-    const model = currentModel();
-    const companyName = project.company?.name || 'Minha Empresa';
-
-    viewer.innerHTML = `
-      <div class="e3d-external model-${esc(model.id)}">
-        <div class="e3d-cloud cloud-a"></div>
-        <div class="e3d-cloud cloud-b"></div>
-        <div class="e3d-lawn lawn-a"></div>
-        <div class="e3d-lawn lawn-b"></div>
-        <div class="e3d-road"></div>
-
-        <div class="e3d-building-wrap">
-          <div class="e3d-building" style="--floor-count:${Math.max(1, Math.min(8, data.floors.length))}">
-            <div class="e3d-building-side"></div>
-            <div class="e3d-building-roof"></div>
-            <div class="e3d-building-front">
-              <div class="e3d-company-sign">
-                <span>${model.icon}</span>
-                <strong>${esc(companyName)}</strong>
-                <small>${esc(model.name)}</small>
-              </div>
-              <div class="e3d-building-floors">
-                ${exteriorFloors(data.floors.length)}
-              </div>
-              <div class="e3d-entry"><span></span></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="e3d-stats">
-          <span><b>🏬 ${data.floors.length}</b> andar(es)</span>
-          <span><b>🗂️ ${data.departments.length}</b> departamentos</span>
-          <span><b>💻 ${data.equipment.length}</b> equipamentos</span>
-          <span><b>🔗 ${data.connections.length}</b> conexões</span>
-        </div>
-
-        <button id="btnEmpresa3DEntrar" class="e3d-enter-btn" type="button">
-          Ver a empresa por dentro →
-        </button>
-      </div>
-    `;
-
-    $('#btnEmpresa3DEntrar')?.addEventListener('click', () => setView('internal'));
-  }
-
-  function pointFor(item, floorId, data) {
-    const view = data.floorViews?.[floorId] || project.mapView || {};
-    const width = Math.max(1, Number(view.width) || 1400);
-    const height = Math.max(1, Number(view.height) || 900);
-
-    const x = clamp((Number(item.x) || 0) / width, 0.03, 0.97);
-    const y = clamp((Number(item.y) || 0) / height, 0.05, 0.95);
-
-    return {
-      left: x * 100,
-      top: y * 100,
-      svgX: x * 1000,
-      svgY: y * 450
-    };
-  }
-
-  function departmentChips(items, data) {
-    const names = [...new Set(
-      items
-        .map(item => departmentName(item.departmentId, data))
-        .filter(Boolean)
-    )];
-
-    if (!names.length) {
-      return '<span class="e3d-dept muted">Sem departamento definido</span>';
-    }
-
-    return names.map(name => `
-      <span class="e3d-dept">${esc(name)}</span>
-    `).join('');
-  }
-
-  function renderFloor(floor, displayIndex, data) {
-    const items = equipmentOnFloor(floor.id, data);
-    const connections = connectionsOnFloor(floor.id, data);
-    const itemMap = new Map(items.map(item => [item.id, item]));
-
-    const lines = connections.map(connection => {
-      const aItem = itemMap.get(connection.from);
-      const bItem = itemMap.get(connection.to);
-      if (!aItem || !bItem) return '';
-
-      const a = pointFor(aItem, floor.id, data);
-      const b = pointFor(bItem, floor.id, data);
-
-      return `
-        <line
-          x1="${a.svgX.toFixed(1)}"
-          y1="${a.svgY.toFixed(1)}"
-          x2="${b.svgX.toFixed(1)}"
-          y2="${b.svgY.toFixed(1)}"
-        />
-      `;
-    }).join('');
-
-    const nodes = items.map(item => {
-      const p = pointFor(item, floor.id, data);
-      const icon = ICONS[item.type] || '🔧';
-      const dep = departmentName(item.departmentId, data);
-      const title = [
-        item.name || TYPE_NAMES[item.type] || item.type,
-        TYPE_NAMES[item.type] || item.type,
-        dep || 'Sem departamento',
-        item.ip ? 'IP: ' + item.ip : ''
-      ].filter(Boolean).join(' • ');
-
-      return `
-        <div
-          class="e3d-node type-${esc(item.type)}"
-          style="left:${p.left.toFixed(2)}%;top:${p.top.toFixed(2)}%"
-          title="${esc(title)}"
-        >
-          <span>${icon}</span>
-          <small>${esc(item.name || TYPE_NAMES[item.type] || item.type)}</small>
-        </div>
-      `;
-    }).join('');
-
-    return `
-      <article class="e3d-floor-card">
-        <div class="e3d-floor-head">
-          <div>
-            <small>CAMADA ${displayIndex + 1}</small>
-            <h4>${esc(floor.name || 'Andar')}</h4>
-          </div>
-          <div class="e3d-floor-meta">
-            <span>💻 ${items.length} equipamento(s)</span>
-            <span>🔗 ${connections.length} conexão(ões)</span>
-          </div>
-        </div>
-
-        <div class="e3d-floor-departments">
-          ${departmentChips(items, data)}
-        </div>
-
-        <div class="e3d-floor-plan">
-          <div class="e3d-floor-grid"></div>
-          <svg class="e3d-lines" viewBox="0 0 1000 450" preserveAspectRatio="none">
-            ${lines}
-          </svg>
-          ${nodes || '<div class="e3d-floor-empty">Nenhum equipamento cadastrado neste andar.</div>'}
-        </div>
-      </article>
-    `;
-  }
-
-  function renderInternal() {
-    const viewer = $('#empresa3dViewer');
-    if (!viewer) return;
-
-    const data = getBuildingData();
-    const model = currentModel();
-    const companyName = project.company?.name || 'Minha Empresa';
-
-    viewer.innerHTML = `
-      <div class="e3d-internal model-${esc(model.id)}">
-        <div class="e3d-internal-head">
-          <div>
-            <small>VISÃO INTERNA AUTOMÁTICA</small>
-            <h3>${esc(companyName)} — todos os andares</h3>
-            <p>
-              Os equipamentos abaixo são os mesmos do Mapa da Rede.
-              As posições e conexões acompanham a topologia criada pelo grupo.
-            </p>
-          </div>
-          <span class="e3d-live">● Sincronizado com o mapa</span>
-        </div>
-
-        <div class="e3d-cutaway">
-          ${data.floors.map((floor, index) => renderFloor(floor, index, data)).join('')}
-        </div>
-      </div>
-    `;
-  }
-
-  function renderViewer() {
-    if (currentView === 'internal') renderInternal();
-    else renderExterior();
-  }
-
-  function renderScreen() {
-    inject();
-    const visual = ensureVisual();
-
-    selectedModel = MODELS.some(model => model.id === visual.modelId)
-      ? visual.modelId
-      : 'corporativo';
-
-    renderModelOptions();
-    renderViewer();
-    renderLegend();
-
-    const status = $('#empresa3dSaveStatus');
-    if (status) {
-      status.textContent = 'Modelo salvo';
-      status.classList.remove('pending');
+    if (cables) {
+      cables.textContent = state.showCables ? '🔗 Cabos: ON' : '🔗 Cabos: OFF';
+      cables.classList.toggle('active-toggle', state.showCables);
     }
   }
 
-  function saveModel() {
-    const visual = ensureVisual();
-    const previous = visual.modelId;
-    const model = currentModel();
+  function persistPrefs() {
+    const visual = ensureVisualPrefs();
+    visual.officeView.showPeople = state.showPeople;
+    visual.officeView.showCables = state.showCables;
+  }
 
-    visual.modelId = selectedModel;
-    visual.updatedAt = new Date().toISOString();
+  function bind() {
+    $('#btnEmpresaRealAtualizar')?.addEventListener('click', () => {
+      renderFloorTabs();
+      renderCanvas();
+    });
 
-    const status = $('#empresa3dSaveStatus');
-    if (status) {
-      status.textContent = '✓ Modelo salvo';
-      status.classList.remove('pending');
-    }
+    $('#btnEmpresaRealPessoas')?.addEventListener('click', () => {
+      state.showPeople = !state.showPeople;
+      persistPrefs();
+      syncButtons();
+      renderCanvas();
+    });
 
-    if (typeof addHistory === 'function' && previous !== selectedModel) {
-      addHistory('Visual', `Modelo visual da Empresa 3D alterado para "${model.name}".`);
-    }
+    $('#btnEmpresaRealCabos')?.addEventListener('click', () => {
+      state.showCables = !state.showCables;
+      persistPrefs();
+      syncButtons();
+      renderCanvas();
+    });
 
-    if (typeof renderAll === 'function') renderAll();
+    $('#btnEmpresaRealDownload')?.addEventListener('click', downloadCurrentFloor);
+    $('#btnEmpresaRealFullscreen')?.addEventListener('click', toggleFullscreen);
+    $('#btnEmpresaRealApresentacao')?.addEventListener('click', presentationMode);
+  }
+
+  function safeFilename(text) {
+    return String(text || 'empresa')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9_-]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .slice(0, 70) || 'empresa';
+  }
+
+  function downloadCurrentFloor() {
+    const canvas = $('#empresaRealCanvas');
+    if (!canvas) return;
+
+    const data = getData();
+    const floor = data.floors.find(f => f.id === state.floorId) || data.floors[0];
+
+    const link = document.createElement('a');
+    link.download =
+      safeFilename(project.company?.name || 'empresa') +
+      '_' +
+      safeFilename(floor?.name || 'andar') +
+      '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
   }
 
   async function toggleFullscreen() {
-    const viewer = $('#empresa3dViewer');
+    const viewer = $('#empresaRealViewer');
     if (!viewer) return;
 
     try {
-      if (document.fullscreenElement) await document.exitFullscreen();
-      else if (viewer.requestFullscreen) await viewer.requestFullscreen();
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else if (viewer.requestFullscreen) {
+        await viewer.requestFullscreen();
+      }
     } catch (_) {}
+  }
+
+  async function presentationMode() {
+    const viewer = $('#empresaRealViewer');
+    if (!viewer) return;
+
+    state.presentation = true;
+    viewer.classList.add('presentation-mode');
+
+    try {
+      if (!document.fullscreenElement && viewer.requestFullscreen) {
+        await viewer.requestFullscreen();
+      }
+    } catch (_) {}
+  }
+
+  function watchFullscreen() {
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement) {
+        state.presentation = false;
+        $('#empresaRealViewer')?.classList.remove('presentation-mode');
+      }
+    });
+  }
+
+  function renderScreen() {
+    ensureVisualPrefs();
+
+    const data = getData();
+    if (!data.floorIds.has(state.floorId)) state.floorId = data.floors[0].id;
+
+    renderFloorTabs();
+    syncButtons();
+    renderCanvas();
+  }
+
+  function bindNav() {
+    const button = $('[data-target="empresa3d"]');
+    if (!button || button.dataset.empresaRealBound === '1') return;
+
+    button.dataset.empresaRealBound = '1';
+    button.addEventListener('click', () => {
+      setTimeout(renderScreen, 0);
+    });
   }
 
   function watchProjectOpen() {
     const input = $('#inputAbrirProjeto');
-    if (!input || input.dataset.empresa3dWatch === '1') return;
+    if (!input || input.dataset.empresaRealWatch === '1') return;
 
-    input.dataset.empresa3dWatch = '1';
+    input.dataset.empresaRealWatch = '1';
     input.addEventListener('change', () => {
       const before = project;
       let checks = 0;
@@ -737,36 +925,33 @@
           clearInterval(loadWatch);
           loadWatch = null;
 
-          if (project !== before && $('#empresa3d')?.classList.contains('active')) {
-            renderScreen();
+          if (project !== before) {
+            ensureVisualPrefs();
+            const data = getData();
+            state.floorId = data.floors[0].id;
+            if ($('#empresa3d')?.classList.contains('active')) renderScreen();
           }
         }
       }, 100);
     });
   }
 
-  function bindNav() {
-    const button = $('[data-target="empresa3d"]');
-    if (!button || button.dataset.empresa3dBound === '1') return;
-
-    button.dataset.empresa3dBound = '1';
-    button.addEventListener('click', () => setTimeout(renderScreen, 0));
-  }
-
-  const previousRenderAll = typeof renderAll === 'function' ? renderAll : null;
-  if (previousRenderAll) {
-    renderAll = function() {
-      const result = previousRenderAll();
-      if ($('#empresa3d')?.classList.contains('active')) renderScreen();
-      return result;
-    };
+  function bindResize() {
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if ($('#empresa3d')?.classList.contains('active')) renderCanvas();
+      }, 120);
+    });
   }
 
   function start() {
-    ensureVisual();
+    ensureVisualPrefs();
     inject();
     bindNav();
     watchProjectOpen();
+    watchFullscreen();
+    bindResize();
     renderScreen();
   }
 
