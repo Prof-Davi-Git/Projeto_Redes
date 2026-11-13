@@ -194,37 +194,39 @@
           <div>
             <small>MODELO BASE + ORIENTAÇÃO</small>
             <h3>Acompanhe o modelo e veja o que colocar em cada página</h3>
-            <p>Avance normalmente pela própria prévia do Canva. Os controles abaixo também podem ser usados, e as dicas ao lado acompanham a página selecionada.</p>
+            <p>Use as setas sobre a própria pré-visualização para avançar. Assim, o slide e as dicas ao lado mudam juntos.</p>
           </div>
         </div>
 
         <div class="presentation-workspace">
           <div class="presentation-preview-shell">
-            <iframe
-              id="presentationCanvaPreview"
-              class="presentation-preview"
-              src="${embedPageUrl(currentPageIndex)}"
-              title="Pré-visualização do modelo de apresentação no Canva"
-              loading="lazy"
-              allowfullscreen
-              allow="fullscreen"
-            ></iframe>
+            <div class="presentation-preview-frame">
+              <iframe
+                id="presentationCanvaPreview"
+                class="presentation-preview"
+                src="${embedPageUrl(currentPageIndex)}"
+                title="Pré-visualização do modelo de apresentação no Canva"
+                loading="lazy"
+                allowfullscreen
+                allow="fullscreen"
+              ></iframe>
 
-            <div class="presentation-preview-controls">
-              <button id="presentationPrevPage" class="presentation-nav-arrow" type="button" aria-label="Página anterior">←</button>
-              <span id="presentationPageCounter">1 / ${pages.length}</span>
-              <button id="presentationNextPage" class="presentation-nav-arrow" type="button" aria-label="Próxima página">→</button>
-
-              <div class="presentation-page-dots" aria-label="Selecionar página">
-                ${pages.map((page, index) => `
-                  <button
-                    type="button"
-                    data-presentation-page="${index}"
-                    class="${index === currentPageIndex ? 'active' : ''}"
-                    title="${page.number === 'FINAL' ? 'Página final' : 'Página ' + page.number}"
-                  >${index + 1}</button>
-                `).join('')}
+              <div class="presentation-preview-nav-overlay" aria-label="Navegação do modelo">
+                <button id="presentationPrevPage" class="presentation-preview-arrow" type="button" aria-label="Página anterior">←</button>
+                <span id="presentationPageCounter">1 / ${pages.length}</span>
+                <button id="presentationNextPage" class="presentation-preview-arrow" type="button" aria-label="Próxima página">→</button>
               </div>
+            </div>
+
+            <div class="presentation-page-dots" aria-label="Selecionar página">
+              ${pages.map((page, index) => `
+                <button
+                  type="button"
+                  data-presentation-page="${index}"
+                  class="${index === currentPageIndex ? 'active' : ''}"
+                  title="${page.number === 'FINAL' ? 'Página final' : 'Página ' + page.number}"
+                >${index + 1}</button>
+              `).join('')}
             </div>
 
             <div class="presentation-preview-footer">
@@ -268,52 +270,6 @@
     renderCurrentTips();
   }
 
-  function findPageNumber(value) {
-    if (typeof value === 'number' && Number.isFinite(value)) {
-      return value >= 1 && value <= pages.length ? value : null;
-    }
-
-    if (typeof value === 'string') {
-      const match = value.match(/(?:page|slide|currentPage|current_page)[^0-9]{0,6}(\d{1,2})/i);
-      if (match) {
-        const number = Number(match[1]);
-        return number >= 1 && number <= pages.length ? number : null;
-      }
-      return null;
-    }
-
-    if (!value || typeof value !== 'object') return null;
-
-    const directKeys = ['page', 'pageNumber', 'page_number', 'currentPage', 'current_page', 'slide', 'slideNumber'];
-    for (const key of directKeys) {
-      if (key in value) {
-        const found = findPageNumber(value[key]);
-        if (found) return found;
-      }
-    }
-
-    for (const nested of Object.values(value)) {
-      const found = findPageNumber(nested);
-      if (found) return found;
-    }
-
-    return null;
-  }
-
-  function bindCanvaMessages() {
-    if (window.__presentationCanvaMessageBound) return;
-    window.__presentationCanvaMessageBound = true;
-
-    window.addEventListener('message', event => {
-      if (!String(event.origin || '').includes('canva.com')) return;
-
-      const pageNumber = findPageNumber(event.data);
-      if (!pageNumber) return;
-
-      goToPage(pageNumber - 1, false);
-    });
-  }
-
   function bindNav() {
     const button = document.querySelector('[data-target="apresentacao"]');
     if (!button || button.dataset.presentationGuideBound === '1') return;
@@ -325,7 +281,6 @@
   function start() {
     render();
     bindNav();
-    bindCanvaMessages();
   }
 
   if (document.readyState === 'loading') {
