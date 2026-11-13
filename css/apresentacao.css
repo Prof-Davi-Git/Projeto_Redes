@@ -96,7 +96,8 @@
 .presentation-section-head p {
   margin: 0;
   color: #64748b;
-  font-size: 11px;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .presentation-preview-shell {
@@ -128,7 +129,7 @@
 
 .presentation-preview-footer span {
   color: #64748b;
-  font-size: 10px;
+  font-size: 13px;
 }
 
 .presentation-tip-grid {
@@ -163,8 +164,9 @@
 .presentation-tip-card p {
   margin: 0;
   color: #334155;
-  font-size: 12px;
-  line-height: 1.5;
+  font-size: 16px;
+  line-height: 1.6;
+  font-weight: 600;
 }
 
 .presentation-guide-list {
@@ -232,20 +234,21 @@
 .presentation-guide-title h3 {
   margin: 0;
   color: #0f172a;
-  font-size: 15px;
+  font-size: 19px;
 }
 
 .presentation-guide-content ul {
   display: grid;
-  gap: 7px;
+  gap: 11px;
   margin: 0;
   padding-left: 20px;
 }
 
 .presentation-guide-content li {
   color: #475569;
-  font-size: 12px;
-  line-height: 1.5;
+  font-size: 16px;
+  line-height: 1.62;
+  font-weight: 500;
 }
 
 .presentation-guide-content li::marker {
@@ -275,8 +278,8 @@
 .presentation-final-note p {
   margin: 0;
   color: #475569;
-  font-size: 11px;
-  line-height: 1.5;
+  font-size: 15px;
+  line-height: 1.6;
 }
 
 @media (max-width: 900px) {
@@ -312,4 +315,39 @@
   .presentation-preview {
     min-height: 300px;
   }
+}
+
+
+/* Leitura reforçada das orientações */
+.presentation-general-tips .presentation-section-head h3,
+.presentation-pages-guide .presentation-section-head h3 {
+  font-size: 21px;
+}
+
+.presentation-general-tips .presentation-section-head small,
+.presentation-pages-guide .presentation-section-head small {
+  font-size: 11px;
+}
+
+.presentation-tip-card {
+  min-height: 88px;
+  padding: 18px 18px;
+}
+
+.presentation-tip-card > span {
+  width: 44px;
+  height: 44px;
+  font-size: 16px;
+}
+
+.presentation-guide-content {
+  padding: 22px 24px;
+}
+
+.presentation-guide-content li {
+  letter-spacing: .002em;
+}
+
+.presentation-guide-title {
+  margin-bottom: 13px;
 }
