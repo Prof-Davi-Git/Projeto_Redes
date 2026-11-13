@@ -134,17 +134,6 @@
         </a>
       </div>
 
-      <section class="presentation-intro">
-        <div>
-          <strong>Use este modelo como ponto de partida.</strong>
-          <p>
-            O grupo pode editar o modelo no Canva ou criar sua própria apresentação.
-            O importante é seguir as orientações abaixo para organizar o conteúdo.
-          </p>
-        </div>
-        <span>8 páginas</span>
-      </section>
-
       <section class="presentation-model-section">
         <div class="presentation-section-head">
           <div>
