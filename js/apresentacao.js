@@ -187,7 +187,7 @@
           <div>
             <small>MODELO BASE + ORIENTAÇÃO</small>
             <h3>Acompanhe o modelo e veja o que colocar em cada página</h3>
-            <p>Use as setas sobre a própria pré-visualização para avançar. Assim, o slide e as dicas ao lado mudam juntos.</p>
+            <p>Use o controlador abaixo da pré-visualização para avançar. O slide e as dicas ao lado mudam juntos.</p>
           </div>
         </div>
 
@@ -200,9 +200,9 @@
                 src="${embedPageUrl(currentPageIndex)}"
                 title="Pré-visualização do modelo de apresentação no Canva"
                 loading="lazy"
-                allowfullscreen
-                allow="fullscreen"
-              ></iframe>
+              tabindex="-1"
+              aria-hidden="true"
+            ></iframe>
             </div>
 
             <div class="presentation-preview-nav-bar" aria-label="Navegação do modelo">
