@@ -194,7 +194,7 @@
           <div>
             <small>MODELO BASE + ORIENTAÇÃO</small>
             <h3>Acompanhe o modelo e veja o que colocar em cada página</h3>
-            <p>Use os controles abaixo da prévia para mudar de página. As dicas ao lado acompanham a página selecionada.</p>
+            <p>Avance normalmente pela própria prévia do Canva. Os controles abaixo também podem ser usados, e as dicas ao lado acompanham a página selecionada.</p>
           </div>
         </div>
 
@@ -206,8 +206,8 @@
               src="${embedPageUrl(currentPageIndex)}"
               title="Pré-visualização do modelo de apresentação no Canva"
               loading="lazy"
-              tabindex="-1"
-              aria-hidden="true"
+              allowfullscreen
+              allow="fullscreen"
             ></iframe>
 
             <div class="presentation-preview-controls">
