@@ -120,7 +120,6 @@
   min-height: 0;
   border: 0;
   background: #eef2f7;
-  pointer-events: none;
 }
 
 .presentation-preview-controls {
@@ -236,15 +235,15 @@
 
 .presentation-current-badge small {
   color: #bfdbfe;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 900;
   letter-spacing: .09em;
 }
 
 .presentation-current-badge strong {
   color: #fff;
-  font-size: 19px;
-  line-height: 1.18;
+  font-size: 21px;
+  line-height: 1.22;
 }
 
 .presentation-current-copy {
@@ -252,26 +251,26 @@
   flex: 1;
   flex-direction: column;
   justify-content: center;
-  padding: 22px 24px;
+  padding: 26px 28px;
 }
 
 .presentation-current-copy h3 {
   margin: 0 0 14px;
   color: #0f172a;
-  font-size: 20px;
+  font-size: 22px;
 }
 
 .presentation-current-copy ul {
   display: grid;
-  gap: 12px;
+  gap: 16px;
   margin: 0;
-  padding-left: 22px;
+  padding-left: 24px;
 }
 
 .presentation-current-copy li {
   color: #475569;
-  font-size: 16px;
-  line-height: 1.62;
+  font-size: 18px;
+  line-height: 1.65;
   font-weight: 500;
 }
 
@@ -344,5 +343,26 @@
 
   .presentation-current-copy {
     padding: 18px;
+  }
+}
+
+
+/* A prévia do Canva permanece totalmente clicável */
+.presentation-preview {
+  pointer-events: auto;
+}
+
+/* Aproveita melhor o espaço disponível no painel de orientações */
+.presentation-current-copy {
+  justify-content: flex-start;
+}
+
+.presentation-current-copy h3 {
+  margin-top: 4px;
+}
+
+@media (min-width: 1051px) {
+  .presentation-current-tips {
+    min-height: 100%;
   }
 }
