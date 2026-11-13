@@ -26,50 +26,11 @@
   white-space: nowrap;
 }
 
-.presentation-intro,
 .presentation-model-section,
 .presentation-general-tips,
 .presentation-pages-guide,
 .presentation-final-note {
   margin-bottom: 18px;
-}
-
-.presentation-intro {
-  display: flex;
-  justify-content: space-between;
-  gap: 18px;
-  align-items: center;
-  padding: 18px 20px;
-  border: 1px solid #dbeafe;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #eff6ff, #f8fafc);
-}
-
-.presentation-intro strong {
-  display: block;
-  margin-bottom: 5px;
-  color: #0f172a;
-  font-size: 16px;
-}
-
-.presentation-intro p {
-  max-width: 820px;
-  margin: 0;
-  color: #64748b;
-  line-height: 1.55;
-}
-
-.presentation-intro > span {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 90px;
-  padding: 10px 14px;
-  border-radius: 999px;
-  background: #2563eb;
-  color: #fff;
-  font-size: 12px;
-  font-weight: 900;
 }
 
 .presentation-section-head {
@@ -101,6 +62,8 @@
 }
 
 .presentation-preview-shell {
+  width: min(760px, 100%);
+  margin: 0 auto;
   overflow: hidden;
   border: 1px solid var(--pg-border);
   border-radius: 18px;
@@ -112,7 +75,7 @@
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
-  min-height: 520px;
+  min-height: 0;
   border: 0;
   background: #eef2f7;
 }
@@ -284,7 +247,6 @@
 
 @media (max-width: 900px) {
   .presentation-page-title,
-  .presentation-intro,
   .presentation-preview-footer {
     align-items: stretch;
     flex-direction: column;
@@ -298,9 +260,6 @@
     grid-template-columns: 120px minmax(0, 1fr);
   }
 
-  .presentation-preview {
-    min-height: 420px;
-  }
 }
 
 @media (max-width: 620px) {
@@ -312,9 +271,6 @@
     min-height: 100px;
   }
 
-  .presentation-preview {
-    min-height: 300px;
-  }
 }
 
 
@@ -350,4 +306,31 @@
 
 .presentation-guide-title {
   margin-bottom: 13px;
+}
+
+
+/* Ajuste final da pré-visualização */
+.presentation-model-section {
+  margin-top: 8px;
+}
+
+.presentation-model-section .presentation-section-head {
+  width: min(760px, 100%);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.presentation-preview-footer {
+  padding: 10px 12px;
+}
+
+.presentation-preview-footer .btn {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 900px) {
+  .presentation-model-section .presentation-section-head,
+  .presentation-preview-shell {
+    width: 100%;
+  }
 }
