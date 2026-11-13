@@ -129,13 +129,6 @@
       </div>
     `;
 
-    document.querySelectorAll('[data-presentation-page]').forEach(button => {
-      button.classList.toggle(
-        'active',
-        Number(button.dataset.presentationPage) === currentPageIndex
-      );
-    });
-
     const counter = document.querySelector('#presentationPageCounter');
     if (counter) counter.textContent = `${currentPageIndex + 1} / ${pages.length}`;
 
@@ -210,23 +203,12 @@
                 allowfullscreen
                 allow="fullscreen"
               ></iframe>
-
-              <div class="presentation-preview-nav-overlay" aria-label="Navegação do modelo">
-                <button id="presentationPrevPage" class="presentation-preview-arrow" type="button" aria-label="Página anterior">←</button>
-                <span id="presentationPageCounter">1 / ${pages.length}</span>
-                <button id="presentationNextPage" class="presentation-preview-arrow" type="button" aria-label="Próxima página">→</button>
-              </div>
             </div>
 
-            <div class="presentation-page-dots" aria-label="Selecionar página">
-              ${pages.map((page, index) => `
-                <button
-                  type="button"
-                  data-presentation-page="${index}"
-                  class="${index === currentPageIndex ? 'active' : ''}"
-                  title="${page.number === 'FINAL' ? 'Página final' : 'Página ' + page.number}"
-                >${index + 1}</button>
-              `).join('')}
+            <div class="presentation-preview-nav-bar" aria-label="Navegação do modelo">
+              <button id="presentationPrevPage" class="presentation-preview-arrow" type="button" aria-label="Página anterior">←</button>
+              <span id="presentationPageCounter">1 / ${pages.length}</span>
+              <button id="presentationNextPage" class="presentation-preview-arrow" type="button" aria-label="Próxima página">→</button>
             </div>
 
             <div class="presentation-preview-footer">
@@ -261,10 +243,6 @@
 
     document.querySelector('#presentationNextPage')?.addEventListener('click', () => {
       goToPage(currentPageIndex + 1);
-    });
-
-    document.querySelectorAll('[data-presentation-page]').forEach(button => {
-      button.addEventListener('click', () => goToPage(Number(button.dataset.presentationPage)));
     });
 
     renderCurrentTips();
