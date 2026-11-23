@@ -6,8 +6,8 @@
    ========================================================= */
 
 (() => {
-  const MODEL_LINK = 'https://canva.link/88o7ryiqgs6r1i3';
-  const EMBED_LINK = 'https://www.canva.com/design/DAHaRRbAVnI/view?embed';
+  const MODEL_LINK = 'https://www.canva.com/design/DAHaRRbAVnI/iTTXl1EMB5lFVqlTY3GMuQ/edit?utm_content=DAHaRRbAVnI&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton';
+  const EMBED_LINK = 'https://www.canva.com/design/DAHaRRbAVnI/iTTXl1EMB5lFVqlTY3GMuQ/view?embed';
 
   const generalTips = [
     'Insira sempre ícones e imagens para que as páginas fiquem visualmente mais bonitas e fáceis de entender.',
